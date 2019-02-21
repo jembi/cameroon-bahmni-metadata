@@ -1,0 +1,21 @@
+language: minimal
+before_install:
+- openssl aes-256-cbc -K $encrypted_e8efdc3a8604_key -iv $encrypted_e8efdc3a8604_iv
+  -in .deploy_key.enc -out /tmp/deploy_key -d
+- eval "$(ssh-agent -s)"
+- chmod 600 /tmp/deploy_key
+- ssh-add /tmp/deploy_key
+addons:
+  ssh_known_hosts:
+  - cmr-dev.jembi.org
+  - cmr-staging.jembi.org
+deploy:
+- provider: script
+  script: ssh bahmni@cmr-dev.jembi.org 'cd ~/git/cameroon-bahmni-metadata;git reset --hard;git checkout dev;git pull;/sbin/service openmrs restart;'
+  on:
+    branch: CORMS-119
+- provider: script
+  script: ssh bahmni@cmr-staging.jembi.org 'cd ~/git/cameroon-bahmni-metadata;git reset --hard;git checkout staging;git pull;/sbin/service openmrs restart;'
+    pull;/sbin/service openmrs restart;'
+  on:
+    branch: CORMS-119
