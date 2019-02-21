@@ -13,9 +13,9 @@ deploy:
 - provider: script
   script: ssh bahmni@cmr-dev.jembi.org 'cd ~/git/cameroon-bahmni-metadata;git reset --hard;git checkout dev;git pull;/sbin/service openmrs restart;'
   on:
-    branch: CORMS-119
+    branch: COMRS-119
 - provider: script
   script: ssh bahmni@cmr-staging.jembi.org 'cd ~/git/cameroon-bahmni-metadata;git reset --hard;git checkout staging;git pull;/sbin/service openmrs restart;'
     pull;/sbin/service openmrs restart;'
   on:
-    branch: CORMS-119
+    branch: COMRS-119
