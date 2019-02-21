@@ -40,7 +40,7 @@
         </addressComponent> 
         <addressComponent> 
             <field>ADDRESS_1</field> 
-            <nameMapping>ADDRESSHIERARCHY_SUBURB</nameMapping> 
+            <nameMapping>ADDRESSHIERARCHY_AREA</nameMapping> 
             <sizeMapping>80</sizeMapping> 
             <requiredInHierarchy>false</requiredInHierarchy> 
         </addressComponent> 
