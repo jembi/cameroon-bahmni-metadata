@@ -1,0 +1,3 @@
+Uuid,Void/Retire,Name,Description,Format,Foreign uuid,Searchable,Edit privilege,_order:1000
+cd1b3cac-34d0-4c3a-a333-c433e8e2d81f,,emergencyContact,Emergency contact,java.lang.String,,,,
+46d216b0-8e57-4151-9270-2918b689c880,,matrimonialStatus,Matrimonial status,org.openmrs.Concept,a54cc160-8133-4a87-a706-3813fb121838,,,
