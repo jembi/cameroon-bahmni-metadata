@@ -1,0 +1,6 @@
+Uuid,Void/Retire,Fully specified name:en,Fully specified name:fr,Short name:en,Short name:fr,Description:en,Description:fr,Data class,Data type,_version:1,_order:1000
+c1935955-b2a5-47c2-8e78-1c9a44aeed54,,HEART_FAILURE,,HEART_FAILURE_SHORT_NAME,,HEART_FAILURE_DESCRIPTION,,Misc,"N/A
+",,
+42ff2076-d570-4703-a826-53432386d529,,DEATH_NOTE_BROUGHT_DEAD,,DEATH_NOTE_BROUGHT_DEAD_SHORT_NAME,,DEATH_NOTE_BROUGHT_DEAD_DESCRIPTION,,Misc,"N/A
+",,
+30e1c728-f008-4dd1-ab34-2c34a00fd3a5,,Reason For Death,,,,,,Misc,Coded,,
