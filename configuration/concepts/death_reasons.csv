@@ -1,0 +1,4 @@
+Uuid,Members,Fully specified name:en,Fully specified name:fr,Short name:en,Short name:fr,Data class,Data type,_version:1,_order:1000
+c1935955-b2a5-47c2-8e78-1c9a44aeed54,,"Heart failure","Arrêt cardiaque",,,Misc,"N/A",,
+42ff2076-d570-4703-a826-53432386d529,,"Death Note, Brought dead","Death Note, Brought dead [FR]","Brought dead ?","Ramené mort ?",Misc,"N/A",,
+30e1c728-f008-4dd1-ab34-2c34a00fd3a5,c1935955-b2a5-47c2-8e78-1c9a44aeed54;42ff2076-d570-4703-a826-53432386d529,"Reason For Death","Reason For Death [FR]",,,Misc,Numeric,,
