@@ -1,0 +1,4 @@
+Uuid,Members,Fully specified name:en,Fully specified name:fr,Short name:en,Short name:fr,Data class,Data type,Absolute low,Absolute high,Critical low,Critical high,Normal high,Normal low,Units,Allow decimals,Display precision,_version:1,_order:1000
+c37bd733-3f10-11e4-adec-0800271c1b75,,Temperature,Temperature [FR],Temperature,Temperature [FR],Misc,Numeric,,,,,37,37,C,Yes,1,,
+c37afa71-3f10-11e4-adec-0800271c1b75,c37bd733-3f10-11e4-adec-0800271c1b75,Temperature Data,Temperature Data [FR],Temperature Data,Temperature Data [FR],Misc,Numeric,,,,,,,,,,,
+c36a7537-3f10-11e4-adec-0800271c1b75,c37afa71-3f10-11e4-adec-0800271c1b75,Vitals,Vitals [FR],,,Misc,Numeric,,,,,,,,,,,
