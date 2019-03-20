@@ -1,0 +1,5 @@
+﻿Uuid,Members,Fully specified name:en,Fully specified name:fr,Short name:en,Short name:fr,Data class,Data type
+e3f9c7ee-aa3e-4224-9d18-42e09b095ac6,,Date de début de traitement ARV,Date de début de traitement ARV,Date de début de traitement ARV,Date de début de traitement ARV,Misc,Date
+20b2eac4-ff3a-4569-b610-067c4cd8b027,e3f9c7ee-aa3e-4224-9d18-42e09b095ac6,V.4 Traitements,V.4 Traitements [fr],V.4 Traitements,V.4 Traitements [fr],Misc,N/A
+059b8309-4cba-46cc-a857-e1e74be3fa86,20b2eac4-ff3a-4569-b610-067c4cd8b027,IV. VISITE INITIALE,IV. VISITE INITIALE [fr],IV. VISITE INITIALE,IV. VISITE INITIALE [fr],Misc,N/A
+1fb2dd86-53b5-4815-9c64-edc081b908d9,059b8309-4cba-46cc-a857-e1e74be3fa86,FICHE DU PATIENT AVEC VIH - ADULTE,FICHE DU PATIENT AVEC VIH - ADULTE,FICHE DU PATIENT AVEC VIH - ADULTE,FICHE DU PATIENT AVEC VIH - ADULTE,Misc,N/A

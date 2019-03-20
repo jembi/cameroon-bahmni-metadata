@@ -1,0 +1,6 @@
+﻿Uuid,Members,Fully specified name:en,Fully specified name:fr,Short name:en,Short name:fr,Data class,Data type
+e3f9c7ee-aa3e-4224-9d18-42e09b095ac6,,Date de début de traitement ARV,Date de début de traitement ARV,Date de début de traitement ARV,Date de début de traitement ARV,Misc,Date
+29955cb9-1fd8-442e-bc59-2f3b20e70617,e3f9c7ee-aa3e-4224-9d18-42e09b095ac6,ARV CHEZ L'ENFANT,ARV CHEZ L'ENFANT [fr],ARV CHEZ L'ENFANT,ARV CHEZ L'ENFANT [fr],Misc,N/A
+51d7342d-d8ad-4061-97f3-c32724a47694,29955cb9-1fd8-442e-bc59-2f3b20e70617,PTME,PTME [fr],PTME,PTME [fr],Misc,N/A
+300fffce-30ef-4c3e-a1be-f6acbe99c243,51d7342d-d8ad-4061-97f3-c32724a47694,III. ANTECEDENTS DE L'ENFANT,III. ANTECEDENTS DE L'ENFANT [fr],III. ANTECEDENTS DE L'ENFANT,III. ANTECEDENTS DE L'ENFANT [fr],Misc,N/A
+48a724c1-fd24-45da-855c-33fcb4ce9c5d,300fffce-30ef-4c3e-a1be-f6acbe99c243,FICHE DU PATIENT AVEC VIH - ENFANT,FICHE DU PATIENT AVEC VIH - ENFANT,FICHE DU PATIENT AVEC VIH - ENFANT,FICHE DU PATIENT AVEC VIH - ENFANT,Misc,N/A
