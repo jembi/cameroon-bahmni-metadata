@@ -1,8 +1,0 @@
-Uuid,Members,Fully specified name:en,Fully specified name:fr,Short name:en,Short name:fr,Data class,Data type
-e3f9c7ee-aa3e-4224-9d18-42e09b095ac6,,ARV treatment start date, Date de début de traitement ARV,ARV treatment start date,Date de début de traitement ARV,Misc,Date
-20b2eac4-ff3a-4569-b610-067c4cd8b027,e3f9c7ee-aa3e-4224-9d18-42e09b095ac6,V.4 Treatments,V.4 Traitements,V.4 Treatments,V.4 Traitements,Misc,N/A
-059b8309-4cba-46cc-a857-e1e74be3fa86,20b2eac4-ff3a-4569-b610-067c4cd8b027,IV.INITIAL VISIT,IV.VISITE INITIALE,IV.INITIAL VISIT,IV.VISITE INITIALE,Misc,N/A
-02f7b1ff-1bfc-46b8-811d-bf524db681cb,,If anterior ARV treatment; Start date,Si traitement ARV antérieur; Date début,If anterior ARV treatment; Start date,Si traitement ARV antérieur; Date début,Misc,Date
-cf74d45d-7a99-4c12-9bbb-02095726f666,02f7b1ff-1bfc-46b8-811d-bf524db681cb,III.ARV and others,III.3 ARV ET Autres,III. ARV and others,III.3 ARV ET Autres,Misc,N/A
-7d1187b3-f428-4064-80ec-869c16761793,cf74d45d-7a99-4c12-9bbb-02095726f666,III.PATIENT HISTORY,III.ANTECEDENTS DU PATIENT,III. PATIENT HISTORY,III.ANTECEDENTS DU PATIENT,Misc,N/A
-1fb2dd86-53b5-4815-9c64-edc081b908d9,7d1187b3-f428-4064-80ec-869c16761793; 059b8309-4cba-46cc-a857-e1e74be3fa86,ADULT HIV PATIENT FORM,FICHE DU PATIENT AVEC VIH - ADULTE,ADULT HIV PATIENT FORM,FICHE DU PATIENT AVEC VIH - ADULTE,Misc,N/A
