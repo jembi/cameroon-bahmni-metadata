@@ -1,6 +1,9 @@
-ï»¿Uuid,Members,Fully specified name:en,Fully specified name:fr,Short name:en,Short name:fr,Data class,Data type
-e3f9c7ee-aa3e-4224-9d18-42e09b095ac6,,Date de dÃ©but de traitement ARV,Date de dÃ©but de traitement ARV,Date de dÃ©but de traitement ARV,Date de dÃ©but de traitement ARV,Misc,Date
-29955cb9-1fd8-442e-bc59-2f3b20e70617,e3f9c7ee-aa3e-4224-9d18-42e09b095ac6,ARV CHEZ L'ENFANT,ARV CHEZ L'ENFANT [fr],ARV CHEZ L'ENFANT,ARV CHEZ L'ENFANT [fr],Misc,N/A
-51d7342d-d8ad-4061-97f3-c32724a47694,29955cb9-1fd8-442e-bc59-2f3b20e70617,PTME,PTME [fr],PTME,PTME [fr],Misc,N/A
-300fffce-30ef-4c3e-a1be-f6acbe99c243,51d7342d-d8ad-4061-97f3-c32724a47694,III. ANTECEDENTS DE L'ENFANT,III. ANTECEDENTS DE L'ENFANT [fr],III. ANTECEDENTS DE L'ENFANT,III. ANTECEDENTS DE L'ENFANT [fr],Misc,N/A
-48a724c1-fd24-45da-855c-33fcb4ce9c5d,300fffce-30ef-4c3e-a1be-f6acbe99c243,FICHE DU PATIENT AVEC VIH - ENFANT,FICHE DU PATIENT AVEC VIH - ENFANT,FICHE DU PATIENT AVEC VIH - ENFANT,FICHE DU PATIENT AVEC VIH - ENFANT,Misc,N/A
+Uuid,Members,Fully specified name:en,Fully specified name:fr,Short name:en,Short name:fr,Data class,Data type
+9169e24e-d0e1-4707-8686-123e677c2f4e,,Initiation date,Date d'initiation,Initiation date,Date d'initiation,Misc,Date
+60ded5e5-e2e7-4573-8181-7d14fddd4dbe,9169e24e-d0e1-4707-8686-123e677c2f4e,Patients referred from another facility,Patients référés d'un autre centre(Non naïf),Patients referred from another facility,Patients référés d'un autre centre(Non naïf),Misc,N/A
+97b30092-34d5-4be0-9a2b-52739a8ef20a,60ded5e5-e2e7-4573-8181-7d14fddd4dbe,VIII. INITIAL TREATMENT,VIII. TRAITEMENT INITIAL,VIII. INITIAL TREATMENT,VIII. TRAITEMENT INITIAL,Misc,N/A
+e3f9c7ee-aa3e-4224-9d18-42e09b095ac6,,ARV treatment start date,Date de début de traitement ARV,ARV treatment start date,Date de début de traitement ARV,Misc,Date
+29955cb9-1fd8-442e-bc59-2f3b20e70617,e3f9c7ee-aa3e-4224-9d18-42e09b095ac6,INFANT ARV,ARV CHEZ L'ENFANT,INFANT ARV,ARV CHEZ L'ENFANT,Misc,N/A
+51d7342d-d8ad-4061-97f3-c32724a47694,29955cb9-1fd8-442e-bc59-2f3b20e70617,PTME [en],PTME,PTME [en],PTME,Misc,N/A
+300fffce-30ef-4c3e-a1be-f6acbe99c243,51d7342d-d8ad-4061-97f3-c32724a47694,III. CHILD HISTORY,III. ANTECEDENTS DE L'ENFANT,III. CHILD HISTORY,III. ANTECEDENTS DE L'ENFANT,Misc,N/A
+48a724c1-fd24-45da-855c-33fcb4ce9c5d,300fffce-30ef-4c3e-a1be-f6acbe99c243; 97b30092-34d5-4be0-9a2b-52739a8ef20a,CHILD HIV PATIENT FORM,FICHE DU PATIENT AVEC VIH - ENFANT,CHILD HIV PATIENT FORM,FICHE DU PATIENT AVEC VIH - ENFANT,Misc,N/A
