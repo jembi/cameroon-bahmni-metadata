@@ -1,9 +1,9 @@
 uuid,Members,Answers,Fully specified name:fr,Fully specified name:en,Data class,Data type,_version:1,_order:1001
-9169e24e-d0e1-4707-8686-123e677c2f4e,,,Date d'initiationInitiation date,Initiation date,Misc,Date,,
+9169e24e-d0e1-4707-8686-123e677c2f4e,,,Date d'initiation,Initiation date,Misc,Date,,
 60ded5e5-e2e7-4573-8181-7d14fddd4dbe,9169e24e-d0e1-4707-8686-123e677c2f4e,,Patients référés d'un autre centre,Patients referred from another facility,Misc,N/A,,
 97b30092-34d5-4be0-9a2b-52739a8ef20a,60ded5e5-e2e7-4573-8181-7d14fddd4dbe,,VIII. TRAITEMENT INITIAL,VIII. INITIAL TREATMENT,Misc,N/A,,
 29955cb9-1fd8-442e-bc59-2f3b20e70617,e3f9c7ee-aa3e-4224-9d18-42e09b095ac6,,ARV CHEZ L'ENFANT,CHILD ARV,Misc,N/A,,
 51d7342d-d8ad-4061-97f3-c32724a47694,29955cb9-1fd8-442e-bc59-2f3b20e70617,,PTME,PMTCT,Misc,N/A,,
 300fffce-30ef-4c3e-a1be-f6acbe99c243,51d7342d-d8ad-4061-97f3-c32724a47694,,III. ANTECEDENTS DE L'ENFANT,III. CHILD BACKGROUND,Misc,N/A,,
 48a724c1-fd24-45da-855c-33fcb4ce9c5d,300fffce-30ef-4c3e-a1be-f6acbe99c243;97b30092-34d5-4be0-9a2b-52739a8ef20a,,FICHE DU PATIENT AVEC VIH - ENFANT,CHILD HIV PATIENT FORM,Misc,N/A,,
-9d91cb77-3f10-11e4-adec-0800271c1b75,18351dd1-078e-456c-8c23-915b16e9dfaf;c36a7537-3f10-11e4-adec-0800271c1b75;48a724c1-fd24-45da-855c-33fcb4ce9c5d;1fb2dd86-53b5-4815-9c64-edc081b908d9,,All Observation Templates,All Observation Templates[FR],ConvSet,N/A,,
+9d91cb77-3f10-11e4-adec-0800271c1b75,18351dd1-078e-456c-8c23-915b16e9dfaf;c36a7537-3f10-11e4-adec-0800271c1b75;48a724c1-fd24-45da-855c-33fcb4ce9c5d;1fb2dd86-53b5-4815-9c64-edc081b908d9,,All Observation Templates,All Observation Templates,ConvSet,N/A,,
