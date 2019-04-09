@@ -49,7 +49,7 @@ ab62a5db-9c40-4d4c-a6e2-e53d783c521b,,,Si oui préciser la date,If yes specify d
 28e491d0-e1fc-4e4a-9ad5-4edf634ff341,,,Si oui Préciser la date de début,"If yes, specify start date",Si oui Préciser la date de début,"If yes, specify start date",Misc,Date,,
 16c12c6b-f734-4fd6-974e-8088f5b1e013,,,La date de fin de traitement,End date of treatment,La date de fin de traitement,End date of treatment,Misc,Date,,
 c1a0d403-2597-469c-a8df-8b424630f3ae,,Yes full name;No full name,Chimio prophylaxie INH,Chemo prophylaxis INH,Chimio prophylaxie INH,Chemo prophylaxis INH,Misc,Coded,,
-9d9a399a-d272-4d39-a5b3-e8f674aed8cf,,Yes full name;No full name,Diabetes,Diabète,Diabetes,Diabète,Misc,Coded,,
+9d9a399a-d272-4d39-a5b3-e8f674aed8cf,,Yes full name;No full name,Diabète?,Diabetes?,Diabète?,Diabetes?,Misc,Coded,,
 6aa07a98-1ace-4cd5-bad6-7e04507bc0ab,,Yes full name;No full name,HTA,HTA,HTA,HTA,Misc,Coded,,
 f6ddc619-4093-4077-b91a-ad54306243e1,,,B,B,B,B,Misc,N/A,,
 ceb11aff-09b7-4b1c-8ea8-7f98ef6079b1,,,C,C,C,C,Misc,N/A,,
