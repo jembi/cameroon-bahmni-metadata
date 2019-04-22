@@ -73,6 +73,33 @@ BEGIN
 END$$
 DELIMITER ;
 
+-- patientHasEnrolledIntoHivProgramDuringReportingPeriod
+
+DROP FUNCTION IF EXISTS patientHasEnrolledIntoHivProgramDuringReportingPeriod;
+
+DELIMITER $$
+CREATE FUNCTION patientHasEnrolledIntoHivProgramDuringReportingPeriod(
+    p_patientId INT(11),
+    p_startDate DATE,
+    p_endDate DATE) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE result TINYINT(1) DEFAULT 0;
+
+    SELECT
+        TRUE INTO result
+    FROM person p
+    JOIN patient_program pp ON pp.patient_id = p.person_id AND pp.voided = 0
+    JOIN program pro ON pro.program_id = pp.program_id AND pro.retired = 0
+    WHERE p.person_id = p_patientId
+        AND p.voided = 0
+        AND DATE(pp.date_enrolled) BETWEEN p_startDate AND p_endDate
+        AND pro.name = "HIV Program";
+
+    RETURN (result );
+END$$
+DELIMITER ;
+
 -- patientHasStartedARVTreatmentBefore
 
 DROP FUNCTION IF EXISTS patientHasStartedARVTreatmentBefore;
@@ -95,6 +122,34 @@ BEGIN
         AND c.uuid = uuidARVTreatmentStartDate
         AND o.value_datetime IS NOT NULL
         AND cast(o.value_datetime AS DATE) < p_startDate;
+
+    RETURN (result );
+END$$
+DELIMITER ;
+
+-- patientHasStartedARVTreatmentDuringReportingPeriod
+
+DROP FUNCTION IF EXISTS patientHasStartedARVTreatmentDuringReportingPeriod;
+
+DELIMITER $$
+CREATE FUNCTION patientHasStartedARVTreatmentDuringReportingPeriod(
+    p_patientId INT(11),
+    p_startDate DATE,
+    p_endDate DATE) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE result TINYINT(1) DEFAULT 0;
+    DECLARE uuidARVTreatmentStartDate VARCHAR(38) DEFAULT "e3f9c7ee-aa3e-4224-9d18-42e09b095ac6";
+
+    SELECT
+        TRUE INTO result
+    FROM obs o
+    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
+    WHERE o.voided = 0
+        AND o.person_id = p_patientId
+        AND c.uuid = uuidARVTreatmentStartDate
+        AND o.value_datetime IS NOT NULL
+        AND cast(o.value_datetime AS DATE) BETWEEN p_startDate AND p_endDate;
 
     RETURN (result );
 END$$
@@ -127,6 +182,35 @@ BEGIN
             do.duration,
             c.uuid -- uuid of the duration unit concept
             ) >= p_startDate
+        AND drugOrderIsDispensed(p_patientId, o.order_id)
+    GROUP BY o.patient_id;
+
+    RETURN (result );
+END$$ 
+DELIMITER ;
+
+-- patientPickedARVDrugDuringReportingPeriod
+
+DROP FUNCTION IF EXISTS patientPickedARVDrugDuringReportingPeriod;
+
+DELIMITER $$
+CREATE FUNCTION patientPickedARVDrugDuringReportingPeriod(
+    p_patientId INT(11),
+    p_startDate DATE,
+    p_endDate DATE) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+
+    DECLARE result TINYINT(1) DEFAULT 0;
+
+    SELECT TRUE INTO result
+    FROM orders o
+    JOIN drug_order do ON do.order_id = o.order_id
+    JOIN concept c ON do.duration_units = c.concept_id AND c.retired = 0
+    JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
+    WHERE o.patient_id = p_patientId AND o.voided = 0
+        AND drugIsARV(d.name)
+        AND o.date_activated BETWEEN p_startDate AND p_endDate
         AND drugOrderIsDispensed(p_patientId, o.order_id)
     GROUP BY o.patient_id;
 
