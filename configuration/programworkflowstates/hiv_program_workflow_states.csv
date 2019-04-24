@@ -1,0 +1,6 @@
+Uuid,Void/Retire,Workflow,State concept,Initial,Terminal,_order:1000
+1a390263-6804-4e23-96d8-0bdd813851f1,,ec41264d-e82e-4356-a7d2-7c1ff6c90abe,OMS stage 1,,,
+8043a2e0-271c-436f-b0fc-7b9498ededf9,,ec41264d-e82e-4356-a7d2-7c1ff6c90abe,OMS stage 2,,,
+23200c9f-8c87-4dff-a59b-9031b6a63d6e,,ec41264d-e82e-4356-a7d2-7c1ff6c90abe,OMS stage 3,,,
+8ac2cb2d-606a-4597-8307-7a2a5b8ead5d,,ec41264d-e82e-4356-a7d2-7c1ff6c90abe,OMS stage 4,,,
+f0596971-50b1-4d45-90f3-318cfaab5085,TRUE,ec41264d-e82e-4356-a7d2-7c1ff6c90abe,Clinical Stage 3,,,
