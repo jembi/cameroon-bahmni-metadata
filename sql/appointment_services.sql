@@ -1,4 +1,4 @@
-INSERT INTO appointment_service
+INSERT IGNORE INTO appointment_service
     (name, speciality_id, start_time, end_time, duration_mins, color, date_created, creator, voided,uuid)
 VALUES
     ('APPOINTMENT_SERVICE_ANC_KEY',1,'08:00', '17:00',30,'#00008B',NOW(),1,0,'e765e550-309a-420e-8375-0e10bdee8224'),
