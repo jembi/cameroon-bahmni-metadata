@@ -392,3 +392,52 @@ BEGIN
 
 END$$
 DELIMITER ;
+
+-- patientPickedFirstLineProtocolARVDrugDuringReportingPeriod
+
+DROP FUNCTION IF EXISTS patientPickedFirstLineProtocolARVDrugDuringReportingPeriod;
+
+DELIMITER $$
+CREATE FUNCTION patientPickedFirstLineProtocolARVDrugDuringReportingPeriod(
+    p_patientId INT(11),
+    p_startDate DATE,
+    p_endDate DATE) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+
+    DECLARE result TINYINT(1) DEFAULT 0;
+
+    SELECT TRUE INTO result
+    FROM orders o
+    JOIN drug_order do ON do.order_id = o.order_id
+    JOIN concept c ON do.duration_units = c.concept_id AND c.retired = 0
+    JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
+    WHERE o.patient_id = p_patientId AND o.voided = 0
+        AND drugIsARVFirstLine(d.name)
+        AND o.date_activated BETWEEN p_startDate AND p_endDate
+        AND drugOrderIsDispensed(p_patientId, o.order_id)
+    GROUP BY o.patient_id;
+
+    RETURN (result );
+END$$ 
+DELIMITER ;
+
+-- drugIsARVFirstLine
+
+DROP FUNCTION IF EXISTS drugIsARVFirstLine;
+
+DELIMITER $$
+CREATE FUNCTION drugIsARVFirstLine(
+    p_drugName VARCHAR(255)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    return p_drugName IN (
+        "TDF+3TC+EFV",
+        "AZT/3TC+EFV",
+        "AZT+3TC+NVP",
+        "TDF/3TC+NVP",
+        "ABC+3TC+EFV",
+        "ABC+3TC+NVP"
+    );
+END$$
+DELIMITER ;
