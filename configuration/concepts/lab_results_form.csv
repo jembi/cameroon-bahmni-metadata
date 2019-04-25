@@ -196,7 +196,7 @@ b97bb1ab-ed7c-4261-bd56-3b56a12e6429,,,Taux de prothrombine,INR,Taux de prothrom
 c275dffe-aac9-4d07-b4b6-6029fbc6b8bc,,,Taux de prothrombine Date de résultat,INR Test Date,Date de résultat,Test Date,Misc,Date,,
 14556e8b-38cf-4cf3-a18c-dda72ecfecfd,,,Temps de Cephaline -Kaolin,Cephalin-Kaolin time,Temps de Cephaline -Kaolin,Cephalin-Kaolin time,LabTest,Text,,
 a4de8a5a-184a-4aab-b5eb-89be74ce84a0,,,Temps de Cephaline -Kaolin Date de résultat,Cephalin-Kaolin time Test Date,Date de résultat,Test Date,Misc,Date,,
-6e23a99b-ae9a-42de-8b95-38ebdf977835,Blood grouping;Bleeding time;Bleeding time Test Date;Clotting time;Clotting time Test Date;INR;INR Test Date;Cephalin-Kaolin time;Cephalin-Kaolin time Test Date,,Hémostase,Haemostasis,Hémostase,Haemostasis,Misc,N/A,,
+6e23a99b-ae9a-42de-8b95-38ebdf977835,Bleeding time;Bleeding time Test Date;Clotting time;Clotting time Test Date;INR;INR Test Date;Cephalin-Kaolin time;Cephalin-Kaolin time Test Date,,Hémostase,Haemostasis,Hémostase,Haemostasis,Misc,N/A,,
 cb47c708-38b3-4bc8-9955-5271efc77fdd,,,Test d'Emmel,Emmel test (P/N),Test d'Emmel,Emmel test (P/N),LabTest,Text,,
 9acec936-c10a-46f4-9cc6-47d0fb37c92f,,,Test d'Emmel Date de résultat,Emmel test (P/N) Test Date,Date de résultat,Test Date,Misc,Date,,
 809dd0f5-ce54-441c-b835-a2a8b06a6140,,,CD4,CD4,CD4,CD4,LabTest,Text,,
