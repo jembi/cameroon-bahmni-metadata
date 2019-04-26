@@ -465,7 +465,6 @@ BEGIN
     WHERE o.patient_id = p_patientId AND o.voided = 0
         AND drugIsARVSecondLine(d.name)
         AND o.date_activated BETWEEN p_startDate AND p_endDate
-        AND drugOrderIsDispensed(p_patientId, o.order_id)
     GROUP BY o.patient_id;
 
     RETURN (result );
