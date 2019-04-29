@@ -2,5 +2,5 @@ Uuid,Answers,Fully specified name:en,Fully specified name:fr,Short name:en,Short
 cf180299-f6e2-4b08-8b80-2e9125a97230,,Transfer in,Transfer in [FR],Transfer in,Transfer in [FR],Misc,N/A,,
 88f2a6ea-367d-45dc-942a-b809b0d17275,,Initiation of ART,Initiation of ART [FR],Initiation of ART,Initiation of ART [FR],Misc,N/A,,
 17a3b24b-e107-49fe-8b0d-69c3b7e60f4c,,Unplanned aid,Unplanned aid [FR],Unplanned aid,Unplanned aid [FR],Misc,N/A,,
-0b34dcdd-4414-4318-9e19-26feec00cc73,,Follow-up ARV,Follow-up ARV [FR],Follow-up ARV,Follow-up ARV [FR],Misc,N/A,,
-08277dd9-14e1-4792-8e61-6368bd2a2c48,cf180299-f6e2-4b08-8b80-2e9125a97230; 88f2a6ea-367d-45dc-942a-b809b0d17275; 17a3b24b-e107-49fe-8b0d-69c3b7e60f4c; 0b34dcdd-4414-4318-9e19-26feec00cc73,Health Stage,Health Stage [FR],Health Stage,Health Stage [FR],Misc,Coded,,
+86e2f66d-6a78-40a3-a3f5-ceb0bbbbdf5a,,Follow-up ARV,Follow-up ARV [FR],Follow-up ARV,Follow-up ARV [FR],Misc,N/A,,
+08277dd9-14e1-4792-8e61-6368bd2a2c48,cf180299-f6e2-4b08-8b80-2e9125a97230; 88f2a6ea-367d-45dc-942a-b809b0d17275; 17a3b24b-e107-49fe-8b0d-69c3b7e60f4c; 86e2f66d-6a78-40a3-a3f5-ceb0bbbbdf5a,Health Stage,Health Stage [FR],Health Stage,Health Stage [FR],Misc,Coded,,
