@@ -1,5 +1,5 @@
 Uuid,Fully specified name:en,Fully specified name:fr,Short name:en,Short name:fr,Data class,Data type,_version:1,_order:1000
-491d6883-3078-47b9-b8d0-872641bd9d27,OMS stage 1,OMS stage 1 [FR],OMS stage 1,OMS stage 1 [FR],Misc,N/A,,
-c7684c11-e9a6-4686-8bea-ba1f4e643014,OMS stage 2,OMS stage 2 [FR],OMS stage 2,OMS stage 2 [FR],Misc,N/A,,
-2ab28290-f5ef-4a99-8eac-741799d86c95,OMS stage 3,OMS stage 3 [FR],OMS stage 3,OMS stage 3 [FR],Misc,N/A,,
-50e08063-fb83-46ab-b008-a8f1d38d6a98,OMS stage 4,OMS stage 4 [FR],OMS stage 4,OMS stage 4 [FR],Misc,N/A,,
+491d6883-3078-47b9-b8d0-872641bd9d27,WHO stage 1,OMS stage 1,WHO stage 1,OMS stage 1,Misc,N/A,,
+c7684c11-e9a6-4686-8bea-ba1f4e643014,WHO stage 2,OMS stage 2,WHO stage 2,OMS stage 2,Misc,N/A,,
+2ab28290-f5ef-4a99-8eac-741799d86c95,WHO stage 3,OMS stage 3,WHO stage 3,OMS stage 3,Misc,N/A,,
+50e08063-fb83-46ab-b008-a8f1d38d6a98,WHO stage 4,OMS stage 4,WHO stage 4,OMS stage 4,Misc,N/A,,
