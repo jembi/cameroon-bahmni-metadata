@@ -100,6 +100,32 @@ BEGIN
 END$$
 DELIMITER ;
 
+-- patientHasEnrolledIntoHivProgramDuringOrBeforeReportingPeriod
+
+DROP FUNCTION IF EXISTS patientHasEnrolledIntoHivProgramDuringOrBeforeReportingPeriod;
+
+DELIMITER $$
+CREATE FUNCTION patientHasEnrolledIntoHivProgramDuringOrBeforeReportingPeriod(
+    p_patientId INT(11),
+    p_endDate DATE) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE result TINYINT(1) DEFAULT 0;
+
+    SELECT
+        TRUE INTO result
+    FROM person p
+    JOIN patient_program pp ON pp.patient_id = p.person_id AND pp.voided = 0
+    JOIN program pro ON pro.program_id = pp.program_id AND pro.retired = 0
+    WHERE p.person_id = p_patientId
+        AND p.voided = 0
+        AND DATE(pp.date_enrolled) <= p_endDate
+        AND pro.name = "HIV Program";
+
+    RETURN (result );
+END$$
+DELIMITER ;
+
 -- patientHasStartedARVTreatmentBefore
 
 DROP FUNCTION IF EXISTS patientHasStartedARVTreatmentBefore;
@@ -150,6 +176,33 @@ BEGIN
         AND c.uuid = uuidARVTreatmentStartDate
         AND o.value_datetime IS NOT NULL
         AND cast(o.value_datetime AS DATE) BETWEEN p_startDate AND p_endDate;
+
+    RETURN (result );
+END$$
+DELIMITER ;
+
+-- patientHasStartedARVTreatmentDuringOrBeforeReportingPeriod
+
+DROP FUNCTION IF EXISTS patientHasStartedARVTreatmentDuringOrBeforeReportingPeriod;
+
+DELIMITER $$
+CREATE FUNCTION patientHasStartedARVTreatmentDuringOrBeforeReportingPeriod(
+    p_patientId INT(11),
+    p_endDate DATE) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE result TINYINT(1) DEFAULT 0;
+    DECLARE uuidARVTreatmentStartDate VARCHAR(38) DEFAULT "e3f9c7ee-aa3e-4224-9d18-42e09b095ac6";
+
+    SELECT
+        TRUE INTO result
+    FROM obs o
+    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
+    WHERE o.voided = 0
+        AND o.person_id = p_patientId
+        AND c.uuid = uuidARVTreatmentStartDate
+        AND o.value_datetime IS NOT NULL
+        AND cast(o.value_datetime AS DATE) <= p_endDate;
 
     RETURN (result );
 END$$
@@ -494,5 +547,29 @@ BEGIN
         "AZT+DRV+RTV",
         "ABC+DRV+RTV"
     );
+END$$
+DELIMITER ;
+
+-- isOldPatient
+
+DROP FUNCTION IF EXISTS isOldPatient;
+
+DELIMITER $$
+CREATE FUNCTION isOldPatient(
+    p_patientId INT(11),
+    p_startDate DATE) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE result TINYINT(1);
+    SELECT TRUE INTO result
+    FROM patient_program pp
+    JOIN person p ON p.person_id = p_patientId AND p.voided = 0
+    JOIN program pro ON pro.program_id = pp.program_id AND pro.retired = 0
+    WHERE DATE(pp.date_enrolled) < p_startDate
+        AND pp.patient_id = p.person_id
+        AND pp.voided = 0
+        AND pro.name = "HIV Program";
+
+    RETURN (result);
 END$$
 DELIMITER ;

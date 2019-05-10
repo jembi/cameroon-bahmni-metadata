@@ -116,9 +116,13 @@ FROM
 WHERE
     patientGenderIs(pat.patient_id, p_gender) AND
     patientAgeWhenRegisteredForHivProgramIsBetween(pat.patient_id, p_startAge, p_endAge, p_includeEndAge) AND
-    patientHasEnrolledIntoHivProgramDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
-    patientHasStartedARVTreatmentDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
-    patientPickedTotalNoOfARVDrugDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
+    patientHasEnrolledIntoHivProgramDuringOrBeforeReportingPeriod(pat.patient_id, p_endDate) AND
+    patientHasStartedARVTreatmentDuringOrBeforeReportingPeriod(pat.patient_id, p_endDate) AND
+    IF (
+        isOldPatient(pat.patient_id, p_startDate),
+        patientWasOnARVTreatmentDuringEntireReportingPeriod(pat.patient_id, p_startDate, p_endDate),
+        patientPickedARVDrugDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate)
+    ) AND
     patientIsNotDead(pat.patient_id) AND
     patientIsNotLostToFollowUp(pat.patient_id) AND
     patientIsNotTransferredOut(pat.patient_id);
