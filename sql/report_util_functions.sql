@@ -41,7 +41,7 @@ BEGIN
     JOIN patient_program pp ON pp.patient_id = p.person_id AND pp.voided = 0 
     JOIN program pro ON pp.program_id = pro.program_id AND pro.retired = 0 
     WHERE p.person_id = p_patientId AND p.voided = 0 
-        AND pro.name = "HIV Program"; 
+        AND pro.name = "HIV_PROGRAM_KEY"; 
 
     RETURN (result ); 
 END$$ 
@@ -67,7 +67,7 @@ BEGIN
     WHERE p.person_id = p_patientId
         AND p.voided = 0
         AND DATE(pp.date_enrolled) < p_date
-        AND pro.name = "HIV Program";
+        AND pro.name = "HIV_PROGRAM_KEY";
 
     RETURN (result );
 END$$
@@ -94,7 +94,7 @@ BEGIN
     WHERE p.person_id = p_patientId
         AND p.voided = 0
         AND DATE(pp.date_enrolled) BETWEEN p_startDate AND p_endDate
-        AND pro.name = "HIV Program";
+        AND pro.name = "HIV_PROGRAM_KEY";
 
     RETURN (result );
 END$$
@@ -120,7 +120,7 @@ BEGIN
     WHERE p.person_id = p_patientId
         AND p.voided = 0
         AND DATE(pp.date_enrolled) <= p_endDate
-        AND pro.name = "HIV Program";
+        AND pro.name = "HIV_PROGRAM_KEY";
 
     RETURN (result );
 END$$
@@ -572,7 +572,7 @@ BEGIN
     WHERE DATE(pp.date_enrolled) < p_startDate
         AND pp.patient_id = p.person_id
         AND pp.voided = 0
-        AND pro.name = "HIV Program";
+        AND pro.name = "HIV_PROGRAM_KEY";
 
     RETURN (result);
 END$$
