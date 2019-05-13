@@ -218,7 +218,8 @@ DELIMITER $$
 CREATE FUNCTION patientWasOnARVTreatmentDuringEntireReportingPeriod(
     p_patientId INT(11),
     p_startDate DATE,
-    p_endDate DATE) RETURNS TINYINT(1)
+    p_endDate DATE,
+    p_protocolLineNumber INT(11)) RETURNS TINYINT(1)
     DETERMINISTIC
 BEGIN
 
@@ -230,7 +231,7 @@ BEGIN
     JOIN concept c ON do.duration_units = c.concept_id AND c.retired = 0
     JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
     WHERE o.patient_id = p_patientId AND o.voided = 0
-        AND drugIsARV(d.name, 0)
+        AND drugIsARV(d.name, p_protocolLineNumber)
         AND o.date_activated < p_startDate
         AND calculateTreatmentEndDate(
             o.date_activated,
@@ -286,7 +287,8 @@ DELIMITER $$
 CREATE FUNCTION patientPickedARVDrugDuringReportingPeriod(
     p_patientId INT(11),
     p_startDate DATE,
-    p_endDate DATE) RETURNS TINYINT(1)
+    p_endDate DATE,
+    p_protocolLineNumber INT(11)) RETURNS TINYINT(1)
     DETERMINISTIC
 BEGIN
 
@@ -298,7 +300,7 @@ BEGIN
     JOIN concept c ON do.duration_units = c.concept_id AND c.retired = 0
     JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
     WHERE o.patient_id = p_patientId AND o.voided = 0
-        AND drugIsARV(d.name, 0)
+        AND drugIsARV(d.name, p_protocolLineNumber)
         AND o.date_activated BETWEEN p_startDate AND p_endDate
         AND drugOrderIsDispensed(p_patientId, o.order_id)
     GROUP BY o.patient_id;
