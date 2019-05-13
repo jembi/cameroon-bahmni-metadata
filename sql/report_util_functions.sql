@@ -147,7 +147,8 @@ BEGIN
         AND o.person_id = p_patientId
         AND c.uuid = uuidARVTreatmentStartDate
         AND o.value_datetime IS NOT NULL
-        AND cast(o.value_datetime AS DATE) < p_startDate;
+        AND cast(o.value_datetime AS DATE) < p_startDate
+    GROUP BY c.uuid;
 
     RETURN (result );
 END$$
@@ -202,7 +203,8 @@ BEGIN
         AND o.person_id = p_patientId
         AND c.uuid = uuidARVTreatmentStartDate
         AND o.value_datetime IS NOT NULL
-        AND cast(o.value_datetime AS DATE) <= p_endDate;
+        AND cast(o.value_datetime AS DATE) <= p_endDate
+    GROUP BY c.uuid;
 
     RETURN (result );
 END$$
@@ -560,7 +562,7 @@ CREATE FUNCTION isOldPatient(
     p_startDate DATE) RETURNS TINYINT(1)
     DETERMINISTIC
 BEGIN
-    DECLARE result TINYINT(1);
+    DECLARE result TINYINT(1) DEFAULT 0;
     SELECT TRUE INTO result
     FROM patient_program pp
     JOIN person p ON p.person_id = p_patientId AND p.voided = 0
