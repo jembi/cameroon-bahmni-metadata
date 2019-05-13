@@ -3,3 +3,5 @@ update program_attribute_type set description = 'PROGRAM_MANAGEMENT_PATIENT_STAG
 update program_attribute_type set description = 'PROGRAM_MANAGEMENT_PATIENT_TREATMENT_DATE', name = 'PROGRAM_MANAGEMENT_PATIENT_TREATMENT_DATE' where name = 'Date';
 update program_attribute_type set description = 'PROGRAM_MANAGEMENT_PATIENT_COMORBIDITES', name = 'PROGRAM_MANAGEMENT_PATIENT_COMORBIDITES' where name = 'Co-morbidites';
 update program_attribute_type set description = 'PROGRAM_MANAGEMENT_PATIENT_DOCTOR_IN_CHARGE', name = 'PROGRAM_MANAGEMENT_PATIENT_DOCTOR_IN_CHARGE' where name = 'Doctor';
+update program set name = 'HIV_PROGRAM_KEY' where name = 'HIV Program';
+update program set name = 'TB_PROGRAM_KEY' where name = 'TB Program';
