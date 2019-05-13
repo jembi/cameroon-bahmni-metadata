@@ -466,12 +466,12 @@ BEGIN
 END$$
 DELIMITER ;
 
--- patientPickedFirstLineProtocolARVDrugDuringReportingPeriod
+-- patientPickedFirstLineARVDrugDuringReportingPeriod
 
-DROP FUNCTION IF EXISTS patientPickedFirstLineProtocolARVDrugDuringReportingPeriod;
+DROP FUNCTION IF EXISTS patientPickedFirstLineARVDrugDuringReportingPeriod;
 
 DELIMITER $$
-CREATE FUNCTION patientPickedFirstLineProtocolARVDrugDuringReportingPeriod(
+CREATE FUNCTION patientPickedFirstLineARVDrugDuringReportingPeriod(
     p_patientId INT(11),
     p_startDate DATE,
     p_endDate DATE) RETURNS TINYINT(1)
@@ -486,8 +486,9 @@ BEGIN
     JOIN concept c ON do.duration_units = c.concept_id AND c.retired = 0
     JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
     WHERE o.patient_id = p_patientId AND o.voided = 0
-        AND drugIsARVFirstLine(d.name)
+        AND drugIsARV(d.name, 1)
         AND o.date_activated BETWEEN p_startDate AND p_endDate
+        AND drugOrderIsDispensed(p_patientId, o.order_id)
     GROUP BY o.patient_id;
 
     RETURN (result );
