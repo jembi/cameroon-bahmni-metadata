@@ -124,7 +124,7 @@ cab317c5-7dea-4608-973f-1cad09a55a57,,,Dépistage familial,Family Screening,Dép
 0f80897c-0f04-4fa7-81bb-f460f5798cd4,,Diseases;PMTCT;Family Screening,Circonstance du dépistage initial,Circumstance initial screening,Circonstance du dépistage initial,Circumstance initial screening,Misc,Coded,,
 6da1a1dc-153b-4c90-b164-70050866c0d8,,,PCR,PCR,PCR,PCR,Misc,Numeric,,
 47b65948-f148-42ea-aefb-393da71e7b2c,,,Sérologie VIH type 1/2/1+2,HIV serology Type 1/2/1 + 2,Sérologie VIH type 1/2/1+2,HIV serology Type 1/2/1 + 2,Misc,N/A,,
-458d568b-aa2c-4363-b5c8-2e48a32adac9,,PCR;HIV serology Type 1/2/1 + 2,Autres circonstances,Other circumstances,Autres circonstances,Other circumstances,Misc,Text,,
+458d568b-aa2c-4363-b5c8-2e48a32adac9,,PCR;HIV serology Type 1/2/1 + 2,Autres circonstances,Other circumstances,Autres circonstances,Other circumstances,Misc,Coded,,
 fcbc6db2-3983-4448-b95d-d8546c5bca68,,,Le diagnostic est basé sur,The diagnosis is based on,Le diagnostic est basé sur,The diagnosis is based on,Misc,Text,,
 0d9692be-a4ea-48b8-bf44-3c6c8eb7ecf5,,,Date du diagnostic,Date of diagnosis,Date du diagnostic,Date of diagnosis,Misc,Date,,
 600c2a56-066b-4ed9-8e22-b2af77fb5261,,,Mére a l'enfant,Mother to child,Mére a l'enfant,Mother to child,Misc,N/A,,
