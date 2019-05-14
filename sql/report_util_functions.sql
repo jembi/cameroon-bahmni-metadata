@@ -41,7 +41,8 @@ BEGIN
     JOIN patient_program pp ON pp.patient_id = p.person_id AND pp.voided = 0 
     JOIN program pro ON pp.program_id = pro.program_id AND pro.retired = 0 
     WHERE p.person_id = p_patientId AND p.voided = 0 
-        AND pro.name = "HIV Program"; 
+        AND pro.name = "HIV_PROGRAM_KEY"
+    GROUP BY pro.name;
 
     RETURN (result ); 
 END$$ 
@@ -67,7 +68,8 @@ BEGIN
     WHERE p.person_id = p_patientId
         AND p.voided = 0
         AND DATE(pp.date_enrolled) < p_date
-        AND pro.name = "HIV Program";
+        AND pro.name = "HIV_PROGRAM_KEY"
+    GROUP BY pro.name;
 
     RETURN (result );
 END$$
@@ -94,7 +96,35 @@ BEGIN
     WHERE p.person_id = p_patientId
         AND p.voided = 0
         AND DATE(pp.date_enrolled) BETWEEN p_startDate AND p_endDate
-        AND pro.name = "HIV Program";
+        AND pro.name = "HIV_PROGRAM_KEY"
+    GROUP BY pro.name;
+
+    RETURN (result );
+END$$
+DELIMITER ;
+
+-- patientHasEnrolledIntoHivProgramDuringOrBeforeReportingPeriod
+
+DROP FUNCTION IF EXISTS patientHasEnrolledIntoHivProgramDuringOrBeforeReportingPeriod;
+
+DELIMITER $$
+CREATE FUNCTION patientHasEnrolledIntoHivProgramDuringOrBeforeReportingPeriod(
+    p_patientId INT(11),
+    p_endDate DATE) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE result TINYINT(1) DEFAULT 0;
+
+    SELECT
+        TRUE INTO result
+    FROM person p
+    JOIN patient_program pp ON pp.patient_id = p.person_id AND pp.voided = 0
+    JOIN program pro ON pro.program_id = pp.program_id AND pro.retired = 0
+    WHERE p.person_id = p_patientId
+        AND p.voided = 0
+        AND DATE(pp.date_enrolled) <= p_endDate
+        AND pro.name = "HIV_PROGRAM_KEY"
+    GROUP BY pro.name;
 
     RETURN (result );
 END$$
@@ -121,7 +151,8 @@ BEGIN
         AND o.person_id = p_patientId
         AND c.uuid = uuidARVTreatmentStartDate
         AND o.value_datetime IS NOT NULL
-        AND cast(o.value_datetime AS DATE) < p_startDate;
+        AND cast(o.value_datetime AS DATE) < p_startDate
+    GROUP BY c.uuid;
 
     RETURN (result );
 END$$
@@ -155,6 +186,89 @@ BEGIN
 END$$
 DELIMITER ;
 
+-- patientHasStartedARVTreatmentDuringOrBeforeReportingPeriod
+
+DROP FUNCTION IF EXISTS patientHasStartedARVTreatmentDuringOrBeforeReportingPeriod;
+
+DELIMITER $$
+CREATE FUNCTION patientHasStartedARVTreatmentDuringOrBeforeReportingPeriod(
+    p_patientId INT(11),
+    p_endDate DATE) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE result TINYINT(1) DEFAULT 0;
+    DECLARE uuidARVTreatmentStartDate VARCHAR(38) DEFAULT "e3f9c7ee-aa3e-4224-9d18-42e09b095ac6";
+
+    SELECT
+        TRUE INTO result
+    FROM obs o
+    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
+    WHERE o.voided = 0
+        AND o.person_id = p_patientId
+        AND c.uuid = uuidARVTreatmentStartDate
+        AND o.value_datetime IS NOT NULL
+        AND cast(o.value_datetime AS DATE) <= p_endDate
+    GROUP BY c.uuid;
+
+    RETURN (result );
+END$$
+DELIMITER ;
+
+-- patientWasOnARVTreatmentDuringEntireReportingPeriod
+
+DROP FUNCTION IF EXISTS patientWasOnARVTreatmentDuringEntireReportingPeriod;
+
+DELIMITER $$
+CREATE FUNCTION patientWasOnARVTreatmentDuringEntireReportingPeriod(
+    p_patientId INT(11),
+    p_startDate DATE,
+    p_endDate DATE,
+    p_protocolLineNumber INT(11)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+
+    DECLARE result TINYINT(1) DEFAULT 0;
+
+    SELECT TRUE INTO result
+    FROM orders o
+    JOIN drug_order do ON do.order_id = o.order_id
+    JOIN concept c ON do.duration_units = c.concept_id AND c.retired = 0
+    JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
+    WHERE o.patient_id = p_patientId AND o.voided = 0
+        AND drugIsARV(d.name, p_protocolLineNumber)
+        AND o.date_activated < p_startDate
+        AND calculateTreatmentEndDate(
+            o.date_activated,
+            do.duration,
+            c.uuid -- uuid of the duration unit concept
+            ) >= p_endDate
+        AND drugOrderIsDispensed(p_patientId, o.order_id)
+    GROUP BY o.patient_id;
+
+    RETURN (result );
+END$$ 
+DELIMITER ;
+
+-- patientWasOnARVTreatmentOrHasPickedUpADrugWithinReportingPeriod
+
+DROP FUNCTION IF EXISTS patientWasOnARVTreatmentOrHasPickedUpADrugWithinReportingPeriod;
+
+DELIMITER $$
+CREATE FUNCTION patientWasOnARVTreatmentOrHasPickedUpADrugWithinReportingPeriod(
+    p_patientId INT(11),
+    p_startDate DATE,
+    p_endDate DATE,
+    p_protocolLineNumber INT(11)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+
+    RETURN
+        patientWasOnARVTreatmentDuringEntireReportingPeriod(p_patientId, p_startDate, p_endDate, p_protocolLineNumber)
+        OR
+        patientPickedARVDrugDuringReportingPeriod(p_patientId, p_startDate, p_endDate, p_protocolLineNumber);
+END$$ 
+DELIMITER ;
+
 -- patientWasOnARVTreatmentDuringReportingPeriod
 
 DROP FUNCTION IF EXISTS patientWasOnARVTreatmentDuringReportingPeriod;
@@ -175,7 +289,7 @@ BEGIN
     JOIN concept c ON do.duration_units = c.concept_id AND c.retired = 0
     JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
     WHERE o.patient_id = p_patientId AND o.voided = 0
-        AND drugIsARV(d.name)
+        AND drugIsARV(d.name, 0)
         AND o.date_activated <= p_endDate
         AND calculateTreatmentEndDate(
             o.date_activated,
@@ -197,7 +311,8 @@ DELIMITER $$
 CREATE FUNCTION patientPickedARVDrugDuringReportingPeriod(
     p_patientId INT(11),
     p_startDate DATE,
-    p_endDate DATE) RETURNS TINYINT(1)
+    p_endDate DATE,
+    p_protocolLineNumber INT(11)) RETURNS TINYINT(1)
     DETERMINISTIC
 BEGIN
 
@@ -209,7 +324,7 @@ BEGIN
     JOIN concept c ON do.duration_units = c.concept_id AND c.retired = 0
     JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
     WHERE o.patient_id = p_patientId AND o.voided = 0
-        AND drugIsARV(d.name)
+        AND drugIsARV(d.name, p_protocolLineNumber)
         AND o.date_activated BETWEEN p_startDate AND p_endDate
         AND drugOrderIsDispensed(p_patientId, o.order_id)
     GROUP BY o.patient_id;
@@ -253,11 +368,11 @@ DELIMITER $$
 CREATE FUNCTION calculateTreatmentEndDate(
     p_startDate DATE,
     p_duration INT(11),
-    p_uuidDurationUnit INT(11)) RETURNS INT(11)
+    p_uuidDurationUnit INT(11)) RETURNS DATE
     DETERMINISTIC
 BEGIN
 
-    DECLARE result INT(11);
+    DECLARE result DATE;
     DECLARE uuidMinute VARCHAR(38) DEFAULT '33bc78b1-8a92-11e4-977f-0800271c1b75';
     DECLARE uuidHour VARCHAR(38) DEFAULT 'bb62c684-3f10-11e4-adec-0800271c1b75';
     DECLARE uuidDay VARCHAR(38) DEFAULT '9d7437a9-3f10-11e4-adec-0800271c1b75';
@@ -287,39 +402,25 @@ DROP FUNCTION IF EXISTS drugIsARV;
 
 DELIMITER $$
 CREATE FUNCTION drugIsARV(
-    p_drugName VARCHAR(255)) RETURNS TINYINT(1)
+    p_drugName VARCHAR(255),
+    p_protocolLineNumber INT(11)) RETURNS TINYINT(1)
     DETERMINISTIC
 BEGIN
-    return p_drugName IN (
-        "ABC/AZT+3TC+EFV",
-        "AZT/3TC+EFV",
-        "TDF/3TC+LPVr ou ATZ/r",
-        "ABC+3TC+NVP",
-        "ABC+3TC+EFV",
-        "AZT+3TC+LPV/r",
-        "AZT/3TC+NVP",
-        "ABC/AZT+3TC+ATV/r",
-        "AZT+3TC+LPV/r",
-        "AZT+3TC+EFV",
-        "ABC+3TC-LPV/r",
-        "TDF+3TC/FTC+EFV",
-        "TDF+3TC+LPV/r",
-        "AZT+3TC+LPV/r",
-        "ABC+3TC+LPV/r",
-        "TDF+3TC+LPV/r ou ATV/r",
-        "TDF/3TC+NVP",
-        "TDF+3TC+EFV",
-        "TDF/3TC/EFV",
-        "ABC+3TC+EFV",
-        "DRV/r+RAL+ETV",
-        "AZT+3TC+ATV/r",
-        "TDF+3TC/FTC+NVP",
-        "AZT+3TC+NVP",
-        "TDF/FTC+EFV",
-        "AZT+3TC+LPVr+ ou AZT/r",
-        "ABC+3TC+NVP",
-        "TDF+3TC+ATV/r"
-    );
+    DECLARE result TINYINT(1);
+    IF p_protocolLineNumber = 1 THEN
+        SET result = drugIsARVFirstLine(p_drugName);
+    ELSEIF p_protocolLineNumber = 2 THEN
+        SET result = drugIsARVSecondLine(p_drugName);
+    ELSEIF p_protocolLineNumber = 3 THEN
+        SET result = drugIsARVThirdLine(p_drugName);
+    ELSE
+        SET result =  
+            drugIsARVFirstLine(p_drugName) OR
+            drugIsARVSecondLine(p_drugName) OR
+            drugIsARVThirdLine(p_drugName);
+    END IF;
+
+    RETURN (result); 
 END$$
 DELIMITER ;
 
@@ -438,5 +539,66 @@ BEGIN
         "ABC+3TC+EFV",
         "ABC+3TC+NVP"
     );
+END$$
+DELIMITER ;
+
+-- drugIsARVSecondLine
+
+DROP FUNCTION IF EXISTS drugIsARVSecondLine;
+
+DELIMITER $$
+CREATE FUNCTION drugIsARVSecondLine(
+    p_drugName VARCHAR(255)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    return p_drugName IN (
+        "AZT+3TC+LPV/r",
+        "AZT+3TC+ATZ/r",
+        "ABC+3TC-LPV/r",
+        "ABC+3TC+ATZ/r",
+        "TDF+3TC+ATZ/r",
+        "TDF+3TC+LPVr"
+    );
+END$$
+DELIMITER ;
+
+-- drugIsARVThirdLine
+
+DROP FUNCTION IF EXISTS drugIsARVThirdLine;
+
+DELIMITER $$
+CREATE FUNCTION drugIsARVThirdLine(
+    p_drugName VARCHAR(255)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    return p_drugName IN (
+        "AZT+DRV+RTV",
+        "ABC+DRV+RTV"
+    );
+END$$
+DELIMITER ;
+
+-- isOldPatient
+
+DROP FUNCTION IF EXISTS isOldPatient;
+
+DELIMITER $$
+CREATE FUNCTION isOldPatient(
+    p_patientId INT(11),
+    p_startDate DATE) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE result TINYINT(1) DEFAULT 0;
+    SELECT TRUE INTO result
+    FROM patient_program pp
+    JOIN person p ON p.person_id = p_patientId AND p.voided = 0
+    JOIN program pro ON pro.program_id = pp.program_id AND pro.retired = 0
+    WHERE DATE(pp.date_enrolled) < p_startDate
+        AND pp.patient_id = p.person_id
+        AND pp.voided = 0
+        AND pro.name = "HIV_PROGRAM_KEY"
+    GROUP BY pro.name;
+
+    RETURN (result);
 END$$
 DELIMITER ;
