@@ -81,7 +81,7 @@ aeecf2e8-4746-4023-bc39-efdd83ce4e94,,09704fda-7fe3-45bf-a993-9b5eb7b69ed9;c74e2
 29538d59-7239-475d-b95c-3e493f8b88fe,,Yes full name;No full name,Traitement toujours en cours,Treatment still in progress,Traitement toujours en cours,Treatment still in progress,Misc,Coded,,
 db3088d9-cc5c-433f-8e47-5e29881dd9c5,,Yes full name;No full name;Do Not Know,Cotrimoxazole (Prophylaxie en cours),Cotrimoxazole (Prophylaxsis in progress),Cotrimoxazole (Prophylaxie en cours),Cotrimoxazole (Prophylaxsis in progress),Misc,Coded,,
 2fba5a24-fd7c-4f15-808e-ffafdeebb786,,Yes full name;No full name,Allergie médicamenteuse,Medication allergy,Allergie médicamenteuse,Medication allergy,Misc,Coded,,
-d0b941d1-cc7d-4fe1-9a7c-188a858431d1,,,Si oui précisez (exemple: Allergie au cotrimoxazole),If yes specify allergy,,,Misc,Text,,
+d0b941d1-cc7d-4fe1-9a7c-188a858431d1,,,Si oui précisez (exemple: Allergie au cotrimoxazole),If yes specify allergy,Si oui précisez (exemple: Allergie au cotrimoxazole),If yes specify allergy,Misc,Text,,
 cf74d45d-7a99-4c12-9bbb-02095726f666,fd43f382-0f14-4740-ad8f-3ec38b05fd14;02f7b1ff-1bfc-46b8-811d-bf524db681cb;fef74daa-2a47-4c4e-b9c2-d18078d8e3be;81ff1578-da33-44f3-bdbe-71d7706ecd87;aeecf2e8-4746-4023-bc39-efdd83ce4e94;3b2a2ded-60f6-4818-a4f4-10f296f53ae1;29538d59-7239-475d-b95c-3e493f8b88fe;db3088d9-cc5c-433f-8e47-5e29881dd9c5;2fba5a24-fd7c-4f15-808e-ffafdeebb786;d0b941d1-cc7d-4fe1-9a7c-188a858431d1,,II.3 ARV ET Autres,II.3 ARV AND OTHER,II.3 ARV ET Autres,II.3 ARV AND OTHER,Misc,N/A,,
 d25b1be5-157a-4d2c-b29b-f872b231416d,,,GPAA (Gravité Parté Accouchement),GPAA (Severity released childbirth),GPAA (Gravité Parté Accouchement),GPAA (Severity released childbirth),Misc,Text,,
 0336010a-4aae-4112-b1a7-5a29d1724517,,,DDR,DDR,DDR,DDR,Misc,Text,,
