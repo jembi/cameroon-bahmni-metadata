@@ -21,7 +21,7 @@ WHERE
     patientAgeWhenRegisteredForHivProgramIsBetween(pat.patient_id, p_startAge, p_endAge, p_includeEndAge) AND
     patientHasEnrolledIntoHivProgramBefore(pat.patient_id, p_startDate) AND
     patientHasStartedARVTreatmentBefore(pat.patient_id, p_startDate) AND
-    patientWasOnARVTreatmentDuringEntireReportingPeriod(pat.patient_id, p_startDate, p_endDate, 0) AND
+    patientWasOnARVTreatmentOrHasPickedUpADrugWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate, 0) AND
     patientIsNotDead(pat.patient_id) AND
     patientIsNotLostToFollowUp(pat.patient_id) AND
     patientIsNotTransferredOut(pat.patient_id);
@@ -120,7 +120,7 @@ WHERE
     patientHasStartedARVTreatmentDuringOrBeforeReportingPeriod(pat.patient_id, p_endDate) AND
     IF (
         isOldPatient(pat.patient_id, p_startDate),
-        patientWasOnARVTreatmentDuringEntireReportingPeriod(pat.patient_id, p_startDate, p_endDate, 0),
+        patientWasOnARVTreatmentOrHasPickedUpADrugWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate, 0),
         patientPickedARVDrugDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate, 0)
     ) AND
     patientIsNotDead(pat.patient_id) AND
@@ -156,7 +156,7 @@ WHERE
     patientHasStartedARVTreatmentDuringOrBeforeReportingPeriod(pat.patient_id, p_endDate) AND
     IF (
         isOldPatient(pat.patient_id, p_startDate),
-        patientWasOnARVTreatmentDuringEntireReportingPeriod(pat.patient_id, p_startDate, p_endDate, 1),
+        patientWasOnARVTreatmentOrHasPickedUpADrugWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate, 1),
         patientPickedARVDrugDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate, 1)
     ) AND
     patientIsNotDead(pat.patient_id) AND
@@ -192,7 +192,7 @@ WHERE
     patientHasStartedARVTreatmentDuringOrBeforeReportingPeriod(pat.patient_id, p_endDate) AND
     IF (
         isOldPatient(pat.patient_id, p_startDate),
-        patientWasOnARVTreatmentDuringEntireReportingPeriod(pat.patient_id, p_startDate, p_endDate, 2),
+        patientWasOnARVTreatmentOrHasPickedUpADrugWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate, 2),
         patientPickedARVDrugDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate, 2)
     ) AND
     patientIsNotDead(pat.patient_id) AND
@@ -228,7 +228,7 @@ WHERE
     patientHasStartedARVTreatmentDuringOrBeforeReportingPeriod(pat.patient_id, p_endDate) AND
     IF (
         isOldPatient(pat.patient_id, p_startDate),
-        patientWasOnARVTreatmentDuringEntireReportingPeriod(pat.patient_id, p_startDate, p_endDate, 3),
+        patientWasOnARVTreatmentOrHasPickedUpADrugWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate, 3),
         patientPickedARVDrugDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate, 3)
     ) AND
     patientIsNotDead(pat.patient_id) AND

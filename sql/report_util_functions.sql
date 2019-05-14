@@ -249,6 +249,26 @@ BEGIN
 END$$ 
 DELIMITER ;
 
+-- patientWasOnARVTreatmentOrHasPickedUpADrugWithinReportingPeriod
+
+DROP FUNCTION IF EXISTS patientWasOnARVTreatmentOrHasPickedUpADrugWithinReportingPeriod;
+
+DELIMITER $$
+CREATE FUNCTION patientWasOnARVTreatmentOrHasPickedUpADrugWithinReportingPeriod(
+    p_patientId INT(11),
+    p_startDate DATE,
+    p_endDate DATE,
+    p_protocolLineNumber INT(11)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+
+    RETURN
+        patientWasOnARVTreatmentDuringEntireReportingPeriod(p_patientId, p_startDate, p_endDate, p_protocolLineNumber)
+        OR
+        patientPickedARVDrugDuringReportingPeriod(p_patientId, p_startDate, p_endDate, p_protocolLineNumber);
+END$$ 
+DELIMITER ;
+
 -- patientWasOnARVTreatmentDuringReportingPeriod
 
 DROP FUNCTION IF EXISTS patientWasOnARVTreatmentDuringReportingPeriod;
