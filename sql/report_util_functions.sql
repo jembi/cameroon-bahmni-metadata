@@ -374,10 +374,11 @@ CREATE FUNCTION drugOrderIsDispensed(
     DETERMINISTIC
 BEGIN
 
-    DECLARE result TINYINT(1) DEFAULT 0;
+    DECLARE drugDispensed TINYINT(1) DEFAULT 0;
+    DECLARE retrospectiveDrugEntry TINYINT(1) DEFAULT 0;
     DECLARE uuidDispensedConcept VARCHAR(38) DEFAULT 'ff0d6d6a-e276-11e4-900f-080027b662ec';
 
-    SELECT TRUE INTO result
+    SELECT TRUE INTO drugDispensed
     FROM obs o
     JOIN concept c ON o.concept_id = c.concept_id AND c.retired = 0
     WHERE voided = 0
@@ -385,7 +386,19 @@ BEGIN
         AND o.order_id = p_orderId
         AND c.uuid = uuidDispensedConcept;
 
-    RETURN (result); 
+    SELECT TRUE INTO retrospectiveDrugEntry
+    FROM orders o
+    JOIN drug_order do ON do.order_id = o.order_id
+    JOIN concept c ON c.concept_id = do.duration_units AND retired = 0
+    WHERE o.voided = 0
+        AND o.patient_id = p_patientId
+        AND o.order_id = p_orderId
+        AND o.date_created > calculateTreatmentEndDate(
+            o.date_activated,
+            do.duration,
+            c.uuid);
+
+    RETURN (drugDispensed OR retrospectiveDrugEntry); 
 END$$ 
 
 DELIMITER ; 
