@@ -249,6 +249,36 @@ BEGIN
 END$$ 
 DELIMITER ;
 
+-- patientHasStartedARVTreatment12MonthsAgo
+
+DROP FUNCTION IF EXISTS patientHasStartedARVTreatment12MonthsAgo;
+
+DELIMITER $$
+CREATE FUNCTION patientHasStartedARVTreatment12MonthsAgo(
+    p_patientId INT(11),
+    p_startDate DATE,
+    p_endDate DATE) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+
+    DECLARE result TINYINT(1) DEFAULT 0;
+    DECLARE uuidARVTreatmentStartDate VARCHAR(38) DEFAULT "e3f9c7ee-aa3e-4224-9d18-42e09b095ac6";
+
+    SELECT
+        TRUE INTO result
+    FROM obs o
+    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
+    WHERE o.voided = 0
+        AND o.person_id = p_patientId
+        AND c.uuid = uuidARVTreatmentStartDate
+        AND o.value_datetime IS NOT NULL
+        AND timestampadd(YEAR, 1, cast(o.value_datetime AS DATE)) BETWEEN p_startDate AND p_endDate
+    GROUP BY c.uuid;
+
+    RETURN (result );
+END$$ 
+DELIMITER ;
+
 -- patientWasOnARVTreatmentOrHasPickedUpADrugWithinReportingPeriod
 
 DROP FUNCTION IF EXISTS patientWasOnARVTreatmentOrHasPickedUpADrugWithinReportingPeriod;
