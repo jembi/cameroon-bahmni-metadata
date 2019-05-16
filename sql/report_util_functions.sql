@@ -411,7 +411,7 @@ DELIMITER $$
 CREATE FUNCTION calculateTreatmentEndDate(
     p_startDate DATE,
     p_duration INT(11),
-    p_uuidDurationUnit INT(11)) RETURNS DATE
+    p_uuidDurationUnit VARCHAR(38)) RETURNS DATE
     DETERMINISTIC
 BEGIN
 
