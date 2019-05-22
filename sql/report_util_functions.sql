@@ -363,6 +363,76 @@ BEGIN
 END$$ 
 DELIMITER ;
 
+-- patientDidntCollectARVDuringReportingPeriod
+
+DROP FUNCTION IF EXISTS patientDidntCollectARVDuringReportingPeriod;
+
+DELIMITER $$
+CREATE FUNCTION patientDidntCollectARVDuringReportingPeriod(
+    p_patientId INT(11),
+    p_startDate DATE,
+    p_endDate DATE,
+    p_protocolLineNumber INT(11)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+
+    DECLARE drugNotDispensed TINYINT(1) DEFAULT 0;
+    DECLARE drugNotOrdered TINYINT(1) DEFAULT 1;
+
+    SELECT TRUE INTO drugNotDispensed
+    FROM orders o
+    JOIN drug_order do ON do.order_id = o.order_id
+    JOIN concept c ON do.duration_units = c.concept_id AND c.retired = 0
+    JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
+    WHERE o.patient_id = p_patientId AND o.voided = 0
+        AND drugIsARV(d.name, p_protocolLineNumber)
+        AND o.date_activated BETWEEN p_startDate AND p_endDate
+        AND !drugOrderIsDispensed(p_patientId, o.order_id)
+    GROUP BY o.patient_id;
+
+    SELECT FALSE INTO drugNotOrdered
+    FROM orders o
+    JOIN drug_order do ON do.order_id = o.order_id
+    JOIN concept c ON do.duration_units = c.concept_id AND c.retired = 0
+    JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
+    WHERE o.patient_id = p_patientId AND o.voided = 0
+        AND drugIsARV(d.name, p_protocolLineNumber)
+        AND o.date_activated BETWEEN p_startDate AND p_endDate
+    GROUP BY o.patient_id;
+
+    RETURN (drugNotDispensed OR drugNotOrdered);
+END$$ 
+DELIMITER ;
+
+-- patientHasScheduledAnARTAppointmentDuringReportingPeriod
+
+DROP FUNCTION IF EXISTS patientHasScheduledAnARTAppointmentDuringReportingPeriod;
+
+DELIMITER $$
+CREATE FUNCTION patientHasScheduledAnARTAppointmentDuringReportingPeriod(
+    p_patientId INT(11),
+    p_startDate DATE,
+    p_endDate DATE) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+
+    DECLARE result TINYINT(1) DEFAULT 0;
+
+    SELECT TRUE INTO result
+    FROM patient_appointment pa
+    JOIN appointment_service aps ON aps.appointment_service_id = pa.appointment_service_id AND aps.voided = 0
+    JOIN `location` lc ON lc.location_id = pa.location_id AND lc.retired = 0
+    WHERE pa.voided = 0
+        AND pa.patient_id = p_patientId
+        AND pa.start_date_time BETWEEN p_startDate AND p_endDate
+        AND aps.name = "APPOINTMENT_SERVICE_ART_KEY"
+        AND lc.name = "LOCATION_ART_DISPENTION"
+    GROUP BY pa.patient_id;
+
+    RETURN (result );
+END$$ 
+DELIMITER ;
+
 -- drugOrderIsDispensed
 
 DROP FUNCTION IF EXISTS drugOrderIsDispensed;
