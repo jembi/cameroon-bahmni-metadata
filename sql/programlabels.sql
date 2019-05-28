@@ -5,3 +5,4 @@ update program_attribute_type set description = 'PROGRAM_MANAGEMENT_PATIENT_COMO
 update program_attribute_type set description = 'PROGRAM_MANAGEMENT_PATIENT_DOCTOR_IN_CHARGE', name = 'PROGRAM_MANAGEMENT_PATIENT_DOCTOR_IN_CHARGE' where name = 'Doctor';
 update program set name = 'HIV_PROGRAM_KEY' where name = 'HIV Program';
 update program set name = 'TB_PROGRAM_KEY' where name = 'TB Program';
+update program_attribute_type set datatype = 'org.bahmni.module.bahmnicore.customdatatype.datatype.CodedConceptDatatype', datatype_config = '3895' where name = 'PROGRAM_MANAGEMENT_PATIENT_COMORBIDITES';
