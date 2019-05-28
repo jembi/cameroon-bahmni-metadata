@@ -2,6 +2,13 @@
     <wipe>true</wipe> 
     <addressComponents> 
         <addressComponent> 
+            <field>ADDRESS_4</field> 
+            <nameMapping>ADDRESSHIERARCHY_OTHER</nameMapping> 
+            <sizeMapping>80</sizeMapping> 
+            <elementDefault></elementDefault> 
+            <requiredInHierarchy>false</requiredInHierarchy> 
+        </addressComponent>
+        <addressComponent> 
             <field>COUNTRY</field> 
             <nameMapping>ADDRESSHIERARCHY_COUNTRY</nameMapping> 
             <sizeMapping>80</sizeMapping> 
@@ -49,7 +56,8 @@
         <string>address1,address2</string> 
         <string>cityVillage,address3</string> 
         <string>countyDistrict, stateProvince</string> 
-        <string>country</string>
+        <string>country</string> 
+        <string>address4</string>
     </lineByLineFormat> 
     <addressHierarchyFile> 
         <filename>address-hierarchy-entries.csv</filename> 
