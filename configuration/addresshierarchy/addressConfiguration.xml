@@ -7,7 +7,7 @@
             <sizeMapping>80</sizeMapping> 
             <elementDefault></elementDefault> 
             <requiredInHierarchy>false</requiredInHierarchy> 
-        </addressComponent>  
+        </addressComponent> 
         <addressComponent> 
             <field>STATE_PROVINCE</field> 
             <nameMapping>ADDRESSHIERARCHY_PROVINCE</nameMapping> 
@@ -49,7 +49,7 @@
         <string>address1,address2</string> 
         <string>cityVillage,address3</string> 
         <string>countyDistrict, stateProvince</string> 
-        <string>country</string>
+        <string>country</string> 
     </lineByLineFormat> 
     <addressHierarchyFile> 
         <filename>address-hierarchy-entries.csv</filename> 
