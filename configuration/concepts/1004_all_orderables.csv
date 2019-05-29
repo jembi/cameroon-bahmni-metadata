@@ -1,6 +1,6 @@
 UUID,Members,Fully specified name:fr,Fully specified name:en,Short name:fr,Short name:en,Data class,Data type,_version:1,_order:1004
 c47d425f-a39c-421b-99a9-ae0b7ceeaa04,Oxygen (arterial saturation);pCO2 (arterial);pO2 (arterial);pH (arterial),Le sang artériel,Arteriall blood,Le sang artériel,Arteriall blood,Sample,N/A,,
-21a7e8d9-f6f3-4bcd-aa8a-73b1cf58653e,Blood (Culture);Blood Culture Germs;Blood Culture Antibiogram,Hémoculture bouteille,Blood culture bottle,Hémoculture,Blood culture,Sample,N/A,,
+21a7e8d9-f6f3-4bcd-aa8a-73b1cf58653e,Blood (Culture);Blood Culture Germs;Blood Culture Antibiogram;HIV Tests;1st Test / Determine;2nd Test / Oraquick or KHB;Retest 1;Retest 2,Hémoculture bouteille,Blood culture bottle,Hémoculture,Blood culture,Sample,N/A,,
 1f11a804-2466-4e37-be97-66a51eae925d,Cerebro-spinal fluid;Protein (CSF);Glucose (CSF);Chloride (CSF);CSF Aspect;CSF Number of epithelial cells per ml;CSF Number of leucocytes per ml;CSF Number of erythrocytes per ml;CSF Cryptococcus;CSF Identified germ;CSF Antibiogram,Échantillon LCR,CSF sample,Échantillon LCR,CSF sample,Sample,N/A,,
 cffbcf9e-05e9-49d9-ac21-46912979dac8,Erythrocyte Sedimentation Rate,ESR tube,ESR tube,ESR tube,ESR tube,Sample,N/A,,
 d3f1d45b-49a5-4ba9-87e7-04fcb7c21116,CBC (NFS);Blood grouping;Total Leucocyte count;RBC;Platelets;Haemoglobin;Haematocrit;MCV;MCH;Neutrolphils;Lymphocytes;Monocytes;Eosinophils;Basophils;ABO;Rh +/-;CD4;Myelogramm;Hemoglobin electrophoresis;HbA1C;Cortisol (plasma) 8 AM;Cortisol (plasma) 4 PM;Reticulocytes,Plasma,Plasma EDTA,Plasma,Plasma EDTA,Sample,N/A,,
