@@ -1,1 +1,1 @@
-DELETE * FROM entity_mapping_type where uuid = 'bf9c4e41-4b69-49b4-986d-1aafdb7dcd55';
+DELETE FROM entity_mapping_type WHERE uuid = 'bf9c4e41-4b69-49b4-986d-1aafdb7dcd55';
