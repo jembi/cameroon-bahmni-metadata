@@ -280,7 +280,8 @@ CREATE FUNCTION PECG_Indicator17(
     p_startAge INT(11),
     p_endAge INT (11),
     p_includeEndAge TINYINT(1),
-    p_gender VARCHAR(1)) RETURNS INT(11)
+    p_gender VARCHAR(1),
+    p_monthOffset INT(11)) RETURNS INT(11)
     DETERMINISTIC
 BEGIN
     DECLARE result INT(11) DEFAULT 0;
@@ -294,8 +295,8 @@ WHERE
     patientAgeWhenRegisteredForHivProgramIsBetween(pat.patient_id, p_startAge, p_endAge, p_includeEndAge) AND
     patientHasEnrolledIntoHivProgramBefore(pat.patient_id, p_endDate) AND
     patientHasStartedARVTreatmentBefore(pat.patient_id, p_startDate) AND
-    patientDidntCollectARVDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate, 0) AND
-    patientHasScheduledAnARTAppointmentDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
+    patientDidntCollectARV(pat.patient_id, p_startDate, p_endDate, 0, 0) AND
+    patientHasScheduledAnARTAppointment(pat.patient_id, p_startDate, p_endDate, 0) AND
     patientIsNotDead(pat.patient_id) AND
     patientIsNotLostToFollowUp(pat.patient_id) AND
     patientIsNotTransferredOut(pat.patient_id);
@@ -313,7 +314,8 @@ CREATE FUNCTION PECG_Indicator18(
     p_startAge INT(11),
     p_endAge INT (11),
     p_includeEndAge TINYINT(1),
-    p_gender VARCHAR(1)) RETURNS INT(11)
+    p_gender VARCHAR(1),
+    p_monthOffset INT(11)) RETURNS INT(11)
     DETERMINISTIC
 BEGIN
     DECLARE result INT(11) DEFAULT 0;
@@ -327,7 +329,8 @@ WHERE
     patientAgeWhenRegisteredForHivProgramIsBetween(pat.patient_id, p_startAge, p_endAge, p_includeEndAge) AND
     patientHasEnrolledIntoHivProgramBefore(pat.patient_id, p_endDate) AND
     patientHasStartedARVTreatmentBefore(pat.patient_id, p_startDate) AND
-    patientPickedARVDrugDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate, 0) AND
+    patientDidntCollectARV(pat.patient_id, p_startDate, p_endDate, 0, -1) AND
+    patientHasScheduledAnARTAppointment(pat.patient_id, p_startDate, p_endDate, -1) AND
     patientIsNotDead(pat.patient_id) AND
     patientIsNotLostToFollowUp(pat.patient_id) AND
     patientIsNotTransferredOut(pat.patient_id);
