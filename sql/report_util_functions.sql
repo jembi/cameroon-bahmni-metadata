@@ -180,7 +180,8 @@ BEGIN
         AND o.person_id = p_patientId
         AND c.uuid = uuidARVTreatmentStartDate
         AND o.value_datetime IS NOT NULL
-        AND cast(o.value_datetime AS DATE) BETWEEN p_startDate AND p_endDate;
+        AND cast(o.value_datetime AS DATE) BETWEEN p_startDate AND p_endDate
+        LIMIT 1;
 
     RETURN (result );
 END$$
