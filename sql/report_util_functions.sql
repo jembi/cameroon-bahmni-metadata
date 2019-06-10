@@ -644,16 +644,12 @@ CREATE FUNCTION drugIsARVFirstLine(
     p_drugName VARCHAR(255)) RETURNS TINYINT(1)
     DETERMINISTIC
 BEGIN
-    return p_drugName IN (
-        "TDF+3TC+EFV",
-        "AZT/3TC+EFV",
-        "AZT+3TC+NVP",
-        "TDF/3TC+NVP",
-        "ABC+3TC+EFV",
-        "ABC+3TC+NVP"
-    );
+    DECLARE firstOrderLineUuid VARCHAR(38) DEFAULT "2f8dba15-95b4-4e1e-a2cf-10f3b2510ed8";
+
+    return _drugIsARV(p_drugName, firstOrderLineUuid);
 END$$
 DELIMITER ;
+
 
 -- drugIsARVSecondLine
 
@@ -664,14 +660,9 @@ CREATE FUNCTION drugIsARVSecondLine(
     p_drugName VARCHAR(255)) RETURNS TINYINT(1)
     DETERMINISTIC
 BEGIN
-    return p_drugName IN (
-        "AZT+3TC+LPV/r",
-        "AZT+3TC+ATZ/r",
-        "ABC+3TC-LPV/r",
-        "ABC+3TC+ATZ/r",
-        "TDF+3TC+ATZ/r",
-        "TDF+3TC+LPVr"
-    );
+    DECLARE secondOrderLineUuid VARCHAR(38) DEFAULT "da334532-dbb3-4456-b684-55fcb42e6fcb";
+
+    return _drugIsARV(p_drugName, secondOrderLineUuid);
 END$$
 DELIMITER ;
 
@@ -684,10 +675,35 @@ CREATE FUNCTION drugIsARVThirdLine(
     p_drugName VARCHAR(255)) RETURNS TINYINT(1)
     DETERMINISTIC
 BEGIN
-    return p_drugName IN (
-        "AZT+DRV+RTV",
-        "ABC+DRV+RTV"
-    );
+    DECLARE thirdOrderLineUuid VARCHAR(38) DEFAULT "89640844-136a-470e-9371-37b26dd7d3c2";
+
+    return _drugIsARV(p_drugName, thirdOrderLineUuid);
+END$$
+DELIMITER ;
+
+-- _drugIsARV
+-- This is a util function to avoid duplicating the SQL code on 
+-- drugIsARVFirstLine, drugIsARVSecondLine and drugIsARVThirdLine
+
+DROP FUNCTION IF EXISTS _drugIsARV;
+
+DELIMITER $$
+CREATE FUNCTION _drugIsARV(
+    p_drugName VARCHAR(255),
+    p_orderLineUuid VARCHAR(38)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE result TINYINT(1) DEFAULT 0;
+
+    SELECT TRUE INTO result
+    FROM concept_set cs
+    INNER JOIN concept c ON c.concept_id = cs.concept_set AND c.retired = 0
+    INNER JOIN concept_name cn ON cn.concept_id = cs.concept_id
+    WHERE c.uuid = p_orderLineUuid
+        AND cn.name = p_drugName
+    LIMIT 1;
+
+    return result;
 END$$
 DELIMITER ;
 
