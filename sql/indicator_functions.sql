@@ -280,8 +280,7 @@ CREATE FUNCTION PECG_Indicator17(
     p_startAge INT(11),
     p_endAge INT (11),
     p_includeEndAge TINYINT(1),
-    p_gender VARCHAR(1),
-    p_monthOffset INT(11)) RETURNS INT(11)
+    p_gender VARCHAR(1)) RETURNS INT(11)
     DETERMINISTIC
 BEGIN
     DECLARE result INT(11) DEFAULT 0;
@@ -314,8 +313,7 @@ CREATE FUNCTION PECG_Indicator18(
     p_startAge INT(11),
     p_endAge INT (11),
     p_includeEndAge TINYINT(1),
-    p_gender VARCHAR(1),
-    p_monthOffset INT(11)) RETURNS INT(11)
+    p_gender VARCHAR(1)) RETURNS INT(11)
     DETERMINISTIC
 BEGIN
     DECLARE result INT(11) DEFAULT 0;

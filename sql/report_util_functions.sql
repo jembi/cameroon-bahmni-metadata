@@ -345,7 +345,9 @@ CREATE FUNCTION patientPickedARVDrugDuringReportingPeriod(
     p_protocolLineNumber INT(11)) RETURNS TINYINT(1)
     DETERMINISTIC
 BEGIN
+
     DECLARE result TINYINT(1) DEFAULT 0;
+
     SELECT TRUE INTO result
     FROM orders o
     JOIN drug_order do ON do.order_id = o.order_id
@@ -395,7 +397,7 @@ BEGIN
     JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
     WHERE o.patient_id = p_patientId AND o.voided = 0
         AND drugIsARV(d.name, p_protocolLineNumber)
-        AND o.date_activated BETWEEN p_startDate AND p_endDate
+        AND o.date_activated BETWEEN TIMESTAMPADD(MONTH,p_monthOffset,p_startDate) AND TIMESTAMPADD(MONTH,p_monthOffset,p_endDate)
     GROUP BY o.patient_id;
 
     RETURN (drugNotDispensed OR drugNotOrdered);
@@ -411,10 +413,11 @@ CREATE FUNCTION patientHasScheduledAnARTAppointment(
     p_patientId INT(11),
     p_startDate DATE,
     p_endDate DATE,
-    p_monthOffset INT(11)) RETURNS TINYINT(1),
+    p_monthOffset INT(11)) RETURNS TINYINT(1)
     DETERMINISTIC
 BEGIN
     DECLARE result TINYINT(1) DEFAULT 0;
+
     SELECT TRUE INTO result
     FROM patient_appointment pa
     JOIN appointment_service aps ON aps.appointment_service_id = pa.appointment_service_id AND aps.voided = 0
@@ -517,6 +520,7 @@ CREATE FUNCTION drugIsARV(
     DETERMINISTIC
 BEGIN
     DECLARE result TINYINT(1);
+    
     IF p_protocolLineNumber = 1 THEN
         SET result = drugIsARVFirstLine(p_drugName);
     ELSEIF p_protocolLineNumber = 2 THEN
@@ -699,6 +703,7 @@ CREATE FUNCTION isOldPatient(
     DETERMINISTIC
 BEGIN
     DECLARE result TINYINT(1) DEFAULT 0;
+    
     SELECT TRUE INTO result
     FROM patient_program pp
     JOIN person p ON p.person_id = p_patientId AND p.voided = 0
