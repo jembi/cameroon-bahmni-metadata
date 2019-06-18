@@ -327,7 +327,7 @@ WHERE
     patientAgeWhenRegisteredForHivProgramIsBetween(pat.patient_id, p_startAge, p_endAge, p_includeEndAge) AND
     patientHasEnrolledIntoHivProgramBefore(pat.patient_id, p_endDate) AND
     patientHasStartedARVTreatment12MonthsAgo(pat.patient_id, p_startDate, p_endDate) AND
-    patientWasOnARVOrHasPickedUpADrugWithinPeriodPlusMinusMonths(pat.patient_id, p_startDate, p_endDate, 0, 3) AND
+    patientWasOnARVOrHasPickedUpADrugWithinPeriodPlusOrMinusMonths(pat.patient_id, p_startDate, p_endDate, 0, 3) AND
     patientIsNotDead(pat.patient_id) AND
     patientIsNotLostToFollowUp(pat.patient_id) AND
     patientIsNotTransferredOut(pat.patient_id);

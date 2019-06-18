@@ -280,12 +280,12 @@ BEGIN
 END$$ 
 DELIMITER ;
 
--- patientWasOnARVOrHasPickedUpADrugWithinPeriodPlusMinusMonths
+-- patientWasOnARVOrHasPickedUpADrugWithinPeriodPlusOrMinusMonths
 
-DROP FUNCTION IF EXISTS patientWasOnARVOrHasPickedUpADrugWithinPeriodPlusMinusMonths;
+DROP FUNCTION IF EXISTS patientWasOnARVOrHasPickedUpADrugWithinPeriodPlusOrMinusMonths;
 
 DELIMITER $$
-CREATE FUNCTION patientWasOnARVOrHasPickedUpADrugWithinPeriodPlusMinusMonths(
+CREATE FUNCTION patientWasOnARVOrHasPickedUpADrugWithinPeriodPlusOrMinusMonths(
     p_patientId INT(11),
     p_startDate DATE,
     p_endDate DATE,
@@ -300,7 +300,9 @@ BEGIN
     SET extended_endDate = timestampadd(MONTH, p_months, p_endDate);
 
     RETURN
-        patientWasOnARVTreatmentDuringEntireReportingPeriod(p_patientId, extended_startDate, extended_endDate, p_protocolLineNumber)
+        patientWasOnARVTreatmentDuringEntireReportingPeriod(p_patientId, extended_startDate, p_endDate, p_protocolLineNumber)
+        OR
+        patientWasOnARVTreatmentDuringEntireReportingPeriod(p_patientId, p_startDate, extended_endDate, p_protocolLineNumber)
         OR
         patientPickedARVDrugDuringReportingPeriod(p_patientId, extended_startDate, extended_endDate, p_protocolLineNumber);
 END$$ 
