@@ -7,7 +7,7 @@
             <sizeMapping>80</sizeMapping> 
             <elementDefault></elementDefault> 
             <requiredInHierarchy>false</requiredInHierarchy> 
-        </addressComponent> 
+        </addressComponent>
         <addressComponent> 
             <field>STATE_PROVINCE</field> 
             <nameMapping>ADDRESSHIERARCHY_PROVINCE</nameMapping> 
@@ -43,9 +43,17 @@
             <nameMapping>ADDRESSHIERARCHY_AREA</nameMapping> 
             <sizeMapping>80</sizeMapping> 
             <requiredInHierarchy>false</requiredInHierarchy> 
-        </addressComponent> 
+        </addressComponent>
+        <addressComponent> 
+            <field>ADDRESS_4</field> 
+            <nameMapping>ADDRESSHIERARCHY_PRECISE_LOCATION</nameMapping> 
+            <sizeMapping>80</sizeMapping> 
+            <elementDefault></elementDefault> 
+            <requiredInHierarchy>false</requiredInHierarchy> 
+        </addressComponent>
     </addressComponents> 
-    <lineByLineFormat> 
+    <lineByLineFormat>
+	<string>address4</string>
         <string>address1,address2</string> 
         <string>cityVillage,address3</string> 
         <string>countyDistrict, stateProvince</string> 
