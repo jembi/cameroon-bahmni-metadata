@@ -237,9 +237,9 @@ BEGIN
     JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
     WHERE o.patient_id = p_patientId AND o.voided = 0
         AND drugIsARV(d.name, p_protocolLineNumber)
-        AND o.date_activated < p_startDate
+        AND o.scheduled_date < p_startDate
         AND calculateTreatmentEndDate(
-            o.date_activated,
+            o.scheduled_date,
             do.duration,
             c.uuid -- uuid of the duration unit concept
             ) >= p_endDate
@@ -347,9 +347,9 @@ BEGIN
     JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
     WHERE o.patient_id = p_patientId AND o.voided = 0
         AND drugIsARV(d.name, 0)
-        AND o.date_activated <= p_endDate
+        AND o.scheduled_date <= p_endDate
         AND calculateTreatmentEndDate(
-            o.date_activated,
+            o.scheduled_date,
             do.duration,
             c.uuid -- uuid of the duration unit concept
             ) >= p_startDate
@@ -382,7 +382,7 @@ BEGIN
     JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
     WHERE o.patient_id = p_patientId AND o.voided = 0
         AND drugIsARV(d.name, p_protocolLineNumber)
-        AND o.date_activated BETWEEN p_startDate AND p_endDate
+        AND o.scheduled_date BETWEEN p_startDate AND p_endDate
         AND drugOrderIsDispensed(p_patientId, o.order_id)
     GROUP BY o.patient_id;
 
@@ -413,7 +413,7 @@ BEGIN
     JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
     WHERE o.patient_id = p_patientId AND o.voided = 0
         AND drugIsARV(d.name, p_protocolLineNumber)
-        AND o.date_activated BETWEEN TIMESTAMPADD(MONTH,p_monthOffset,p_startDate) AND TIMESTAMPADD(MONTH,p_monthOffset,p_endDate)
+        AND o.scheduled_date BETWEEN TIMESTAMPADD(MONTH,p_monthOffset,p_startDate) AND TIMESTAMPADD(MONTH,p_monthOffset,p_endDate)
         AND !drugOrderIsDispensed(p_patientId, o.order_id)
     GROUP BY o.patient_id;
 
@@ -424,7 +424,7 @@ BEGIN
     JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
     WHERE o.patient_id = p_patientId AND o.voided = 0
         AND drugIsARV(d.name, p_protocolLineNumber)
-        AND o.date_activated BETWEEN TIMESTAMPADD(MONTH,p_monthOffset,p_startDate) AND TIMESTAMPADD(MONTH,p_monthOffset,p_endDate)
+        AND o.scheduled_date BETWEEN TIMESTAMPADD(MONTH,p_monthOffset,p_startDate) AND TIMESTAMPADD(MONTH,p_monthOffset,p_endDate)
     GROUP BY o.patient_id;
 
     RETURN (drugNotDispensed OR drugNotOrdered);
@@ -579,7 +579,7 @@ BEGIN
         AND o.patient_id = p_patientId
         AND o.order_id = p_orderId
         AND o.date_created > calculateTreatmentEndDate(
-            o.date_activated,
+            o.scheduled_date,
             do.duration,
             c.uuid);
 
@@ -744,7 +744,7 @@ BEGIN
     JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
     WHERE o.patient_id = p_patientId AND o.voided = 0
         AND drugIsARVFirstLine(d.name)
-        AND o.date_activated BETWEEN p_startDate AND p_endDate
+        AND o.scheduled_date BETWEEN p_startDate AND p_endDate
     GROUP BY o.patient_id;
 
     RETURN (result );
