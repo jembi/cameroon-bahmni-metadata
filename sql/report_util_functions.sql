@@ -237,9 +237,9 @@ BEGIN
     JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
     WHERE o.patient_id = p_patientId AND o.voided = 0
         AND drugIsARV(d.name, p_protocolLineNumber)
-        AND o.date_activated < p_startDate
+        AND o.scheduled_date < p_startDate
         AND calculateTreatmentEndDate(
-            o.date_activated,
+            o.scheduled_date,
             do.duration,
             c.uuid -- uuid of the duration unit concept
             ) >= p_endDate
@@ -280,29 +280,27 @@ BEGIN
 END$$ 
 DELIMITER ;
 
--- patientWasOnARVOrHasPickedUpADrugWithinPeriodPlusOrMinusMonths
+-- patientOnARVOrHasPickedUpADrugWithinExtendedPeriod
 
-DROP FUNCTION IF EXISTS patientWasOnARVOrHasPickedUpADrugWithinPeriodPlusOrMinusMonths;
+DROP FUNCTION IF EXISTS patientOnARVOrHasPickedUpADrugWithinExtendedPeriod;
 
 DELIMITER $$
-CREATE FUNCTION patientWasOnARVOrHasPickedUpADrugWithinPeriodPlusOrMinusMonths(
+CREATE FUNCTION patientOnARVOrHasPickedUpADrugWithinExtendedPeriod(
     p_patientId INT(11),
     p_startDate DATE,
     p_endDate DATE,
     p_protocolLineNumber INT(11),
-    p_months INT(11)) RETURNS TINYINT(1)
+    p_extended_months INT(11)) RETURNS TINYINT(1)
     DETERMINISTIC
 BEGIN
 
     DECLARE extended_startDate DATE;
     DECLARE extended_endDate DATE;
-    SET extended_startDate = timestampadd(MONTH, -p_months, p_startDate);
-    SET extended_endDate = timestampadd(MONTH, p_months, p_endDate);
+    SET extended_startDate = timestampadd(MONTH, -p_extended_months, p_startDate);
+    SET extended_endDate = timestampadd(MONTH, p_extended_months, p_endDate);
 
     RETURN
-        patientWasOnARVTreatmentDuringEntireReportingPeriod(p_patientId, extended_startDate, p_endDate, p_protocolLineNumber)
-        OR
-        patientWasOnARVTreatmentDuringEntireReportingPeriod(p_patientId, p_startDate, extended_endDate, p_protocolLineNumber)
+        patientWasOnARVTreatmentDuringEntireReportingPeriod(p_patientId, extended_startDate, extended_endDate, p_protocolLineNumber)
         OR
         patientPickedARVDrugDuringReportingPeriod(p_patientId, extended_startDate, extended_endDate, p_protocolLineNumber);
 END$$ 
@@ -349,9 +347,9 @@ BEGIN
     JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
     WHERE o.patient_id = p_patientId AND o.voided = 0
         AND drugIsARV(d.name, 0)
-        AND o.date_activated <= p_endDate
+        AND o.scheduled_date <= p_endDate
         AND calculateTreatmentEndDate(
-            o.date_activated,
+            o.scheduled_date,
             do.duration,
             c.uuid -- uuid of the duration unit concept
             ) >= p_startDate
@@ -384,7 +382,7 @@ BEGIN
     JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
     WHERE o.patient_id = p_patientId AND o.voided = 0
         AND drugIsARV(d.name, p_protocolLineNumber)
-        AND o.date_activated BETWEEN p_startDate AND p_endDate
+        AND o.scheduled_date BETWEEN p_startDate AND p_endDate
         AND drugOrderIsDispensed(p_patientId, o.order_id)
     GROUP BY o.patient_id;
 
@@ -415,7 +413,7 @@ BEGIN
     JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
     WHERE o.patient_id = p_patientId AND o.voided = 0
         AND drugIsARV(d.name, p_protocolLineNumber)
-        AND o.date_activated BETWEEN TIMESTAMPADD(MONTH,p_monthOffset,p_startDate) AND TIMESTAMPADD(MONTH,p_monthOffset,p_endDate)
+        AND o.scheduled_date BETWEEN TIMESTAMPADD(MONTH,p_monthOffset,p_startDate) AND TIMESTAMPADD(MONTH,p_monthOffset,p_endDate)
         AND !drugOrderIsDispensed(p_patientId, o.order_id)
     GROUP BY o.patient_id;
 
@@ -426,7 +424,7 @@ BEGIN
     JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
     WHERE o.patient_id = p_patientId AND o.voided = 0
         AND drugIsARV(d.name, p_protocolLineNumber)
-        AND o.date_activated BETWEEN TIMESTAMPADD(MONTH,p_monthOffset,p_startDate) AND TIMESTAMPADD(MONTH,p_monthOffset,p_endDate)
+        AND o.scheduled_date BETWEEN TIMESTAMPADD(MONTH,p_monthOffset,p_startDate) AND TIMESTAMPADD(MONTH,p_monthOffset,p_endDate)
     GROUP BY o.patient_id;
 
     RETURN (drugNotDispensed OR drugNotOrdered);
@@ -581,7 +579,7 @@ BEGIN
         AND o.patient_id = p_patientId
         AND o.order_id = p_orderId
         AND o.date_created > calculateTreatmentEndDate(
-            o.date_activated,
+            o.scheduled_date,
             do.duration,
             c.uuid);
 
@@ -746,7 +744,7 @@ BEGIN
     JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
     WHERE o.patient_id = p_patientId AND o.voided = 0
         AND drugIsARVFirstLine(d.name)
-        AND o.date_activated BETWEEN p_startDate AND p_endDate
+        AND o.scheduled_date BETWEEN p_startDate AND p_endDate
     GROUP BY o.patient_id;
 
     RETURN (result );
@@ -849,6 +847,166 @@ BEGIN
 
     RETURN (result);
 END$$
+DELIMITER ;
+
+-- patientHadViralLoadTest3MonthsBeforeOrAfterReportingPeriod
+
+DROP FUNCTION IF EXISTS patientHadViralLoadTest3MonthsBeforeOrAfterReportingPeriod;
+
+DELIMITER $$
+CREATE FUNCTION patientHadViralLoadTest3MonthsBeforeOrAfterReportingPeriod(
+    p_patientId INT(11),
+    p_startDate DATE,
+    p_endDate DATE) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE result TINYINT(1);
+    DECLARE testDate DATE;
+    DECLARE testResult DATE;
+
+    -- retrieve the test date
+    CALL retrieveViralLoadTestDateAndResult(p_patientId, testDate, testResult);
+
+    -- if the test date is null, return FALSE (because the patient didn't have a viral load test)
+    IF testDate IS NULL THEN
+        RETURN 0;
+    END IF;
+
+    -- return true if the viral load test date is 3 months before or after the reporting period
+    IF timestampdiff(MONTH, testDate, p_startDate) BETWEEN 0 AND 3 OR timestampdiff(MONTH, p_endDate, testDate) BETWEEN 0 AND 3 THEN
+        RETURN 1;
+    ELSE
+        RETURN 0;
+    END IF;
+
+END$$ 
+DELIMITER ;
+
+-- patientIsVirallySuppressed
+
+DROP FUNCTION IF EXISTS patientIsVirallySuppressed3MonthsBeforeOrAfterReportingPeriod;
+
+DELIMITER $$
+CREATE FUNCTION patientIsVirallySuppressed3MonthsBeforeOrAfterReportingPeriod(
+    p_patientId INT(11),
+    p_startDate DATE,
+    p_endDate DATE) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE result TINYINT(1);
+    DECLARE testDate DATE;
+    DECLARE testResult INT(11);
+
+    -- retrieve the test date
+    CALL retrieveViralLoadTestDateAndResult(p_patientId, testDate, testResult);
+
+    -- if the test date is null, return FALSE (because the patient didn't have a viral load test)
+    IF testDate IS NULL THEN
+        RETURN 0;
+    END IF;
+
+    -- return true if the viral load test date is 3 months before or after the reporting period
+    IF (timestampdiff(MONTH, testDate, p_startDate) BETWEEN 0 AND 3
+        OR
+        timestampdiff(MONTH, p_endDate, testDate) BETWEEN 0 AND 3)
+        AND
+        testResult < 1000 THEN
+        RETURN 1;
+    ELSE
+        RETURN 0;
+    END IF;
+
+END$$ 
+DELIMITER ;
+
+-- retrieveViralLoadTestDate
+DROP PROCEDURE IF EXISTS retrieveViralLoadTestDateAndResult;
+
+DELIMITER $$
+CREATE PROCEDURE retrieveViralLoadTestDateAndResult(
+    IN p_patientId INT(11),
+    OUT p_testDate DATE,
+    OUT p_testResult INT(11)
+    )
+    DETERMINISTIC
+proc_vital_load:BEGIN
+    DECLARE viralLoadTestDateUuid VARCHAR(38) DEFAULT 'cac6bf44-f671-4f85-ab76-71e7f099d3cb';
+    DECLARE viralLoadTestUuid VARCHAR(38) DEFAULT '4d80e0ce-5465-4041-9d1e-d281d25a9b50';
+    DECLARE testDate DATE;
+    DECLARE testDateFromForm DATE;
+    DECLARE testDateFromOpenElis DATE;
+    DECLARE useFormResult TINYINT(1);
+
+    -- Read and store latest test date from form "LAB RESULTS - ADD MANUALLY"
+    SELECT o.value_datetime INTO testDateFromForm
+    FROM obs o
+    JOIN concept c ON o.concept_id = c.concept_id AND c.retired = 0
+    WHERE voided = 0
+        AND order_id IS NULL
+        AND o.value_datetime IS NOT NULL
+        AND o.person_id = p_patientId
+        AND c.uuid = viralLoadTestDateUuid
+    ORDER BY o.value_datetime DESC
+    LIMIT 1;
+
+    -- read and store latest test date from elis
+    SELECT o.obs_datetime INTO testDateFromOpenElis
+    FROM obs o
+    JOIN concept c ON o.concept_id = c.concept_id AND c.retired = 0
+    WHERE voided = 0
+        AND order_id IS NOT NULL
+        AND o.value_numeric IS NOT NULL
+        AND o.person_id = p_patientId
+        AND c.uuid = viralLoadTestUuid
+    ORDER BY o.obs_datetime DESC
+    LIMIT 1;
+
+    -- if both dates are null, return NULL
+    IF (testDateFromForm IS NULL AND testDateFromOpenElis IS NULL) THEN
+        SET p_testDate = NULL;
+        SET p_testResult = NULL;
+        LEAVE proc_vital_load;
+    END IF;
+
+    -- select the test date to use
+    IF (testDateFromForm IS NULL) THEN -- if date from form is null, use date from elis as test date
+        SET testDate = testDateFromOpenElis;
+        SET useFormResult = 0;
+    ELSEIF (testDateFromOpenElis IS NULL) THEN -- else if date from elis is null, use date from form
+        SET testDate = testDateFromForm;
+        SET useFormResult = 1;
+    ELSEIF (DATE(testDateFromForm) = DATE(testDateFromOpenElis)) THEN -- if date from form = date from elis, use the date from elis
+        SET testDate = testDateFromOpenElis;
+        SET useFormResult = 0;
+    END IF;
+
+    SET p_testDate = testDate;
+
+    IF (useFormResult) THEN
+        SELECT o.value_numeric INTO p_testResult
+        FROM obs o
+        JOIN concept c ON o.concept_id = c.concept_id AND c.retired = 0
+        WHERE voided = 0
+            AND order_id IS NULL
+            AND o.value_numeric IS NOT NULL
+            AND o.person_id = p_patientId
+            AND c.uuid = viralLoadTestUuid
+        ORDER BY o.value_datetime DESC
+        LIMIT 1;
+    ELSE
+        SELECT o.value_numeric INTO p_testResult
+        FROM obs o
+        JOIN concept c ON o.concept_id = c.concept_id AND c.retired = 0
+        WHERE voided = 0
+            AND order_id IS NOT NULL
+            AND o.value_numeric IS NOT NULL
+            AND o.person_id = p_patientId
+            AND c.uuid = viralLoadTestUuid
+        ORDER BY o.value_datetime DESC
+        LIMIT 1;
+    END IF;
+
+END$$ 
 DELIMITER ;
 
 -- patientHasNotBeenEnrolledIntoHivProgramDuringReportingPeriod
