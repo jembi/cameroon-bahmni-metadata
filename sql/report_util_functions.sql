@@ -1009,31 +1009,28 @@ proc_vital_load:BEGIN
 END$$ 
 DELIMITER ;
 
--- patientHasNotBeenEnrolledIntoHivProgramDuringReportingPeriod
+-- patientHasNotBeenEnrolledIntoHivProgram
 
-DROP FUNCTION IF EXISTS patientHasNotBeenEnrolledIntoHivProgramDuringReportingPeriod;
+DROP FUNCTION IF EXISTS patientHasNotBeenEnrolledIntoHivProgram;
 
 DELIMITER $$
-CREATE FUNCTION patientHasNotBeenEnrolledIntoHivProgramDuringReportingPeriod(
-    p_patientId INT(11),
-    p_startDate DATE,
-    p_endDate DATE) RETURNS TINYINT(1)
+CREATE FUNCTION patientHasNotBeenEnrolledIntoHivProgram(
+    p_patientId INT(11)) RETURNS TINYINT(1)
     DETERMINISTIC
 BEGIN
-    DECLARE result TINYINT(1) DEFAULT 0;
+    DECLARE hivProgramFound TINYINT(1) DEFAULT 0;
 
     SELECT
-        TRUE INTO result
+        TRUE INTO hivProgramFound
     FROM person p
     JOIN patient_program pp ON pp.patient_id = p.person_id AND pp.voided = 0
     JOIN program pro ON pro.program_id = pp.program_id AND pro.retired = 0
     WHERE p.person_id = p_patientId
         AND p.voided = 0
-        AND DATE(pp.date_enrolled) BETWEEN p_startDate AND p_endDate
         AND pro.name = "HIV_PROGRAM_KEY"
     GROUP BY pro.name;
 
-    RETURN (!result);
+    RETURN (!hivProgramFound);
 END$$
 DELIMITER ;
 
@@ -1084,7 +1081,7 @@ BEGIN
     JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
     WHERE o.patient_id = p_patientId AND o.voided = 0
         AND drugIsProphylaxis(d.name)
-        AND o.date_activated BETWEEN p_startDate AND p_endDate
+        AND o.scheduled_date BETWEEN p_startDate AND p_endDate
         AND drugOrderIsDispensed(p_patientId, o.order_id)
     GROUP BY o.patient_id;
 
