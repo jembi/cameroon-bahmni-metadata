@@ -737,13 +737,12 @@ BEGIN
     DECLARE uuidPatientIsUnplannedAid VARCHAR(38) DEFAULT "17a3b24b-e107-49fe-8b0d-69c3b7e60f4c";
 
     SELECT TRUE INTO patientIsUnplannedAid
-    FROM person p
-    JOIN patient_program pp ON pp.patient_id = p.person_id AND pp.voided = 0 AND p_patientId = pp.patient_id
+    FROM  patient_program pp  
     JOIN patient_program_attribute ppt ON ppt.patient_program_id = pp.patient_program_id
     JOIN concept c ON c.concept_id = ppt.value_reference
-    WHERE  p.voided = 0
-        AND c.uuid = uuidPatientIsUnplannedAid;
-
+    WHERE  ppt.voided = 0 AND p_patientId = pp.patient_id
+        AND c.uuid = uuidPatientIsUnplannedAid
+    LIMIT 1;
     RETURN (patientIsUnplannedAid );
 END$$
 DELIMITER ;
