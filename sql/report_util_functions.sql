@@ -1153,7 +1153,10 @@ BEGIN
     JOIN concept c ON do.duration_units = c.concept_id AND c.retired = 0
     JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
     WHERE o.patient_id = p_patientId AND o.voided = 0
-        AND drugIsProphylaxis(d.name)
+        AND IF (
+            patientIsAdult(p_patientId),
+            drugIsAdultProphylaxis(d.name),
+            drugIsChildProphylaxis(d.name))
         AND o.scheduled_date BETWEEN p_startDate AND p_endDate
         AND drugOrderIsDispensed(p_patientId, o.order_id)
     GROUP BY o.patient_id;
@@ -1162,16 +1165,51 @@ BEGIN
 END$$ 
 DELIMITER ;
 
--- drugIsProphylaxis
+-- drugIsChildProphylaxis
 
-DROP FUNCTION IF EXISTS drugIsProphylaxis;
+DROP FUNCTION IF EXISTS drugIsChildProphylaxis;
 
 DELIMITER $$
-CREATE FUNCTION drugIsProphylaxis(
+CREATE FUNCTION drugIsChildProphylaxis(
     p_drugName VARCHAR(255)) RETURNS TINYINT(1)
     DETERMINISTIC
 BEGIN
-    DECLARE drugIsProphylaxisUuid VARCHAR(38) DEFAULT "fa7e7514-146b-4add-92ee-95d6e03315e0";
-    return _drugIsARV(p_drugName, drugIsProphylaxisUuid);
+    DECLARE childProphylaxisUuid VARCHAR(38) DEFAULT "fa7e7514-146b-4add-92ee-95d6e03315e0";
+    return _drugIsARV(p_drugName, childProphylaxisUuid);
+END$$
+DELIMITER ;
+
+-- drugIsAdultProphylaxis
+
+DROP FUNCTION IF EXISTS drugIsAdultProphylaxis;
+
+DELIMITER $$
+CREATE FUNCTION drugIsAdultProphylaxis(
+    p_drugName VARCHAR(255)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE adultProphylaxisUuid VARCHAR(38) DEFAULT "48990aed-5d90-4165-8d56-6e03e9914951";
+    return _drugIsARV(p_drugName, adultProphylaxisUuid);
+END$$
+DELIMITER ;
+
+-- patientIsAdult
+
+DROP FUNCTION IF EXISTS patientIsAdult;
+
+DELIMITER $$
+CREATE FUNCTION patientIsAdult(
+    p_patientId INT(11)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE result TINYINT(1) DEFAULT 0;
+
+    SELECT TRUE INTO result
+    FROM person p
+    WHERE p.person_id = p_patientId
+    AND  timestampdiff(YEAR, p.birthdate, CURDATE()) >= 15
+    AND p.voided = 0;
+
+    RETURN result;
 END$$
 DELIMITER ;
