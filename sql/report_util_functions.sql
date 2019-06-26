@@ -215,6 +215,55 @@ BEGIN
 END$$
 DELIMITER ;
 
+-- patientHadTBExaminationDuringReportingPeriod
+
+DROP FUNCTION IF EXISTS patientHadTBExaminationDuringReportingPeriod;
+
+DELIMITER $$
+CREATE FUNCTION patientHadTBExaminationDuringReportingPeriod(
+    p_patientId INT(11),
+    p_startDate DATE,
+    p_endDate DATE) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE result TINYINT(1) DEFAULT 0;
+    DECLARE tbScreenedUuid VARCHAR(38) DEFAULT "b5e95e00-b0bc-411b-993b-50ace78cdaf6";
+    DECLARE tbScreenedDateUuid VARCHAR(38) DEFAULT "55185e73-e634-4dfc-8ec0-02086e8c54d0";
+    DECLARE yesFullNameUuid VARCHAR(38) DEFAULT "8f864633-beb0-4bd7-a75c-703affdcd93d";
+    DECLARE tbScreened TINYINT(1) DEFAULT 0;
+    DECLARE tbScreenedDate DATE;
+
+    SELECT
+        TRUE INTO tbScreened
+    FROM obs o
+    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
+    WHERE o.voided = 0
+        AND o.person_id = p_patientId
+        AND c.uuid = tbScreenedUuid
+        AND o.value_coded IS NOT NULL
+    GROUP BY c.uuid
+    ORDER BY o.obs_datetime DESC;
+
+    SELECT
+        o.value_datetime INTO tbScreenedDate
+    FROM obs o
+    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
+    WHERE o.voided = 0
+        AND o.person_id = p_patientId
+        AND c.uuid = tbScreenedDateUuid
+        AND o.value_datetime IS NOT NULL
+    GROUP BY c.uuid
+    ORDER BY o.value_datetime DESC;
+
+    IF tbScreened AND tbScreenedDate BETWEEN p_startDate AND p_endDate THEN
+        RETURN 1;
+    ELSE
+        RETURN 0;
+    END IF;
+
+END$$
+DELIMITER ;
+
 -- patientWasOnARVTreatmentDuringEntireReportingPeriod
 
 DROP FUNCTION IF EXISTS patientWasOnARVTreatmentDuringEntireReportingPeriod;
@@ -720,6 +769,30 @@ BEGIN
 
     RETURN (!patientTransferedOut); 
 
+END$$
+DELIMITER ;
+
+-- patientReasonForConsultationIsUnplannedAid
+
+DROP FUNCTION IF EXISTS patientReasonForConsultationIsUnplannedAid;
+
+DELIMITER $$
+CREATE FUNCTION patientReasonForConsultationIsUnplannedAid(
+    p_patientId INT(11)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN 
+    DECLARE patientIsUnplannedAid TINYINT(1) DEFAULT 0;
+
+    DECLARE uuidPatientIsUnplannedAid VARCHAR(38) DEFAULT "17a3b24b-e107-49fe-8b0d-69c3b7e60f4c";
+
+    SELECT TRUE INTO patientIsUnplannedAid
+    FROM  patient_program pp  
+    JOIN patient_program_attribute ppt ON ppt.patient_program_id = pp.patient_program_id
+    JOIN concept c ON c.concept_id = ppt.value_reference
+    WHERE  ppt.voided = 0 AND p_patientId = pp.patient_id
+        AND c.uuid = uuidPatientIsUnplannedAid
+    LIMIT 1;
+    RETURN (patientIsUnplannedAid );
 END$$
 DELIMITER ;
 

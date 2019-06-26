@@ -2,7 +2,7 @@
   <globalProperties>
     <globalProperty>
       <property>mrs.genders</property>
-      <value>{"M":"GENDER_MALE", "F":"GENDER_FEMALE","O":"GENDER_OTHER"}</value>
+      <value>{"M":"GENDER_MALE", "F":"GENDER_FEMALE"}</value>
     </globalProperty>
   </globalProperties>
 </config>

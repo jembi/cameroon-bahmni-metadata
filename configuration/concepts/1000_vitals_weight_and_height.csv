@@ -1,5 +1,5 @@
 Uuid,Members,Fully specified name:en,Fully specified name:fr,Short name:en,Short name:fr,Data class,Data type,Normal low,Normal high,Units,Allow decimals,Display precision,_version:1,_order:1000
-5089AAAAAAAAAAAAAAAAAAAAAAAAAAAA,,WEIGHT,Poids,Weight,Poids,Misc,Numeric,,,kg,,,,
+5089AAAAAAAAAAAAAAAAAAAAAAAAAAAA,,WEIGHT,Poids,Weight,Poids,Misc,Numeric,,,kg,yes,,,
 5090AAAAAAAAAAAAAAAAAAAAAAAAAAAA,,HEIGHT,Taille,Height,Taille,Misc,Numeric,,,cm,,,,
 c367d9ee-3f10-11e4-adec-0800271c1b75,,BMI,IMC,BMI,IMC,Computed,Numeric,18.5,25,,true,1,,
 2c5bbbbf-f34d-4590-b624-9f17b75b7f00,BMI;BMI ABNORMAL,BMI Data,IMC Data,BMI,IMC,Concept Details,N/A,,,,,,,
