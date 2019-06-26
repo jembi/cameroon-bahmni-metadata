@@ -10,7 +10,7 @@
         </addressComponent>
         <addressComponent> 
             <field>STATE_PROVINCE</field> 
-            <nameMapping>ADDRESSHIERARCHY_PROVINCE</nameMapping> 
+            <nameMapping>ADDRESSHIERARCHY_REGION</nameMapping> 
             <sizeMapping>80</sizeMapping> 
             <requiredInHierarchy>false</requiredInHierarchy> 
         </addressComponent> 
@@ -27,25 +27,19 @@
             <requiredInHierarchy>false</requiredInHierarchy> 
         </addressComponent> 
         <addressComponent> 
-            <field>CITY_VILLAGE</field> 
-            <nameMapping>ADDRESSHIERARCHY_CITY</nameMapping> 
+            <field>ADDRESS_2</field> 
+            <nameMapping>ADDRESSHIERARCHY_CANTON</nameMapping> 
             <sizeMapping>80</sizeMapping> 
             <requiredInHierarchy>false</requiredInHierarchy> 
         </addressComponent> 
         <addressComponent> 
-            <field>ADDRESS_2</field> 
-            <nameMapping>ADDRESSHIERARCHY_DISTRICT</nameMapping> 
+            <field>CITY_VILLAGE</field> 
+            <nameMapping>ADDRESSHIERARCHY_VILLAGE</nameMapping> 
             <sizeMapping>80</sizeMapping> 
             <requiredInHierarchy>false</requiredInHierarchy> 
         </addressComponent> 
         <addressComponent> 
             <field>ADDRESS_1</field> 
-            <nameMapping>ADDRESSHIERARCHY_AREA</nameMapping> 
-            <sizeMapping>80</sizeMapping> 
-            <requiredInHierarchy>false</requiredInHierarchy> 
-        </addressComponent>
-        <addressComponent> 
-            <field>ADDRESS_4</field> 
             <nameMapping>ADDRESSHIERARCHY_PRECISE_LOCATION</nameMapping> 
             <sizeMapping>80</sizeMapping> 
             <elementDefault></elementDefault> 
@@ -53,9 +47,9 @@
         </addressComponent>
     </addressComponents> 
     <lineByLineFormat>
-	<string>address4</string>
-        <string>address1,address2</string> 
-        <string>cityVillage,address3</string> 
+	    <string>address1</string>
+        <string>cityVillage, address2</string> 
+        <string>address3</string> 
         <string>countyDistrict, stateProvince</string> 
         <string>country</string> 
     </lineByLineFormat> 
