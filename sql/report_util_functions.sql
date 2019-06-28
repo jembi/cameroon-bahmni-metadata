@@ -215,6 +215,55 @@ BEGIN
 END$$
 DELIMITER ;
 
+-- patientHadTBExaminationDuringReportingPeriod
+
+DROP FUNCTION IF EXISTS patientHadTBExaminationDuringReportingPeriod;
+
+DELIMITER $$
+CREATE FUNCTION patientHadTBExaminationDuringReportingPeriod(
+    p_patientId INT(11),
+    p_startDate DATE,
+    p_endDate DATE) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE result TINYINT(1) DEFAULT 0;
+    DECLARE tbScreenedUuid VARCHAR(38) DEFAULT "b5e95e00-b0bc-411b-993b-50ace78cdaf6";
+    DECLARE tbScreenedDateUuid VARCHAR(38) DEFAULT "55185e73-e634-4dfc-8ec0-02086e8c54d0";
+    DECLARE yesFullNameUuid VARCHAR(38) DEFAULT "8f864633-beb0-4bd7-a75c-703affdcd93d";
+    DECLARE tbScreened TINYINT(1) DEFAULT 0;
+    DECLARE tbScreenedDate DATE;
+
+    SELECT
+        TRUE INTO tbScreened
+    FROM obs o
+    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
+    WHERE o.voided = 0
+        AND o.person_id = p_patientId
+        AND c.uuid = tbScreenedUuid
+        AND o.value_coded IS NOT NULL
+    GROUP BY c.uuid
+    ORDER BY o.obs_datetime DESC;
+
+    SELECT
+        o.value_datetime INTO tbScreenedDate
+    FROM obs o
+    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
+    WHERE o.voided = 0
+        AND o.person_id = p_patientId
+        AND c.uuid = tbScreenedDateUuid
+        AND o.value_datetime IS NOT NULL
+    GROUP BY c.uuid
+    ORDER BY o.value_datetime DESC;
+
+    IF tbScreened AND tbScreenedDate BETWEEN p_startDate AND p_endDate THEN
+        RETURN 1;
+    ELSE
+        RETURN 0;
+    END IF;
+
+END$$
+DELIMITER ;
+
 -- patientWasOnARVTreatmentDuringEntireReportingPeriod
 
 DROP FUNCTION IF EXISTS patientWasOnARVTreatmentDuringEntireReportingPeriod;
@@ -723,6 +772,30 @@ BEGIN
 END$$
 DELIMITER ;
 
+-- patientReasonForConsultationIsUnplannedAid
+
+DROP FUNCTION IF EXISTS patientReasonForConsultationIsUnplannedAid;
+
+DELIMITER $$
+CREATE FUNCTION patientReasonForConsultationIsUnplannedAid(
+    p_patientId INT(11)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN 
+    DECLARE patientIsUnplannedAid TINYINT(1) DEFAULT 0;
+
+    DECLARE uuidPatientIsUnplannedAid VARCHAR(38) DEFAULT "17a3b24b-e107-49fe-8b0d-69c3b7e60f4c";
+
+    SELECT TRUE INTO patientIsUnplannedAid
+    FROM  patient_program pp  
+    JOIN patient_program_attribute ppt ON ppt.patient_program_id = pp.patient_program_id
+    JOIN concept c ON c.concept_id = ppt.value_reference
+    WHERE  ppt.voided = 0 AND p_patientId = pp.patient_id
+        AND c.uuid = uuidPatientIsUnplannedAid
+    LIMIT 1;
+    RETURN (patientIsUnplannedAid );
+END$$
+DELIMITER ;
+
 -- patientPickedFirstLineProtocolARVDrugDuringReportingPeriod
 
 DROP FUNCTION IF EXISTS patientPickedFirstLineProtocolARVDrugDuringReportingPeriod;
@@ -1007,4 +1080,136 @@ proc_vital_load:BEGIN
     END IF;
 
 END$$ 
+DELIMITER ;
+
+-- patientHasNotBeenEnrolledIntoHivProgram
+
+DROP FUNCTION IF EXISTS patientHasNotBeenEnrolledIntoHivProgram;
+
+DELIMITER $$
+CREATE FUNCTION patientHasNotBeenEnrolledIntoHivProgram(
+    p_patientId INT(11)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE hivProgramFound TINYINT(1) DEFAULT 0;
+
+    SELECT
+        TRUE INTO hivProgramFound
+    FROM person p
+    JOIN patient_program pp ON pp.patient_id = p.person_id AND pp.voided = 0
+    JOIN program pro ON pro.program_id = pp.program_id AND pro.retired = 0
+    WHERE p.person_id = p_patientId
+        AND p.voided = 0
+        AND pro.name = "HIV_PROGRAM_KEY"
+    GROUP BY pro.name;
+
+    RETURN (!hivProgramFound);
+END$$
+DELIMITER ;
+
+-- patientAgeIsBetween
+
+DROP FUNCTION IF EXISTS patientAgeIsBetween;  
+
+DELIMITER $$ 
+CREATE FUNCTION patientAgeIsBetween(
+    p_patientId INT(11),
+    p_startAge INT(11),
+    p_endAge INT(11),
+    p_includeEndAge TINYINT(1)) RETURNS TINYINT(1) 
+    DETERMINISTIC 
+BEGIN 
+    DECLARE result TINYINT(1) DEFAULT 0; 
+    SELECT  
+        IF (p_includeEndAge, 
+            timestampdiff(YEAR, p.birthdate, CURDATE()) BETWEEN p_startAge AND p_endAge, 
+            timestampdiff(YEAR, p.birthdate, CURDATE()) >= p_startAge
+                AND timestampdiff(YEAR, p.birthdate, CURDATE()) < p_endAge
+        ) INTO result
+        FROM person p 
+        WHERE p.person_id = p_patientId AND p.voided = 0;
+
+    RETURN (result ); 
+END$$ 
+DELIMITER ;
+
+-- patientHasPickedProphylaxisDuringReportingPeriod
+
+DROP FUNCTION IF EXISTS patientHasPickedProphylaxisDuringReportingPeriod;
+
+DELIMITER $$
+CREATE FUNCTION patientHasPickedProphylaxisDuringReportingPeriod(
+    p_patientId INT(11),
+    p_startDate DATE,
+    p_endDate DATE) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+
+    DECLARE result TINYINT(1) DEFAULT 0;
+
+    SELECT TRUE INTO result
+    FROM orders o
+    JOIN drug_order do ON do.order_id = o.order_id
+    JOIN concept c ON do.duration_units = c.concept_id AND c.retired = 0
+    JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
+    WHERE o.patient_id = p_patientId AND o.voided = 0
+        AND IF (
+            patientIsAdult(p_patientId),
+            drugIsAdultProphylaxis(d.name),
+            drugIsChildProphylaxis(d.name))
+        AND o.scheduled_date BETWEEN p_startDate AND p_endDate
+        AND drugOrderIsDispensed(p_patientId, o.order_id)
+    GROUP BY o.patient_id;
+
+    RETURN (result);
+END$$ 
+DELIMITER ;
+
+-- drugIsChildProphylaxis
+
+DROP FUNCTION IF EXISTS drugIsChildProphylaxis;
+
+DELIMITER $$
+CREATE FUNCTION drugIsChildProphylaxis(
+    p_drugName VARCHAR(255)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE childProphylaxisUuid VARCHAR(38) DEFAULT "fa7e7514-146b-4add-92ee-95d6e03315e0";
+    return _drugIsARV(p_drugName, childProphylaxisUuid);
+END$$
+DELIMITER ;
+
+-- drugIsAdultProphylaxis
+
+DROP FUNCTION IF EXISTS drugIsAdultProphylaxis;
+
+DELIMITER $$
+CREATE FUNCTION drugIsAdultProphylaxis(
+    p_drugName VARCHAR(255)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE adultProphylaxisUuid VARCHAR(38) DEFAULT "48990aed-5d90-4165-8d56-6e03e9914951";
+    return _drugIsARV(p_drugName, adultProphylaxisUuid);
+END$$
+DELIMITER ;
+
+-- patientIsAdult
+
+DROP FUNCTION IF EXISTS patientIsAdult;
+
+DELIMITER $$
+CREATE FUNCTION patientIsAdult(
+    p_patientId INT(11)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE result TINYINT(1) DEFAULT 0;
+
+    SELECT TRUE INTO result
+    FROM person p
+    WHERE p.person_id = p_patientId
+    AND  timestampdiff(YEAR, p.birthdate, CURDATE()) >= 15
+    AND p.voided = 0;
+
+    RETURN result;
+END$$
 DELIMITER ;
