@@ -1,0 +1,6 @@
+Uuid,Answers,Fully specified name:en,Fully specified name:fr,Short name:en,Short name:fr,Data class,Data type,_version:1,_order:1000
+a2077f2e-51a0-405c-a666-fcd69ec020a0,,Hep A,Hep A,Hep A,Hep A,Misc,N/A,,
+ae4838a3-fdbe-494d-ba3e-cb9877944d10,,Hep B,Hep B,Hep B,Hep B,Misc,N/A,,
+cb350113-0c30-4065-891b-6f6556111db6,,Hep C,Hep C,Hep C,Hep C,Misc,N/A,,
+342e0365-5ba2-4cdd-b10d-d740e93ec31d,,Syphilis,Syphilis,Syphilis,Syphilis,Misc,N/A,,
+6cf6c41e-9f39-4d92-a78d-18252eba93ff,TB;Hep A;Hep B;Hep C;Syphilis,Patient Comorbidities,Patient Comorbidities,Patient Comorbidities,Patient Comorbidities,Misc,Coded,,
