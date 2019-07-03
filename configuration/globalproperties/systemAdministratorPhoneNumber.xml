@@ -1,8 +1,8 @@
 <config>
   <globalProperties>
     <globalProperty>
-      <property>mrs.phoneNumberFr</property>
-      <value>{"number":"694021547"}</value>
+      <property>mrs.phoneNumber</property>
+      <value>{"number":"987654321"}</value>
     </globalProperty>
   </globalProperties>
 </config>

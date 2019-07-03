@@ -1,8 +1,0 @@
-<config>
-  <globalProperties>
-    <globalProperty>
-      <property>mrs.emailFr</property>
-      <value>{"email":"systemsadmin@gmail.com"}</value>
-    </globalProperty>
-  </globalProperties>
-</config>
