@@ -2,6 +2,6 @@ Uuid,Members,Fully specified name:en,Fully specified name:fr,Short name:en,Short
 5089AAAAAAAAAAAAAAAAAAAAAAAAAAAA,,WEIGHT,Poids,Weight,Poids,Misc,Numeric,,,kg,yes,,,
 5090AAAAAAAAAAAAAAAAAAAAAAAAAAAA,,HEIGHT,Taille,Height,Taille,Misc,Numeric,,,cm,,,,
 c367d9ee-3f10-11e4-adec-0800271c1b75,,BMI,IMC,BMI,IMC,Computed,Numeric,18.5,25,,true,1,,
-2c5bbbbf-f34d-4590-b624-9f17b75b7f00,BMI;BMI ABNORMAL,BMI Data,IMC Data,BMI,IMC,Concept Details,N/A,,,,,,,
-80ef57a5-0d0c-48de-acdd-19e026c890b5,BMI STATUS;BMI STATUS ABNORMAL,BMI Status Data,IMC Statut Data,BMI STATUS,IMC STATUT,Concept Details,N/A,,,,,,,
+2c5bbbbf-f34d-4590-b624-9f17b75b7f00,BMI;BMI ABNORMAL,BMI Data,Données de l'IMC,BMI,Données de l'IMC,Concept Details,N/A,,,,,,,
+80ef57a5-0d0c-48de-acdd-19e026c890b5,BMI STATUS;BMI STATUS ABNORMAL,BMI Status Data, Statut IMC,BMI STATUS,STATUT IMC,Concept Details,N/A,,,,,,,
 c36a7537-3f10-11e4-adec-0800271c1b75,Pulse Data;Blood Pressure;Temperature Data;RR Data;SPO2 Data;HEIGHT;WEIGHT,Vitals,Paramètres Vitaux,Vitals,Paramètres Vitaux,Misc,N/A,,,,,,,
