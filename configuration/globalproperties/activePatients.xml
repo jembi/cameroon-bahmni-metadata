@@ -1,7 +1,7 @@
 <config>
   <globalProperties>
     <globalProperty>
-      <property>emrapi.sqlSearch.activePatientsByLocation</property>
+      <property>emrapi.sqlSearch.activePatients</property>
       <value>
       select distinct concat(pn.given_name," ", ifnull(pn.family_name,'')) as name,
       pi.identifier as identifier,

@@ -16,7 +16,7 @@ ff6b443b-958b-4cf9-b187-d0f6da6b6d94, ,LOCATION_MAJOR_SURGERY,LOCATION_MAJOR_SUR
 0607712c-aced-44da-8534-72d639bd9994, ,LOCATION_MINOR_SURGERY,LOCATION_MINOR_SURGERY,LOCATION_HOSPITAL,Login Location;Appointment Location,,,,,,,,CAMEROON,,,,
 4863dd00-0543-40c1-9cb0-f019c11e86bf, ,LOCATION_NEONATOLOGY,LOCATION_NEONATOLOGY,LOCATION_HOSPITAL,Login Location;Appointment Location,,,,,,,,CAMEROON,,,,
 4dd3bdc2-38ab-450e-b36f-784ed6f8427d, ,LOCATION_OPD,LOCATION_OPD,LOCATION_HOSPITAL,Login Location;Appointment Location,,,,,,,,CAMEROON,,,,
-df204697-a6c6-4768-a4e8-7082940fc8eb, ,LOCATION_OPTHALMOLOGY,LOCATION_OPTHALMOLOGY,LOCATION_HOSPITAL,Login Location;Appointment Location,,,,,,,,CAMEROON,,,,
+df204697-a6c6-4768-a4e8-7082940fc8eb, ,LOCATION_OPHTHALMOLOGY,LOCATION_OPHTHALMOLOGY,LOCATION_HOSPITAL,Login Location;Appointment Location,,,,,,,,CAMEROON,,,,
 c7b372e3-ee2d-4e1e-b525-b89372399bbe, ,LOCATION_PEDIATRIC,LOCATION_PEDIATRIC,LOCATION_HOSPITAL,Login Location;Appointment Location,,,,,,,,CAMEROON,,,,
 24a4ce15-b68c-4b97-bb6b-244af88c0505, ,LOCATION_PHYSIOTHERAPY,LOCATION_PHYSIOTHERAPY,LOCATION_HOSPITAL,Login Location;Appointment Location,,,,,,,,CAMEROON,,,,
 4f1db0d2-8269-4e55-a81a-483674196b89, ,LOCATION_POST_NATAL,LOCATION_POST_NATAL,LOCATION_HOSPITAL,Login Location;Appointment Location,,,,,,,,CAMEROON,,,,
@@ -28,7 +28,6 @@ c1f25be5-3f10-11e4-adec-0800271c1b75,TRUE,Subcenter 1 (BAM),Subcenter 1 (BAM),,V
 c1e4950f-3f10-11e4-adec-0800271c1b75,TRUE,Subcenter 2 (SEM),,,,,,,,,,,,,,,
 c1ebb8db-3f10-11e4-adec-0800271c1b75,TRUE,Subcenter 3 (SIV),,,,,,,,,,,,,,,
 c1e42932-3f10-11e4-adec-0800271c1b75,TRUE,Ganiyari,,,,,,,,,,,,,,,
-c5854fd7-3f12-11e4-adec-0800271c1b75,TRUE,Registration Desk,,,,,,,,,,,,,,,
 c58e12ed-3f12-11e4-adec-0800271c1b75,TRUE,OPD-1,,,,,,,,,,,,,,,
 baf7bd38-d225-11e4-9c67-080027b662ec,TRUE,General Ward,,,,,,,,,,,,,,,
 baf83667-d225-11e4-9c67-080027b662ec,TRUE,General Ward Room 1,,,,,,,,,,,,,,,
@@ -36,5 +35,4 @@ bb0e512e-d225-11e4-9c67-080027b662ec,TRUE,Labour Ward,,,,,,,,,,,,,,,
 bb0eb071-d225-11e4-9c67-080027b662ec,TRUE,Labour Ward - 1,,,,,,,,,,,,,,,
 e48fb2b3-d490-11e5-b193-0800270d80ce,TRUE,General Ward - Room 2,,,,,,,,,,,,,,,
 8d6c993e-c2cc-11de-8d13-0010c6dffd0f,TRUE,Unknown Location,,,,,,,,,,,,,,,
-
-
+7de6273c-b57f-11e8-bd05-080027405b36,TRUE,OT,,,,,,,,,,,,,,,
