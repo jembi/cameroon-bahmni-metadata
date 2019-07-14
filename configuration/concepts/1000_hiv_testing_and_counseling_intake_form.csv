@@ -23,7 +23,7 @@ a6df013d-8850-4b6f-b523-2d793aac0279,,,Sex Worker,Travailleur du sexe,Sex Worker
 4b2379ba-a180-4f69-8802-493ed0177654,,,Migrant,Migrant,Migrant,Migrant,Misc,N/A,,
 e6f3cebd-aa29-4d88-8021-7949c55a65cd,,,Spouse/Partner of Migrant,Épouse / partenaire du migrant,Spouse/Partner of Migrant,Épouse / partenaire du migrant,Misc,N/A,,
 ef5d7595-87f6-4814-95e0-41533a517783,,,Others,Autres,Others,Autres,Misc,N/A,,
-44861d4c-de67-4368-b5cf-279b754e5343,,Sex Worker;People Who Inject Drugs;MSM and Transgenders;Blood or Organ Recipient;Client of Sex Worker;Migrant;Spouse/Partner of Migrant;Others,"HTC, Risk Group","HTC, groupe de risque",Risk Group,"HTC, groupe de risque",Misc,Coded,,
+44861d4c-de67-4368-b5cf-279b754e5343,,a6df013d-8850-4b6f-b523-2d793aac0279;762af91a-d2c1-4edc-9ec4-47a82c6f6485;6d098664-6da4-4367-9037-9c8371c60f6e;4982cf37-cb8a-4dea-bae8-002bf6162998;3cbdb51b-86e9-4a44-802c-e99b033ad55d;4b2379ba-a180-4f69-8802-493ed0177654;e6f3cebd-aa29-4d88-8021-7949c55a65cd;ef5d7595-87f6-4814-95e0-41533a517783,"HTC, Risk Group","HTC, groupe de risque",Risk Group,"HTC, groupe de risque",Misc,Coded,,
 18944af2-8fc2-4565-a97e-62b247bc53ed,,,"HTC, Other Risk Group","HTC, Autre groupe de risque",Others (Specify),"HTC, Autre groupe de risque",Misc,Text,,
 b1bfee88-9cf4-477a-ab8f-a7c24ecfcc22,"HTC, Pre-test Counseling;HTC, Tested before;HTC, Result if tested;HTC, Reason for test;HTC, Other reason for test;HTC, Pregnancy Status;HTC, Risk Group;HTC, Other Risk Group",,"HTC, Pre-test Counseling Set","HTC, Kit de counseling pré-test",Pre-test Counseling,"HTC, Kit de counseling pré-test",ConvSet,N/A,,
 a55e6e56-d3a2-45a8-aa78-3f6a940f609a,, ,"HTC, Informed Consent","HTC, Consent pour le test?",Informed Consent,"HTC, Consent pour le test?",Misc,Boolean,,
