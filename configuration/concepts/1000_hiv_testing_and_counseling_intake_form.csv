@@ -8,7 +8,7 @@ ac208afb-152e-414a-a130-d38969edbf57,,,Tuberculosis Reason for HIV Test,"Tubercu
 f47f4ab1-0ed3-49e5-b535-5018b25cafc6,,,HIV/AIDS Symptoms,Symptômes du VIH / SIDA,HIV/AIDS Symptoms,Symptômes du VIH / SIDA,Misc,N/A,,
 75f3c572-74dc-4c71-aa9a-3278dbcd2fb6,,,None,Aucun,None,Aucun,Misc,N/A,,
 ef5d7595-87f6-4814-95e0-41533a517783,,,Others,Autres,Others,Autres,Misc,N/A,,
-9edf4f7c-9baf-4467-80b8-45440406ebfb,,Sextually Transmitted Infection;Tuberculosis Reason for HIV Test;Pregnancy;HIV/AIDS Symptoms;None;Others        ,"HTC, Reason for test","HTC, Raison du test",Medical Reason for Test,"HTC, Raison du test",Misc,Coded,,
+9edf4f7c-9baf-4467-80b8-45440406ebfb,,9cfd7151-0b09-4118-8e85-a27f47a34e8a;ac208afb-152e-414a-a130-d38969edbf57;279583bf-70d4-40b5-82e9-6cb29fbe00b4;f47f4ab1-0ed3-49e5-b535-5018b25cafc6;75f3c572-74dc-4c71-aa9a-3278dbcd2fb6;ef5d7595-87f6-4814-95e0-41533a517783,"HTC, Reason for test","HTC, Raison du test",Medical Reason for Test,"HTC, Raison du test",Misc,Coded,,
 103c7f4f-3bf8-44df-9330-adbb236f64f0,,,"HTC, Other reason for test","HTC, Autre raison du test",Others (Specify),"HTC, Autre raison du test",Misc,Text,,
 a2065636-5326-40f5-aed6-0cc2cca81ccc,,,Yes,Oui,Yes,Oui,Misc,N/A,,
 b497171e-0410-4d8d-bbd4-7e1a8f8b504e,,,No,Non,No,Non,Misc,N/A,,
