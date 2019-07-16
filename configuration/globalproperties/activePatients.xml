@@ -1,7 +1,7 @@
 <config>
   <globalProperties>
     <globalProperty>
-      <property>emrapi.sqlSearch.activePatientsByLocation</property>
+      <property>emrapi.sqlSearch.activePatients</property>
       <value>
       select distinct concat(pn.given_name," ", ifnull(pn.family_name,'')) as name,
       pi.identifier as identifier,
@@ -15,17 +15,19 @@
       join global_property gp on gp.property="bahmni.primaryIdentifierType" and gp.property_value=pit.uuid
       join person p on p.person_id = v.patient_id  and p.voided=0
       join encounter en on en.visit_id = v.visit_id and en.voided=0
+      join visit_type vt on vt.visit_type_id=v.visit_type_id 
       left outer join location loc on en.location_id = loc.location_id
       join encounter_provider ep on ep.encounter_id = en.encounter_id  and ep.voided=0
       join provider pr on ep.provider_id=pr.provider_id and pr.retired=0
       join person per on pr.person_id=per.person_id and per.voided=0
+      left Join entity_mapping em on em.entity1_uuid=vt.uuid
       left outer join visit_attribute va on va.visit_id = v.visit_id and va.attribute_type_id = (
-                select visit_attribute_type_id from visit_attribute_type where name="Admission Status"
-            )
+      select visit_attribute_type_id from visit_attribute_type where name="Admission Status"
+      )
       where
       v.date_stopped is null and
-      loc.uuid=${location_uuid}
-      order by en.encounter_datetime desc
+      em.entity2_uuid=${location_uuid}
+      order by en.encounter_datetime desc;
       </value>
     </globalProperty>
   </globalProperties>
