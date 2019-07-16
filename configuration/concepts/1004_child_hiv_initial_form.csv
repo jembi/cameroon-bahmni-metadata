@@ -57,6 +57,7 @@ b3990e3d-03d6-4f96-99a1-c77d2c209291,,Positive;Negative;Unknown,Statut de l'Ag H
 68676922-07f9-4144-af7a-504f93055ca1,,,Accouchement à domicile,Childbirth at home,Accouchement à domicile,Childbirth at home,Misc,N/A,,
 e27da154-3ec8-4c5a-a93d-1d6aed3fc8ae,,,Accouchement dans une formation sanitaire,Delivery in a health facility,Accouchement dans une formation sanitaire,Delivery in a health facility,Misc,N/A,,
 09894da7-41c1-4996-a9d2-ecaca1af5bfb,,Childbirth at home;Delivery in a health facility,Lieu d'accouchement,Place of delivery,Lieu d'accouchement,Place of delivery,Misc,Coded,,
+4bbd6b11-0461-4e3f-89a8-5faa500a815b,,,Normal Delivery,Normal Delivery,Normal Delivery,Normal Delivery,Misc,N/A,,
 b305446d-00ef-4733-8d00-20369a4e1c2b,,Normal Delivery;Caesarean section,Mode d'accouchement,Delivery mode,Mode d'accouchement,Delivery mode,Misc,Coded,,
 eb9215a4-be8a-47f4-a08e-629d91e959bd,,Cephalic;Breech Presentation;cb279713-3373-44be-91bf-ead37122d098,Presentation,Presentation,Presentation,Presentation,Misc,Coded,,
 152fb57d-ddfe-4240-8711-c4bf317a7187,,,"Si Autres presentation, préciser","If other presentation, specify","Si Autres presentation, préciser","If other presentation, specify",Misc,Text,,

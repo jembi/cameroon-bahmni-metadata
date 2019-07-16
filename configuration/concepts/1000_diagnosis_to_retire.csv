@@ -294,7 +294,7 @@ ea2b518e-4e14-11e4-8a57-0800271c1b75,TRUE,"Decreased fetal movements, unspec.",D
 ea2ec61e-4e14-11e4-8a57-0800271c1b75,TRUE,"Ectopic pregnancy, no IUP, unspec.",Diagnosis,N/A,,
 ea32f731-4e14-11e4-8a57-0800271c1b75,TRUE,"Endometritis, postpartum",Diagnosis,N/A,,
 ea3601ff-4e14-11e4-8a57-0800271c1b75,TRUE,"Gestational hypertension, unspec.",Diagnosis,N/A,,
-ea380283-4e14-11e4-8a57-0800271c1b75,TRUE,Normal delivery,Diagnosis,N/A,,
+ea380283-4e14-11e4-8a57-0800271c1b75,TRUE,Normal delivery to retire,Diagnosis,N/A,,
 ea3b6389-4e14-11e4-8a57-0800271c1b75,TRUE,"Other complication of puerperium/postpartum, unspec.",Diagnosis,N/A,,
 ea526593-4e14-11e4-8a57-0800271c1b75,TRUE,"Placenta previa, w/ bleeding, unspec.",Diagnosis,N/A,,
 ea57f1c4-4e14-11e4-8a57-0800271c1b75,TRUE,"Placenta previa, w/o bleeding, unspec.",Diagnosis,N/A,,
