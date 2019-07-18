@@ -1,0 +1,8 @@
+<config>
+  <globalProperties>
+    <globalProperty>
+      <property>emrapi.visitExpireHours</property>
+      <value>12</value>
+    </globalProperty>
+  </globalProperties>
+</config>
