@@ -4,35 +4,35 @@ SET @doctorsalt = (SHA2(SUBSTRING(MD5(RAND()), -10), 512));
 
 SET @receptionsalt = (SHA2(SUBSTRING(MD5(RAND()), -10), 512));
 
-INSERT IGNORE INTO person (uuid,gender,date_created,creator) VALUES ('3f64faba-ad31-11e9-a2a3-2a2ae2dbcce4','F',NOW(),('4'));
+INSERT IGNORE INTO person (uuid,gender,date_created,creator) VALUES ('3f64faba-ad31-11e9-a2a3-2a2ae2dbcce4','F',NOW(),'4');
 
 SET @nurse_person_uuid = (SELECT person_id FROM person WHERE uuid = '3f64faba-ad31-11e9-a2a3-2a2ae2dbcce4');
 
 INSERT IGNORE INTO person_name (person_id,uuid,given_name,family_name) 
 VALUES
-(@nurse_person_uuid,'7459fb76-c81a-4a04-9578-656018d2828f',('Nurse'),(''));
+(@nurse_person_uuid,'7459fb76-c81a-4a04-9578-656018d2828f','Nurse','');
 
-INSERT IGNORE INTO person (uuid,gender,date_created,creator) VALUES ('3f64fd1c-ad31-11e9-a2a3-2a2ae2dbcce4','F',NOW(),('4'));
+INSERT IGNORE INTO person (uuid,gender,date_created,creator) VALUES ('3f64fd1c-ad31-11e9-a2a3-2a2ae2dbcce4','F',NOW(),'4');
 
 SET @doctor_person_uuid = (SELECT person_id FROM person WHERE uuid = '3f64fd1c-ad31-11e9-a2a3-2a2ae2dbcce4');
 
 INSERT IGNORE INTO person_name (person_id,uuid,given_name,family_name) 
 VALUES
-(@doctor_person_uuid,'c4d2632f-3ed2-4f5f-b37a-f92398cc5cc8',('Doctor'),(''));
+(@doctor_person_uuid,'c4d2632f-3ed2-4f5f-b37a-f92398cc5cc8','Doctor','');
 
-INSERT IGNORE INTO person (uuid,gender,date_created,creator) VALUES ('3f64fe70-ad31-11e9-a2a3-2a2ae2dbcce4','F',NOW(),('4'));
+INSERT IGNORE INTO person (uuid,gender,date_created,creator) VALUES ('3f64fe70-ad31-11e9-a2a3-2a2ae2dbcce4','F',NOW(),'4');
 
 SET @reception_person_uuid = (SELECT person_id FROM person WHERE uuid = '3f64fe70-ad31-11e9-a2a3-2a2ae2dbcce4');
 
 INSERT IGNORE INTO person_name (person_id,uuid,given_name,family_name) 
 VALUES
-(@reception_person_uuid,'df9280ef-9f5a-4207-9668-9725355dfd01',('Reception'),(''));
+(@reception_person_uuid,'df9280ef-9f5a-4207-9668-9725355dfd01','Reception','');
 
 INSERT IGNORE INTO users (system_id,username,password,salt,date_created,uuid,person_id,creator)
 VALUES 
-('Nurse', 'Nurse', SHA2(CONCAT('Nurse#123',@nursesalt), 512), @nursesalt, NOW(), '3bfbd6ec-ad1c-11e9-a2a3-2a2ae2dbcce4',@nurse_person_uuid,('4')),
-('Doctor', 'Doctor', SHA2(CONCAT('Doctor#123',@doctorsalt), 512), @doctorsalt, NOW(), '3bfbdbba-ad1c-11e9-a2a3-2a2ae2dbcce4',@doctor_person_uuid,('4')),
-('Reception', 'Reception', SHA2(CONCAT('Reception#123',@receptionsalt), 512), @receptionsalt, NOW(), '3bfbdd40-ad1c-11e9-a2a3-2a2ae2dbcce4',@reception_person_uuid,('4'));
+('Nurse', 'Nurse', SHA2(CONCAT('Nurse#123',@nursesalt), 512), @nursesalt, NOW(), '3bfbd6ec-ad1c-11e9-a2a3-2a2ae2dbcce4',@nurse_person_uuid,'4'),
+('Doctor', 'Doctor', SHA2(CONCAT('Doctor#123',@doctorsalt), 512), @doctorsalt, NOW(), '3bfbdbba-ad1c-11e9-a2a3-2a2ae2dbcce4',@doctor_person_uuid,'4'),
+('Reception', 'Reception', SHA2(CONCAT('Reception#123',@receptionsalt), 512), @receptionsalt, NOW(), '3bfbdd40-ad1c-11e9-a2a3-2a2ae2dbcce4',@reception_person_uuid,'4');
 
 SET @nurse_user_id = (SELECT user_id FROM users WHERE username = 'Nurse');
 SET @doctor_user_id = (SELECT user_id FROM users WHERE username = 'Doctor');
@@ -48,67 +48,67 @@ VALUES
 INSERT IGNORE INTO user_role (user_id,role)
 VALUES 
 (@nurse_user_id,
-('Appointments:FullAccess')),
+'Appointments:FullAccess'),
 (@nurse_user_id,
-('Clinical-App')),
+'Clinical-App'),
 (@nurse_user_id,
-('PatientDocuments-App')),
+'PatientDocuments-App'),
 (@nurse_user_id,
-('Programs-App')),
+'Programs-App'),
 (@nurse_user_id,
 ('Reports-App')),
 (@nurse_user_id,
-('Registration-App')),
+'Registration-App'),
 (@nurse_user_id,
-('Clinical-App-Bacteriology')),
+'Clinical-App-Bacteriology'),
 (@nurse_user_id,
 ('Clinical-App-Diagnosis')),
 (@nurse_user_id,
-('Clinical-App-Observations')),
+'Clinical-App-Observations'),
 (@nurse_user_id,
-('Clinical-App-Disposition')),
+'Clinical-App-Disposition'),
 (@nurse_user_id,
-('Clinical-App-Orders')),
+'Clinical-App-Orders'),
 (@nurse_user_id,
-('Clinical-App-Save'));
+'Clinical-App-Save');
 
 INSERT IGNORE INTO user_role (user_id,role)
 VALUES 
 (@doctor_user_id,
-('Appointments:FullAccess')),
+'Appointments:FullAccess'),
 (@doctor_user_id,
-('Clinical-App')),
+'Clinical-App'),
 (@doctor_user_id,
-('PatientDocuments-App')),
+'PatientDocuments-App'),
 (@doctor_user_id,
-('Programs-App')),
+'Programs-App'),
 (@doctor_user_id,
-('Reports-App')),
+'Reports-App'),
 (@doctor_user_id,
-('Registration-App')),
+'Registration-App'),
 (@doctor_user_id,
-('Clinical-App-Bacteriology')),
+'Clinical-App-Bacteriology'),
 (@doctor_user_id,
-('Clinical-App-Diagnosis')),
+'Clinical-App-Diagnosis'),
 (@doctor_user_id,
-('Clinical-App-Observations')),
+'Clinical-App-Observations'),
 (@doctor_user_id,
-('Clinical-App-Disposition')),
+'Clinical-App-Disposition'),
 (@doctor_user_id,
-('Clinical-App-Orders')),
+'Clinical-App-Orders'),
 (@doctor_user_id,
-('Clinical-App-Save'));
+'Clinical-App-Save');
 INSERT IGNORE INTO user_role (user_id,role)
 VALUES 
 (@reception_user_id,
-('Appointments:FullAccess')),
+'Appointments:FullAccess'),
 (@reception_user_id,
-('Clinical-App')),
+'Clinical-App'),
 (@reception_user_id,
-('PatientDocuments-App')),
+'PatientDocuments-App'),
 (@reception_user_id,
-('Programs-App')),
+'Programs-App'),
 (@reception_user_id,
-('Reports-App')),
+'Reports-App'),
 (@reception_user_id,
-('Registration-App'));
+'Registration-App');
