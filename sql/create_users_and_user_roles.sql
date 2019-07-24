@@ -10,7 +10,7 @@ SET @nurse_person_uuid = (SELECT person_id FROM person WHERE uuid = '3f64faba-ad
 
 INSERT IGNORE INTO person_name (person_id,uuid,given_name,family_name) 
 VALUES
-(@nurse_person_uuid,(uuid()),('Nurse'),(''));
+(@nurse_person_uuid,'7459fb76-c81a-4a04-9578-656018d2828f',('Nurse'),(''));
 
 INSERT IGNORE INTO person (uuid,gender,date_created,creator) VALUES ('3f64fd1c-ad31-11e9-a2a3-2a2ae2dbcce4','F',NOW(),('4'));
 
@@ -18,7 +18,7 @@ SET @doctor_person_uuid = (SELECT person_id FROM person WHERE uuid = '3f64fd1c-a
 
 INSERT IGNORE INTO person_name (person_id,uuid,given_name,family_name) 
 VALUES
-(@doctor_person_uuid,(uuid()),('Doctor'),(''));
+(@doctor_person_uuid,'c4d2632f-3ed2-4f5f-b37a-f92398cc5cc8',('Doctor'),(''));
 
 INSERT IGNORE INTO person (uuid,gender,date_created,creator) VALUES ('3f64fe70-ad31-11e9-a2a3-2a2ae2dbcce4','F',NOW(),('4'));
 
@@ -26,7 +26,7 @@ SET @reception_person_uuid = (SELECT person_id FROM person WHERE uuid = '3f64fe7
 
 INSERT IGNORE INTO person_name (person_id,uuid,given_name,family_name) 
 VALUES
-(@reception_person_uuid,(uuid()),('Reception'),(''));
+(@reception_person_uuid,'df9280ef-9f5a-4207-9668-9725355dfd01',('Reception'),(''));
 
 INSERT IGNORE INTO users (system_id,username,password,salt,date_created,uuid,person_id,creator)
 VALUES 
