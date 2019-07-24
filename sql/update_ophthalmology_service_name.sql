@@ -1,1 +1,0 @@
-update appointment_service set name = 'APPOINTMENT_SERVICE_OPHTHALMOLOGY_KEY' where uuid = '8d9b48dd-6e9b-4196-afb2-4f402d064d95';
