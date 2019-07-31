@@ -497,12 +497,10 @@ BEGIN
     SELECT TRUE INTO result
     FROM patient_appointment pa
     JOIN appointment_service aps ON aps.appointment_service_id = pa.appointment_service_id AND aps.voided = 0
-    JOIN `location` lc ON lc.location_id = pa.location_id AND lc.retired = 0
     WHERE pa.voided = 0
         AND pa.patient_id = p_patientId
         AND pa.start_date_time BETWEEN TIMESTAMPADD(MONTH,p_monthOffset,p_startDate)  AND TIMESTAMPADD(MONTH,p_monthOffset,p_endDate)
-        AND aps.name = "APPOINTMENT_SERVICE_ART_KEY"
-        AND lc.name = "LOCATION_ART_DISPENTION"
+        AND (aps.name = "APPOINTMENT_SERVICE_ART_KEY" OR aps.name = "APPOINTMENT_SERVICE_ART_DISPENSARY_KEY")
     GROUP BY pa.patient_id;
 
     RETURN (result );
