@@ -66,41 +66,52 @@ INSERT IGNORE INTO provider (person_id, creator, date_created, uuid)
         (@doctor_person_id, '4', NOW(), '1ad6ac88-adfa-11e9-a2a3-2a2ae2dbcce4'),
         (@reception_person_id, '4', NOW(), '1ad6adf0-adfa-11e9-a2a3-2a2ae2dbcce4');
 
-INSERT IGNORE INTO user_role (user_id, role)
+INSERT IGNORE INTO role (role, description, uuid)
+   VALUES 
+        ('Nurse', 'Nurse Role', 'cdd84e88-b41a-11e9-a2a3-2a2ae2dbcce4'),
+        ('Doctor', 'Doctor Role', 'cdd85374-b41a-11e9-a2a3-2a2ae2dbcce4'),
+        ('Reception', 'Reception Role', 'cdd854e6-b41a-11e9-a2a3-2a2ae2dbcce4');
+
+INSERT IGNORE INTO role_role (parent_role, child_role)
     VALUES 
-        (@nurse_user_id, 'Appointments:FullAccess'),
-        (@nurse_user_id, 'Clinical-App'),
-        (@nurse_user_id, 'PatientDocuments-App'),
-        (@nurse_user_id, 'Programs-App'),
-        (@nurse_user_id, 'Reports-App'),
-        (@nurse_user_id, 'Registration-App'),
-        (@nurse_user_id, 'Clinical-App-Bacteriology'),
-        (@nurse_user_id, 'Clinical-App-Diagnosis'),
-        (@nurse_user_id, 'Clinical-App-Observations'),
-        (@nurse_user_id, 'Clinical-App-Disposition'),
-        (@nurse_user_id, 'Clinical-App-Orders'),
-        (@nurse_user_id, 'Clinical-App-Save');
+        ('Appointments:FullAccess', 'Nurse'),
+        ('Clinical-App', 'Nurse'),
+        ('PatientDocuments-App', 'Nurse'),
+        ('Programs-App', 'Nurse'),
+        ('Reports-App', 'Nurse'),
+        ('Registration-App', 'Nurse'),
+        ('Clinical-App-Bacteriology', 'Nurse'),
+        ('Clinical-App-Diagnosis', 'Nurse'),
+        ('Clinical-App-Observations', 'Nurse'),
+        ('Clinical-App-Disposition', 'Nurse'),
+        ('Clinical-App-Orders', 'Nurse'),
+        ('Clinical-App-Save', 'Nurse'),
+        ('Appointments:FullAccess', 'Doctor'),
+        ('Clinical-App', 'Doctor'),
+        ('PatientDocuments-App', 'Doctor'),
+        ('Programs-App', 'Doctor'),
+        ('Reports-App', 'Doctor'),
+        ('Registration-App', 'Doctor'),
+        ('Clinical-App-Bacteriology', 'Doctor'),
+        ('Clinical-App-Diagnosis', 'Doctor'),
+        ('Clinical-App-Observations', 'Doctor'),
+        ('Clinical-App-Disposition', 'Doctor'),
+        ('Clinical-App-Orders', 'Doctor'),
+        ('Clinical-App-Save', 'Doctor'),
+        ('Appointments:FullAccess', 'Reception'),
+        ('PatientDocuments-App', 'Reception'),
+        ('Programs-App', 'Reception'),
+        ('Reports-App', 'Reception'),
+        ('Registration-App', 'Reception');
 
 INSERT IGNORE INTO user_role (user_id, role)
     VALUES 
-        (@doctor_user_id, 'Appointments:FullAccess'),
-        (@doctor_user_id, 'Clinical-App'),
-        (@doctor_user_id, 'PatientDocuments-App'),
-        (@doctor_user_id, 'Programs-App'),
-        (@doctor_user_id, 'Reports-App'),
-        (@doctor_user_id, 'Registration-App'),
-        (@doctor_user_id, 'Clinical-App-Bacteriology'),
-        (@doctor_user_id, 'Clinical-App-Diagnosis'),
-        (@doctor_user_id, 'Clinical-App-Observations'),
-        (@doctor_user_id, 'Clinical-App-Disposition'),
-        (@doctor_user_id, 'Clinical-App-Orders'),
-        (@doctor_user_id, 'Clinical-App-Save');
+        (@nurse_user_id, 'Nurse');
 
 INSERT IGNORE INTO user_role (user_id, role)
     VALUES 
-        (@reception_user_id, 'Appointments:FullAccess'),
-        (@reception_user_id, 'Clinical-App'),
-        (@reception_user_id, 'PatientDocuments-App'),
-        (@reception_user_id, 'Programs-App'),
-        (@reception_user_id, 'Reports-App'),
-        (@reception_user_id, 'Registration-App');
+        (@doctor_user_id, 'Doctor');
+
+INSERT IGNORE INTO user_role (user_id, role)
+    VALUES 
+        (@reception_user_id, 'Reception');
