@@ -796,6 +796,31 @@ BEGIN
 END$$
 DELIMITER ;
 
+-- patientIsPregnant
+
+DROP FUNCTION IF EXISTS patientIsPregnant;
+
+DELIMITER $$
+CREATE FUNCTION patientIsPregnant(
+    p_patientId INT(11)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN 
+    DECLARE patientPregnant TINYINT(1) DEFAULT 0;
+
+    DECLARE uuidpatientIsPregnant VARCHAR(38) DEFAULT "279583bf-70d4-40b5-82e9-6cb29fbe00b4";
+
+    SELECT TRUE INTO patientPregnant
+    FROM obs o
+    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
+    WHERE o.voided = 0
+        AND o.person_id = p_patientId 
+        AND c.uuid = uuidpatientIsPregnant
+    GROUP BY c.uuid;
+        
+    RETURN (patientPregnant );
+END$$
+DELIMITER ;
+
 -- patientPickedFirstLineProtocolARVDrugDuringReportingPeriod
 
 DROP FUNCTION IF EXISTS patientPickedFirstLineProtocolARVDrugDuringReportingPeriod;
