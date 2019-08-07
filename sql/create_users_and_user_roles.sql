@@ -5,6 +5,7 @@ SET @receptionsalt = (SHA2(SUBSTRING(MD5(RAND()), -10), 512));
 SET @nurse_user_uuid = '3bfbd6ec-ad1c-11e9-a2a3-2a2ae2dbcce4';
 SET @doctor_user_uuid = '3bfbdbba-ad1c-11e9-a2a3-2a2ae2dbcce4';
 SET @reception_user_uuid = '3bfbdd40-ad1c-11e9-a2a3-2a2ae2dbcce4';
+SET @superman_user_uuid = 'c1c21e11-3f10-11e4-adec-0800271c1b75';
 
 SET @nurse_person_uuid = '564565ae-aec5-11e9-a2a3-2a2ae2dbcce4';
 SET @doctor_person_uuid = '56456824-aec5-11e9-a2a3-2a2ae2dbcce4';
@@ -59,6 +60,7 @@ INSERT IGNORE INTO users (system_id, username, password, salt, date_created, uui
 SET @nurse_user_id = (SELECT user_id FROM users WHERE uuid = @nurse_user_uuid);
 SET @doctor_user_id = (SELECT user_id FROM users WHERE uuid = @doctor_user_uuid);
 SET @reception_user_id = (SELECT user_id FROM users WHERE uuid = @reception_user_uuid);
+SET @superman_user_id = (SELECT user_id FROM users WHERE uuid = @superman_user_uuid);
 
 INSERT IGNORE INTO provider (person_id, creator, date_created, uuid)
     VALUES
@@ -115,3 +117,7 @@ INSERT IGNORE INTO user_role (user_id, role)
 INSERT IGNORE INTO user_role (user_id, role)
     VALUES 
         (@reception_user_id, 'Reception');
+
+INSERT IGNORE INTO user_role (user_id, role)
+    VALUES 
+        (@superman_user_id, 'Appointments:FullAccess');
