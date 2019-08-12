@@ -538,12 +538,10 @@ BEGIN
     SELECT TRUE INTO result
     FROM patient_appointment pa
     JOIN appointment_service aps ON aps.appointment_service_id = pa.appointment_service_id AND aps.voided = 0
-    JOIN `location` lc ON lc.location_id = pa.location_id AND lc.retired = 0
     WHERE pa.voided = 0
         AND pa.patient_id = p_patientId
         AND pa.start_date_time BETWEEN TIMESTAMPADD(MONTH,p_monthOffset,p_startDate)  AND TIMESTAMPADD(MONTH,p_monthOffset,p_endDate)
-        AND aps.name = "APPOINTMENT_SERVICE_ART_KEY"
-        AND lc.name = "LOCATION_ART_DISPENTION"
+        AND (aps.name = "APPOINTMENT_SERVICE_ART_KEY" OR aps.name = "APPOINTMENT_SERVICE_ART_DISPENSARY_KEY")
     GROUP BY pa.patient_id;
 
     RETURN (result );
@@ -848,17 +846,58 @@ CREATE FUNCTION patientIsPregnant(
 BEGIN 
     DECLARE patientPregnant TINYINT(1) DEFAULT 0;
 
-    DECLARE uuidpatientIsPregnant VARCHAR(38) DEFAULT "279583bf-70d4-40b5-82e9-6cb29fbe00b4";
+    DECLARE uuidPatientIsPregnant VARCHAR(38) DEFAULT "279583bf-70d4-40b5-82e9-6cb29fbe00b4";
 
     SELECT TRUE INTO patientPregnant
     FROM obs o
     JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
     WHERE o.voided = 0
         AND o.person_id = p_patientId 
-        AND c.uuid = uuidpatientIsPregnant
+        AND c.uuid = uuidPatientIsPregnant
     GROUP BY c.uuid;
         
     RETURN (patientPregnant );
+END$$
+DELIMITER ;
+
+-- patientIsNewlyInitiatingART
+
+DROP FUNCTION IF EXISTS patientIsNewlyInitiatingART;
+
+DELIMITER $$
+CREATE FUNCTION patientIsNewlyInitiatingART(
+    p_patientId INT(11),
+    p_startDate DATE,
+    p_endDate DATE) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE isNewlyInitiatingART TINYINT(1) DEFAULT 0;
+    DECLARE artStartedDuringReportingPeriod TINYINT(1) DEFAULT 0;
+    DECLARE uuidARTStatus VARCHAR(38) DEFAULT "f961ec41-cd5d-4b45-91e0-0f5a408fea4b";
+    DECLARE uuidNewlyInitiatingART VARCHAR(38) DEFAULT "31314c4c-c0b9-4b86-bd68-3449ff0ad20c";
+    DECLARE uuidStartDate VARCHAR(38) DEFAULT "d986e715-14fd-4ae1-9ef2-7a60e3a6a54e";
+
+    SELECT
+        TRUE INTO isNewlyInitiatingART
+    FROM obs o
+    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
+    WHERE o.voided = 0
+        AND o.person_id = p_patientId
+        AND c.uuid = uuidARTStatus
+        AND o.value_coded = (SELECT concept_id FROM concept WHERE uuid = uuidNewlyInitiatingART)
+    LIMIT 1;
+
+    SELECT
+        TRUE INTO artStartedDuringReportingPeriod
+    FROM obs o
+    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
+    WHERE o.voided = 0
+        AND o.person_id = p_patientId
+        AND c.uuid = uuidStartDate
+        AND cast(o.value_datetime AS DATE) BETWEEN p_startDate AND p_endDate
+    LIMIT 1;
+
+    RETURN (isNewlyInitiatingART && artStartedDuringReportingPeriod);
 END$$
 DELIMITER ;
 
