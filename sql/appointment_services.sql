@@ -1,3 +1,5 @@
+INSERT IGNORE INTO appointment_speciality (name, date_created, creator, uuid) VALUES ('APPOINTMENT_OPD_SPECIALITY_KEY', NOW(), 1, 'a319f694-a262-4db3-9f3d-59744a0203d3');
+
 INSERT IGNORE INTO appointment_service
     (name, speciality_id, start_time, end_time, duration_mins, color, date_created, creator, voided,uuid)
 VALUES
