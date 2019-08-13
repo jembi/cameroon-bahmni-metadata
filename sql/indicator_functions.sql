@@ -658,11 +658,11 @@ FROM
 WHERE
     patientGenderIs(pat.patient_id, p_gender) AND
     patientAgeWhenRegisteredForHivProgramIsBetween(pat.patient_id, p_startAge, p_endAge, p_includeEndAge) AND
-    patientHasEnrolledIntoHivProgramDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
-    patientHasStartedARVTreatmentDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
-    patientAlreadyOnART(pat.patient_id, p_startDate, p_endDate) AND
+    patientHasEnrolledIntoHivProgramBefore(pat.patient_id, p_startDate) AND
+    patientHasStartedARVTreatmentBefore(pat.patient_id, p_startDate) AND
+    patientAlreadyOnART(pat.patient_id, p_startDate) AND
     patientIsPregnant(pat.patient_id) AND
-    patientPickedARVDrugDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate, 0) AND
+    patientOnARVOrHasPickedUpADrugWithinExtendedPeriod(pat.patient_id, p_startDate, p_endDate, 0, 0) AND
     patientIsNotDead(pat.patient_id) AND
     patientIsNotLostToFollowUp(pat.patient_id) AND
     patientIsNotTransferredOut(pat.patient_id);

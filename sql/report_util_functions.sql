@@ -194,8 +194,7 @@ DROP FUNCTION IF EXISTS patientAlreadyOnART;
 DELIMITER $$
 CREATE FUNCTION patientAlreadyOnART(
     p_patientId INT(11),
-    p_startDate DATE,
-    p_endDate DATE) RETURNS TINYINT(1)
+    p_startDate DATE) RETURNS TINYINT(1)
     DETERMINISTIC
 BEGIN
     DECLARE isAlreadyOnART TINYINT(1) DEFAULT 0;
@@ -221,7 +220,7 @@ BEGIN
     WHERE o.voided = 0
         AND o.person_id = p_patientId
         AND c.uuid = uuidStartDate
-        AND cast(o.value_datetime AS DATE) BETWEEN p_startDate AND p_endDate
+        AND cast(o.value_datetime AS DATE) < p_startDate
     LIMIT 1;
 
     RETURN (isAlreadyOnART && artStartedDuringReportingPeriod);
