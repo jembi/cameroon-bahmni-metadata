@@ -4,6 +4,8 @@
       <property>emrapi.sqlSearch.activePatients</property>
       <value>
       select distinct concat(pn.given_name," ", ifnull(pn.family_name,'')) as name,
+      pn.given_name as givenName,
+      pn.family_name as familyName,
       pi.identifier as identifier,
       concat("",p.uuid) as uuid,
       concat("",v.uuid) as activeVisitUuid,
