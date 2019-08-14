@@ -198,7 +198,7 @@ CREATE FUNCTION patientAlreadyOnART(
     DETERMINISTIC
 BEGIN
     DECLARE isAlreadyOnART TINYINT(1) DEFAULT 0;
-    DECLARE artStartedDuringReportingPeriod TINYINT(1) DEFAULT 0;
+    DECLARE artStartedBeforeReportingPeriod TINYINT(1) DEFAULT 0;
     DECLARE uuidARTStatus VARCHAR(38) DEFAULT "f961ec41-cd5d-4b45-91e0-0f5a408fea4b";
     DECLARE uuidAlreadyOnART VARCHAR(38) DEFAULT "6122279f-93a8-4e5a-ac5e-b347b60c989b";
     DECLARE uuidStartDate VARCHAR(38) DEFAULT "d986e715-14fd-4ae1-9ef2-7a60e3a6a54e";
@@ -214,7 +214,7 @@ BEGIN
     LIMIT 1;
 
     SELECT
-        TRUE INTO artStartedDuringReportingPeriod
+        TRUE INTO artStartedBeforeReportingPeriod
     FROM obs o
     JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
     WHERE o.voided = 0
@@ -223,7 +223,7 @@ BEGIN
         AND cast(o.value_datetime AS DATE) < p_startDate
     LIMIT 1;
 
-    RETURN (isAlreadyOnART && artStartedDuringReportingPeriod);
+    RETURN (isAlreadyOnART && artStartedBeforeReportingPeriod);
 END$$
 DELIMITER ;
 
