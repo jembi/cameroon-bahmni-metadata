@@ -7,7 +7,7 @@ Uuid,Void/Retire,Name,Concept Drug,Concept Dosage Form,Strength,_version:1
 c0d315a9-63cc-4020-914a-9f0a7e43cfa9,0,AZT/3TC 60/30mg ,AZT/3TC,Tablet,60/30mg,
 3a06d492-d51c-4f0f-8579-4a8eb722caa4,0,AZT/3TC 600/300mg ,AZT/3TC,Tablet,600/300mg,
 7861ff41-eae5-4c1c-988c-a5dc6083888d,0,CTX 100/20mg ,CTX,Tablet,100/20mg,
-b3b28610-106b-45f4-982f-6c4288109257,0,CTX 200/40mg,CTX,Syrup,200/40mg,
+b3b28610-106b-45f4-982f-6c4288109257,0,CTX 200/40mg/ml,CTX,Syrup,200/40mg,
 f7555dc5-57b9-4268-bd67-14557d022173,0,CTX 400/80mg ,CTX,Tablet,400/80mg,
 5ba2eca3-8afa-4d50-ad8b-aa43eeca2356,0,DRV/r 600/100mg ,DRV/r,Tablet,600/100mg,
 df02fc73-c63e-4d9b-add7-60675ecd2b8b,0,DTG 50mg ,DTG,Tablet,50mg,
