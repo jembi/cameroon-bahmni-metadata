@@ -325,7 +325,8 @@ BEGIN
     JOIN concept c ON do.duration_units = c.concept_id AND c.retired = 0
     JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
     WHERE o.patient_id = p_patientId AND o.voided = 0
-        AND drugIsARV(d.name, p_protocolLineNumber)
+        AND drugIsARV(d.name)
+        AND patientIsOnARV(p_patientId, p_protocolLineNumber)
         AND o.scheduled_date < p_startDate
         AND calculateTreatmentEndDate(
             o.scheduled_date,
@@ -435,7 +436,8 @@ BEGIN
     JOIN concept c ON do.duration_units = c.concept_id AND c.retired = 0
     JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
     WHERE o.patient_id = p_patientId AND o.voided = 0
-        AND drugIsARV(d.name, 0)
+        AND drugIsARV(d.name)
+        AND patientIsOnARV(p_patientId, 0)
         AND o.scheduled_date <= p_endDate
         AND calculateTreatmentEndDate(
             o.scheduled_date,
@@ -470,7 +472,8 @@ BEGIN
     JOIN concept c ON do.duration_units = c.concept_id AND c.retired = 0
     JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
     WHERE o.patient_id = p_patientId AND o.voided = 0
-        AND drugIsARV(d.name, p_protocolLineNumber)
+        AND drugIsARV(d.name)
+        AND patientIsOnARV(p_patientId, p_protocolLineNumber)
         AND o.scheduled_date BETWEEN p_startDate AND p_endDate
         AND drugOrderIsDispensed(p_patientId, o.order_id)
     GROUP BY o.patient_id;
@@ -501,7 +504,8 @@ BEGIN
     JOIN concept c ON do.duration_units = c.concept_id AND c.retired = 0
     JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
     WHERE o.patient_id = p_patientId AND o.voided = 0
-        AND drugIsARV(d.name, p_protocolLineNumber)
+        AND drugIsARV(d.name)
+        AND patientIsOnARV(p_patientId, p_protocolLineNumber)
         AND o.scheduled_date BETWEEN TIMESTAMPADD(MONTH,p_monthOffset,p_startDate) AND TIMESTAMPADD(MONTH,p_monthOffset,p_endDate)
         AND !drugOrderIsDispensed(p_patientId, o.order_id)
     GROUP BY o.patient_id;
@@ -512,7 +516,8 @@ BEGIN
     JOIN concept c ON do.duration_units = c.concept_id AND c.retired = 0
     JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
     WHERE o.patient_id = p_patientId AND o.voided = 0
-        AND drugIsARV(d.name, p_protocolLineNumber)
+        AND drugIsARV(d.name)
+        AND patientIsOnARV(p_patientId, p_protocolLineNumber)
         AND o.scheduled_date BETWEEN TIMESTAMPADD(MONTH,p_monthOffset,p_startDate) AND TIMESTAMPADD(MONTH,p_monthOffset,p_endDate)
     GROUP BY o.patient_id;
 
@@ -711,35 +716,6 @@ END$$
 
 DELIMITER ; 
 
--- drugIsARV
-
-DROP FUNCTION IF EXISTS drugIsARV;
-
-DELIMITER $$
-CREATE FUNCTION drugIsARV(
-    p_drugName VARCHAR(255),
-    p_protocolLineNumber INT(11)) RETURNS TINYINT(1)
-    DETERMINISTIC
-BEGIN
-    DECLARE result TINYINT(1);
-    
-    IF p_protocolLineNumber = 1 THEN
-        SET result = drugIsARVFirstLine(p_drugName);
-    ELSEIF p_protocolLineNumber = 2 THEN
-        SET result = drugIsARVSecondLine(p_drugName);
-    ELSEIF p_protocolLineNumber = 3 THEN
-        SET result = drugIsARVThirdLine(p_drugName);
-    ELSE
-        SET result =  
-            drugIsARVFirstLine(p_drugName) OR
-            drugIsARVSecondLine(p_drugName) OR
-            drugIsARVThirdLine(p_drugName);
-    END IF;
-
-    RETURN (result); 
-END$$
-DELIMITER ;
-
 -- patientIsNotDead
 
 DROP FUNCTION IF EXISTS patientIsNotDead;
@@ -900,83 +876,7 @@ BEGIN
 END$$
 DELIMITER ;
 
--- patientPickedFirstLineProtocolARVDrugDuringReportingPeriod
-
-DROP FUNCTION IF EXISTS patientPickedFirstLineProtocolARVDrugDuringReportingPeriod;
-
-DELIMITER $$
-CREATE FUNCTION patientPickedFirstLineProtocolARVDrugDuringReportingPeriod(
-    p_patientId INT(11),
-    p_startDate DATE,
-    p_endDate DATE) RETURNS TINYINT(1)
-    DETERMINISTIC
-BEGIN
-
-    DECLARE result TINYINT(1) DEFAULT 0;
-
-    SELECT TRUE INTO result
-    FROM orders o
-    JOIN drug_order do ON do.order_id = o.order_id
-    JOIN concept c ON do.duration_units = c.concept_id AND c.retired = 0
-    JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
-    WHERE o.patient_id = p_patientId AND o.voided = 0
-        AND drugIsARVFirstLine(d.name)
-        AND o.scheduled_date BETWEEN p_startDate AND p_endDate
-    GROUP BY o.patient_id;
-
-    RETURN (result );
-END$$ 
-DELIMITER ;
-
--- drugIsARVFirstLine
-
-DROP FUNCTION IF EXISTS drugIsARVFirstLine;
-
-DELIMITER $$
-CREATE FUNCTION drugIsARVFirstLine(
-    p_drugName VARCHAR(255)) RETURNS TINYINT(1)
-    DETERMINISTIC
-BEGIN
-    DECLARE firstOrderLineUuid VARCHAR(38) DEFAULT "2f8dba15-95b4-4e1e-a2cf-10f3b2510ed8";
-
-    return _drugIsARV(p_drugName, firstOrderLineUuid);
-END$$
-DELIMITER ;
-
-
--- drugIsARVSecondLine
-
-DROP FUNCTION IF EXISTS drugIsARVSecondLine;
-
-DELIMITER $$
-CREATE FUNCTION drugIsARVSecondLine(
-    p_drugName VARCHAR(255)) RETURNS TINYINT(1)
-    DETERMINISTIC
-BEGIN
-    DECLARE secondOrderLineUuid VARCHAR(38) DEFAULT "da334532-dbb3-4456-b684-55fcb42e6fcb";
-
-    return _drugIsARV(p_drugName, secondOrderLineUuid);
-END$$
-DELIMITER ;
-
--- drugIsARVThirdLine
-
-DROP FUNCTION IF EXISTS drugIsARVThirdLine;
-
-DELIMITER $$
-CREATE FUNCTION drugIsARVThirdLine(
-    p_drugName VARCHAR(255)) RETURNS TINYINT(1)
-    DETERMINISTIC
-BEGIN
-    DECLARE thirdOrderLineUuid VARCHAR(38) DEFAULT "89640844-136a-470e-9371-37b26dd7d3c2";
-
-    return _drugIsARV(p_drugName, thirdOrderLineUuid);
-END$$
-DELIMITER ;
-
 -- _drugIsARV
--- This is a util function to avoid duplicating the SQL code on 
--- drugIsARVFirstLine, drugIsARVSecondLine and drugIsARVThirdLine
 
 DROP FUNCTION IF EXISTS _drugIsARV;
 
@@ -993,6 +893,136 @@ BEGIN
     INNER JOIN concept c ON c.concept_id = cs.concept_set AND c.retired = 0
     INNER JOIN concept_name cn ON cn.concept_id = cs.concept_id
     WHERE c.uuid = p_orderLineUuid
+        AND cn.name = p_drugName
+    LIMIT 1;
+
+    return result;
+END$$
+DELIMITER ;
+
+-- _patientIsOnARV
+-- This is a util function to avoid duplicating the SQL code on 
+-- patientIsOnARVFirstLine, patientIsOnARVSecondLine and patientIsOnARVThirdLine
+
+DROP FUNCTION IF EXISTS _patientIsOnARV;
+
+DELIMITER $$
+CREATE FUNCTION _patientIsOnARV(
+    p_patientId INT(11),
+    p_uuidConceptARVLineNumber VARCHAR(38)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE uuidTherapeuticLine VARCHAR(38) DEFAULT "a8bc4608-eaae-4610-a842-d83d6261ea49";
+    DECLARE result TINYINT(1) DEFAULT 0;
+
+    SELECT TRUE INTO result
+    FROM patient_program_attribute ppa
+    JOIN program_attribute_type pat ON ppa.attribute_type_id = pat.program_attribute_type_id AND pat.retired = 0
+    JOIN patient_program pp ON ppa.patient_program_id = pp.patient_program_id AND pp.voided = 0
+    JOIN concept c ON ppa.value_reference = c.concept_id
+    WHERE ppa.voided = 0
+        AND pp.patient_id = p_patientId
+        AND pat.uuid = uuidTherapeuticLine
+        AND c.uuid = p_uuidConceptARVLineNumber
+    LIMIT 1;
+
+    RETURN (result);
+END$$
+DELIMITER ;
+
+-- patientIsOnARVFirstLine
+
+DROP FUNCTION IF EXISTS patientIsOnARVFirstLine;
+
+DELIMITER $$
+CREATE FUNCTION patientIsOnARVFirstLine(
+    p_patientId INT(11)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE p_uuidConceptFirstLine VARCHAR(38) DEFAULT "9d928a3f-95cb-487f-96ef-86cf960503a9";
+
+    RETURN _patientIsOnARV(p_patientId, p_uuidConceptFirstLine);
+END$$
+DELIMITER ;
+
+-- patientIsOnARVSecondLine
+
+DROP FUNCTION IF EXISTS patientIsOnARVSecondLine;
+
+DELIMITER $$
+CREATE FUNCTION patientIsOnARVSecondLine(
+    p_patientId INT(11)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE p_uuidConceptSecondLine VARCHAR(38) DEFAULT "d0ee855d-f0b4-49d2-be02-1d1457d5c8bf";
+
+    RETURN _patientIsOnARV(p_patientId, p_uuidConceptSecondLine);
+END$$
+DELIMITER ;
+
+-- patientIsOnARVThirdLine
+
+DROP FUNCTION IF EXISTS patientIsOnARVThirdLine;
+
+DELIMITER $$
+CREATE FUNCTION patientIsOnARVThirdLine(
+    p_patientId INT(11)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE p_uuidConceptThirdLine VARCHAR(38) DEFAULT "d1661aa5-9a4f-4b31-b816-6973aa604289";
+
+    RETURN _patientIsOnARV(p_patientId, p_uuidConceptThirdLine);
+END$$
+DELIMITER ;
+
+-- patientIsOnARV
+
+DROP FUNCTION IF EXISTS patientIsOnARV;
+
+DELIMITER $$
+CREATE FUNCTION patientIsOnARV(
+    p_patientId INT(11),
+    p_protocolLineNumber INT(11)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+
+    DECLARE result TINYINT(1);
+    
+    IF p_protocolLineNumber = 1 THEN
+        SET result = patientIsOnARVFirstLine(p_patientId);
+    ELSEIF p_protocolLineNumber = 2 THEN
+        SET result = patientIsOnARVSecondLine(p_patientId);
+    ELSEIF p_protocolLineNumber = 3 THEN
+        SET result = patientIsOnARVThirdLine(p_patientId);
+    ELSE
+        SET result =  
+            patientIsOnARVFirstLine(p_patientId) OR
+            patientIsOnARVSecondLine(p_patientId) OR
+            patientIsOnARVThirdLine(p_patientId);
+    END IF;
+
+    RETURN (result);
+
+END$$
+DELIMITER ;
+
+-- drugIsARV
+
+DROP FUNCTION IF EXISTS drugIsARV;
+
+DELIMITER $$
+CREATE FUNCTION drugIsARV(
+    p_drugName VARCHAR(255)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE result TINYINT(1) DEFAULT 0;
+    DECLARE uuidARVDrugsSet VARCHAR(38) DEFAULT "9e7f1f61-216f-44bb-b5bb-35c9a0d9d9ba";
+
+    SELECT TRUE INTO result
+    FROM concept_set cs
+    INNER JOIN concept c ON c.concept_id = cs.concept_set AND c.retired = 0
+    INNER JOIN concept_name cn ON cn.concept_id = cs.concept_id
+    WHERE c.uuid = uuidARVDrugsSet
         AND cn.name = p_drugName
     LIMIT 1;
 
