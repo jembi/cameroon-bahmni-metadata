@@ -2,6 +2,7 @@ update program_attribute_type set description = 'PROGRAM_MANAGEMENT_ART_NUMBER',
 update program_attribute_type set description = 'PROGRAM_MANAGEMENT_PATIENT_STAGE', name = 'PROGRAM_MANAGEMENT_PATIENT_STAGE' where name = 'Stage';
 update program_attribute_type set description = 'PROGRAM_MANAGEMENT_PATIENT_TREATMENT_DATE', name = 'PROGRAM_MANAGEMENT_PATIENT_TREATMENT_DATE' where name = 'Date';
 update program_attribute_type set description = 'PROGRAM_MANAGEMENT_PATIENT_COMORBIDITES', name = 'PROGRAM_MANAGEMENT_PATIENT_COMORBIDITES' where name = 'Co-morbidites';
+update program_attribute_type set datatype = 'org.bahmni.module.bahmnicore.customdatatype.datatype.CodedConceptDatatype', datatype_config = (select concept_id from concept where uuid = '6cf6c41e-9f39-4d92-a78d-18252eba93ff') where name = 'PROGRAM_MANAGEMENT_PATIENT_COMORBIDITES';
 update program_attribute_type set description = 'PROGRAM_MANAGEMENT_PATIENT_DOCTOR_IN_CHARGE', name = 'PROGRAM_MANAGEMENT_PATIENT_DOCTOR_IN_CHARGE' where name = 'Doctor';
 insert ignore into program_attribute_type(name, description, datatype,creator, date_created, uuid) values("PROGRAM_MANAGEMENT_LABEL_THERAPEUTIC_LINE","PROGRAM_MANAGEMENT_LABEL_THERAPEUTIC_LINE","org.bahmni.module.bahmnicore.customdatatype.datatype.CodedConceptDatatype", 1, NOW(), "397b7bc7-13ca-4e4e-abc3-bf854904dce3");
 update program_attribute_type set datatype_config=(select concept_id from concept where uuid="397b7bc7-13ca-4e4e-abc3-bf854904dce3") where name="PROGRAM_MANAGEMENT_LABEL_THERAPEUTIC_LINE";
