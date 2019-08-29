@@ -1,1 +1,0 @@
-DELETE FROM concept where uuid = '4d80e0ce-5465-4041-9d1e-d281d25a9b50';
