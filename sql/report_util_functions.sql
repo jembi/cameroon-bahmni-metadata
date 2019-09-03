@@ -465,7 +465,7 @@ CREATE FUNCTION patientPickedARVDrugDuringReportingPeriod(
 BEGIN
 
     RETURN
-        patientPickedARVDrugDuringReportingPeriodWithNoTherapeuticLine(pat.patient_id, p_startDate, p_endDate)
+        patientPickedARVDrugDuringReportingPeriodWithNoTherapeuticLine(p_patientId, p_startDate, p_endDate)
         AND
         patientHasTherapeuticLine(p_patientId, p_protocolLineNumber);
 END$$ 
