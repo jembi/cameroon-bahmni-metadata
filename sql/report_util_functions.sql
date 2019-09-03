@@ -326,7 +326,7 @@ BEGIN
     JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
     WHERE o.patient_id = p_patientId AND o.voided = 0
         AND drugIsARV(d.concept_id)
-        AND patientIsOnARV(p_patientId, p_protocolLineNumber)
+        AND patientHasTherapeuticLine(p_patientId, p_protocolLineNumber)
         AND o.scheduled_date < p_startDate
         AND calculateTreatmentEndDate(
             o.scheduled_date,
@@ -437,7 +437,7 @@ BEGIN
     JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
     WHERE o.patient_id = p_patientId AND o.voided = 0
         AND drugIsARV(d.concept_id)
-        AND patientIsOnARV(p_patientId, 0)
+        AND patientHasTherapeuticLine(p_patientId, 0)
         AND o.scheduled_date <= p_endDate
         AND calculateTreatmentEndDate(
             o.scheduled_date,
@@ -464,6 +464,25 @@ CREATE FUNCTION patientPickedARVDrugDuringReportingPeriod(
     DETERMINISTIC
 BEGIN
 
+    RETURN
+        patientPickedARVDrugDuringReportingPeriodWithNoTherapeuticLine(pat.patient_id, p_startDate, p_endDate)
+        AND
+        patientHasTherapeuticLine(p_patientId, p_protocolLineNumber);
+END$$ 
+DELIMITER ;
+
+-- patientPickedARVDrugDuringReportingPeriodWithNoTherapeuticLine
+
+DROP FUNCTION IF EXISTS patientPickedARVDrugDuringReportingPeriodWithNoTherapeuticLine;
+
+DELIMITER $$
+CREATE FUNCTION patientPickedARVDrugDuringReportingPeriodWithNoTherapeuticLine(
+    p_patientId INT(11),
+    p_startDate DATE,
+    p_endDate DATE) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+
     DECLARE result TINYINT(1) DEFAULT 0;
 
     SELECT TRUE INTO result
@@ -473,7 +492,6 @@ BEGIN
     JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
     WHERE o.patient_id = p_patientId AND o.voided = 0
         AND drugIsARV(d.concept_id)
-        AND patientIsOnARV(p_patientId, p_protocolLineNumber)
         AND o.scheduled_date BETWEEN p_startDate AND p_endDate
         AND drugOrderIsDispensed(p_patientId, o.order_id)
     GROUP BY o.patient_id;
@@ -505,7 +523,7 @@ BEGIN
     JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
     WHERE o.patient_id = p_patientId AND o.voided = 0
         AND drugIsARV(d.concept_id)
-        AND patientIsOnARV(p_patientId, p_protocolLineNumber)
+        AND patientHasTherapeuticLine(p_patientId, p_protocolLineNumber)
         AND o.scheduled_date BETWEEN TIMESTAMPADD(MONTH,p_monthOffset,p_startDate) AND TIMESTAMPADD(MONTH,p_monthOffset,p_endDate)
         AND !drugOrderIsDispensed(p_patientId, o.order_id)
     GROUP BY o.patient_id;
@@ -517,7 +535,7 @@ BEGIN
     JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
     WHERE o.patient_id = p_patientId AND o.voided = 0
         AND drugIsARV(d.concept_id)
-        AND patientIsOnARV(p_patientId, p_protocolLineNumber)
+        AND patientHasTherapeuticLine(p_patientId, p_protocolLineNumber)
         AND o.scheduled_date BETWEEN TIMESTAMPADD(MONTH,p_monthOffset,p_startDate) AND TIMESTAMPADD(MONTH,p_monthOffset,p_endDate)
     GROUP BY o.patient_id;
 
@@ -899,14 +917,14 @@ BEGIN
 END$$
 DELIMITER ;
 
--- _patientIsOnARV
+-- patientHasTherapeuticLine
 -- This is a util function to avoid duplicating the SQL code on 
--- patientIsOnARVFirstLine, patientIsOnARVSecondLine and patientIsOnARVThirdLine
+-- patientHasTherapeuticLineFirstLine, patientHasTherapeuticLineSecondLine and patientHasTherapeuticLineThirdLine
 
-DROP FUNCTION IF EXISTS _patientIsOnARV;
+DROP FUNCTION IF EXISTS _patientHasTherapeuticLine;
 
 DELIMITER $$
-CREATE FUNCTION _patientIsOnARV(
+CREATE FUNCTION _patientHasTherapeuticLine(
     p_patientId INT(11),
     p_uuidConceptARVLineNumber VARCHAR(38)) RETURNS TINYINT(1)
     DETERMINISTIC
@@ -929,57 +947,57 @@ BEGIN
 END$$
 DELIMITER ;
 
--- patientIsOnARVFirstLine
+-- patientHasTherapeuticLineFirstLine
 
-DROP FUNCTION IF EXISTS patientIsOnARVFirstLine;
+DROP FUNCTION IF EXISTS patientHasTherapeuticLineFirstLine;
 
 DELIMITER $$
-CREATE FUNCTION patientIsOnARVFirstLine(
+CREATE FUNCTION patientHasTherapeuticLineFirstLine(
     p_patientId INT(11)) RETURNS TINYINT(1)
     DETERMINISTIC
 BEGIN
     DECLARE p_uuidConceptFirstLine VARCHAR(38) DEFAULT "9d928a3f-95cb-487f-96ef-86cf960503a9";
 
-    RETURN _patientIsOnARV(p_patientId, p_uuidConceptFirstLine);
+    RETURN _patientHasTherapeuticLine(p_patientId, p_uuidConceptFirstLine);
 END$$
 DELIMITER ;
 
--- patientIsOnARVSecondLine
+-- patientHasTherapeuticLineSecondLine
 
-DROP FUNCTION IF EXISTS patientIsOnARVSecondLine;
+DROP FUNCTION IF EXISTS patientHasTherapeuticLineSecondLine;
 
 DELIMITER $$
-CREATE FUNCTION patientIsOnARVSecondLine(
+CREATE FUNCTION patientHasTherapeuticLineSecondLine(
     p_patientId INT(11)) RETURNS TINYINT(1)
     DETERMINISTIC
 BEGIN
     DECLARE p_uuidConceptSecondLine VARCHAR(38) DEFAULT "d0ee855d-f0b4-49d2-be02-1d1457d5c8bf";
 
-    RETURN _patientIsOnARV(p_patientId, p_uuidConceptSecondLine);
+    RETURN _patientHasTherapeuticLine(p_patientId, p_uuidConceptSecondLine);
 END$$
 DELIMITER ;
 
--- patientIsOnARVThirdLine
+-- patientHasTherapeuticLineThirdLine
 
-DROP FUNCTION IF EXISTS patientIsOnARVThirdLine;
+DROP FUNCTION IF EXISTS patientHasTherapeuticLineThirdLine;
 
 DELIMITER $$
-CREATE FUNCTION patientIsOnARVThirdLine(
+CREATE FUNCTION patientHasTherapeuticLineThirdLine(
     p_patientId INT(11)) RETURNS TINYINT(1)
     DETERMINISTIC
 BEGIN
     DECLARE p_uuidConceptThirdLine VARCHAR(38) DEFAULT "d1661aa5-9a4f-4b31-b816-6973aa604289";
 
-    RETURN _patientIsOnARV(p_patientId, p_uuidConceptThirdLine);
+    RETURN _patientHasTherapeuticLine(p_patientId, p_uuidConceptThirdLine);
 END$$
 DELIMITER ;
 
--- patientIsOnARV
+-- patientHasTherapeuticLine
 
-DROP FUNCTION IF EXISTS patientIsOnARV;
+DROP FUNCTION IF EXISTS patientHasTherapeuticLine;
 
 DELIMITER $$
-CREATE FUNCTION patientIsOnARV(
+CREATE FUNCTION patientHasTherapeuticLine(
     p_patientId INT(11),
     p_protocolLineNumber INT(11)) RETURNS TINYINT(1)
     DETERMINISTIC
@@ -988,16 +1006,16 @@ BEGIN
     DECLARE result TINYINT(1);
     
     IF p_protocolLineNumber = 1 THEN
-        SET result = patientIsOnARVFirstLine(p_patientId);
+        SET result = patientHasTherapeuticLineFirstLine(p_patientId);
     ELSEIF p_protocolLineNumber = 2 THEN
-        SET result = patientIsOnARVSecondLine(p_patientId);
+        SET result = patientHasTherapeuticLineSecondLine(p_patientId);
     ELSEIF p_protocolLineNumber = 3 THEN
-        SET result = patientIsOnARVThirdLine(p_patientId);
+        SET result = patientHasTherapeuticLineThirdLine(p_patientId);
     ELSE
         SET result =  
-            patientIsOnARVFirstLine(p_patientId) OR
-            patientIsOnARVSecondLine(p_patientId) OR
-            patientIsOnARVThirdLine(p_patientId);
+            patientHasTherapeuticLineFirstLine(p_patientId) OR
+            patientHasTherapeuticLineSecondLine(p_patientId) OR
+            patientHasTherapeuticLineThirdLine(p_patientId);
     END IF;
 
     RETURN (result);
