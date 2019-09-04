@@ -592,8 +592,12 @@ CREATE FUNCTION retrieveViralLoadTestDate(
     p_patientId INT(11)) RETURNS DATE
     DETERMINISTIC
 BEGIN
-    DECLARE viralLoadTestDateUuid VARCHAR(38) DEFAULT 'cac6bf44-f671-4f85-ab76-71e7f099d3cb';
-    DECLARE viralLoadTestUuid VARCHAR(38) DEFAULT '4d80e0ce-5465-4041-9d1e-d281d25a9b50';
+    DECLARE routineViralLoadTestDateUuid VARCHAR(38) DEFAULT '9ee13a14-c7ce-11e9-a32f-2a2ae2dbcce4';
+    DECLARE routineViralLoadTestUuid VARCHAR(38) DEFAULT 'e91915f5-bfda-42ca-bd03-25d2810ee82e';
+    DECLARE targetedViralLoadTestDateUuid VARCHAR(38) DEFAULT '9ee13e38-c7ce-11e9-a32f-2a2ae2dbcce4';
+    DECLARE targetedViralLoadTestUuid VARCHAR(38) DEFAULT 'ac479522-c891-11e9-a32f-2a2ae2dbcce4';
+    DECLARE notDocumentedviralLoadTestDateUuid VARCHAR(38) DEFAULT '9ee140e0-c7ce-11e9-a32f-2a2ae2dbcce4';
+    DECLARE notDocumentedviralLoadTestUuid VARCHAR(38) DEFAULT 'ac4797de-c891-11e9-a32f-2a2ae2dbcce4';
     DECLARE testDate DATE;
     DECLARE testDateFromForm DATE;
     DECLARE testDateFromOpenElis DATE;
@@ -606,7 +610,7 @@ BEGIN
         AND order_id IS NULL
         AND o.value_datetime IS NOT NULL
         AND o.person_id = p_patientId
-        AND c.uuid = viralLoadTestDateUuid
+        AND (c.uuid = routineViralLoadTestDateUuid OR c.uuid = targetedViralLoadTestDateUuid OR c.uuid = notDocumentedviralLoadTestDateUuid)
     ORDER BY o.value_datetime DESC
     LIMIT 1;
 
@@ -618,7 +622,7 @@ BEGIN
         AND order_id IS NOT NULL
         AND o.value_numeric IS NOT NULL
         AND o.person_id = p_patientId
-        AND c.uuid = viralLoadTestUuid
+        AND (c.uuid = routineViralLoadTestUuid OR c.uuid = targetedViralLoadTestUuid OR c.uuid = notDocumentedviralLoadTestUuid)
     ORDER BY o.obs_datetime DESC
     LIMIT 1;
 
@@ -1135,8 +1139,12 @@ CREATE PROCEDURE retrieveViralLoadTestDateAndResult(
     )
     DETERMINISTIC
 proc_vital_load:BEGIN
-    DECLARE viralLoadTestDateUuid VARCHAR(38) DEFAULT 'cac6bf44-f671-4f85-ab76-71e7f099d3cb';
-    DECLARE viralLoadTestUuid VARCHAR(38) DEFAULT '4d80e0ce-5465-4041-9d1e-d281d25a9b50';
+    DECLARE routineViralLoadTestDateUuid VARCHAR(38) DEFAULT '9ee13a14-c7ce-11e9-a32f-2a2ae2dbcce4';
+    DECLARE routineViralLoadTestUuid VARCHAR(38) DEFAULT 'e91915f5-bfda-42ca-bd03-25d2810ee82e';
+    DECLARE targetedViralLoadTestDateUuid VARCHAR(38) DEFAULT '9ee13e38-c7ce-11e9-a32f-2a2ae2dbcce4';
+    DECLARE targetedViralLoadTestUuid VARCHAR(38) DEFAULT 'ac479522-c891-11e9-a32f-2a2ae2dbcce4';
+    DECLARE notDocumentedviralLoadTestDateUuid VARCHAR(38) DEFAULT '9ee140e0-c7ce-11e9-a32f-2a2ae2dbcce4';
+    DECLARE notDocumentedviralLoadTestUuid VARCHAR(38) DEFAULT 'ac4797de-c891-11e9-a32f-2a2ae2dbcce4';
     DECLARE testDate DATE;
     DECLARE testDateFromForm DATE;
     DECLARE testDateFromOpenElis DATE;
@@ -1150,7 +1158,7 @@ proc_vital_load:BEGIN
         AND order_id IS NULL
         AND o.value_datetime IS NOT NULL
         AND o.person_id = p_patientId
-        AND c.uuid = viralLoadTestDateUuid
+        AND (c.uuid = routineViralLoadTestDateUuid OR c.uuid = targetedViralLoadTestDateUuid OR c.uuid = notDocumentedviralLoadTestDateUuid)
     ORDER BY o.value_datetime DESC
     LIMIT 1;
 
@@ -1162,7 +1170,7 @@ proc_vital_load:BEGIN
         AND order_id IS NOT NULL
         AND o.value_numeric IS NOT NULL
         AND o.person_id = p_patientId
-        AND c.uuid = viralLoadTestUuid
+        AND (c.uuid = routineViralLoadTestUuid OR c.uuid = targetedViralLoadTestUuid OR c.uuid = notDocumentedviralLoadTestUuid)
     ORDER BY o.obs_datetime DESC
     LIMIT 1;
 
@@ -1195,7 +1203,7 @@ proc_vital_load:BEGIN
             AND order_id IS NULL
             AND o.value_numeric IS NOT NULL
             AND o.person_id = p_patientId
-            AND c.uuid = viralLoadTestUuid
+            AND (c.uuid = routineViralLoadTestUuid OR c.uuid = targetedViralLoadTestUuid OR c.uuid = notDocumentedviralLoadTestUuid)
         ORDER BY o.value_datetime DESC
         LIMIT 1;
     ELSE
@@ -1206,7 +1214,7 @@ proc_vital_load:BEGIN
             AND order_id IS NOT NULL
             AND o.value_numeric IS NOT NULL
             AND o.person_id = p_patientId
-            AND c.uuid = viralLoadTestUuid
+            AND (c.uuid = routineViralLoadTestUuid OR c.uuid = targetedViralLoadTestUuid OR c.uuid = notDocumentedviralLoadTestUuid)
         ORDER BY o.value_datetime DESC
         LIMIT 1;
     END IF;
