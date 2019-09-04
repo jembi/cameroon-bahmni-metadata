@@ -1230,7 +1230,7 @@ BEGIN
     DECLARE testResult INT(11);
 
     -- retrieve the test date
-    CALL retrieveRoutineViralLoadTestDateAndResult(p_patientId, testDate, testResult);
+    CALL retrieveTargetedViralLoadTestDateAndResult(p_patientId, testDate, testResult);
 
     -- if the test date is null, return FALSE (because the patient didn't have a routine viral load test)
     IF testDate IS NULL THEN
@@ -1248,12 +1248,12 @@ BEGIN
 END$$ 
 DELIMITER ;
 
--- retrieveRoutineViralLoadTestDateAndResult
+-- retrieveTargetedViralLoadTestDateAndResult
 
-DROP PROCEDURE IF EXISTS retrieveRoutineViralLoadTestDateAndResult;
+DROP PROCEDURE IF EXISTS retrieveTargetedViralLoadTestDateAndResult;
 
 DELIMITER $$
-CREATE PROCEDURE retrieveRoutineViralLoadTestDateAndResult(
+CREATE PROCEDURE retrieveTargetedViralLoadTestDateAndResult(
     IN p_patientId INT(11),
     OUT p_testDate DATE,
     OUT p_testResult INT(11)
