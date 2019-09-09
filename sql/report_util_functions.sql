@@ -158,6 +158,35 @@ BEGIN
 END$$
 DELIMITER ;
 
+-- patientHasStartedARVTreatmentBeforeExtendedEndDate
+
+DROP FUNCTION IF EXISTS patientHasStartedARVTreatmentBeforeExtendedEndDate;
+
+DELIMITER $$
+CREATE FUNCTION patientHasStartedARVTreatmentBeforeExtendedEndDate(
+    p_patientId INT(11),
+    p_endDate DATE,
+    p_extendedMonths INT(11)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE result TINYINT(1) DEFAULT 0;
+    DECLARE uuidARVTreatmentStartDate VARCHAR(38) DEFAULT "e3f9c7ee-aa3e-4224-9d18-42e09b095ac6";
+
+    SELECT
+        TRUE INTO result
+    FROM obs o
+    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
+    WHERE o.voided = 0
+        AND o.person_id = p_patientId
+        AND c.uuid = uuidARVTreatmentStartDate
+        AND o.value_datetime IS NOT NULL
+        AND timestampadd(MONTH, -p_extendedMonths, cast(o.value_datetime AS DATE)) < p_endDate
+    GROUP BY c.uuid;
+
+    RETURN (result);
+END$$
+DELIMITER ;
+
 -- patientHasStartedARVTreatmentDuringReportingPeriod
 
 DROP FUNCTION IF EXISTS patientHasStartedARVTreatmentDuringReportingPeriod;
@@ -337,6 +366,142 @@ BEGIN
     GROUP BY o.patient_id;
 
     RETURN (result );
+END$$ 
+DELIMITER ;
+
+-- patientWasOnARVTreatmentAtEndReportingPeriod
+
+DROP FUNCTION IF EXISTS patientWasOnARVTreatmentAtEndReportingPeriod;
+
+DELIMITER $$
+CREATE FUNCTION patientWasOnARVTreatmentAtEndReportingPeriod(
+    p_patientId INT(11),
+    p_endDate DATE) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+
+    DECLARE result TINYINT(1) DEFAULT 0;
+
+    SELECT TRUE INTO result
+    FROM orders o
+    JOIN drug_order do ON do.order_id = o.order_id
+    JOIN concept c ON do.duration_units = c.concept_id AND c.retired = 0
+    JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
+    WHERE o.patient_id = p_patientId AND o.voided = 0
+        AND drugIsARV(d.concept_id)
+        AND calculateTreatmentEndDate(
+            o.scheduled_date,
+            do.duration,
+            c.uuid -- uuid of the duration unit concept
+            ) >= p_endDate
+        AND drugOrderIsDispensed(p_patientId, o.order_id)
+    GROUP BY o.patient_id;
+
+    RETURN (result);
+END$$ 
+DELIMITER ;
+
+-- mostRecentNotDocumentedViralLoadExamIsBelow
+
+DROP FUNCTION IF EXISTS mostRecentNotDocumentedViralLoadExamIsBelow;
+
+DELIMITER $$
+CREATE FUNCTION mostRecentNotDocumentedViralLoadExamIsBelow(
+    p_patientId INT(11),
+    p_endDate DATE,
+    p_examResult INT(11)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+
+    DECLARE uuidNotDocumentedViralLoadExam VARCHAR(38) DEFAULT "9ee140e0-c7ce-11e9-a32f-2a2ae2dbcce4";
+    DECLARE uuidNotDocumentedViralLoadExamDate VARCHAR(38) DEFAULT "ac4797de-c891-11e9-a32f-2a2ae2dbcce4";
+
+    return mostRecentViralLoadExamIsBelow(uuidNotDocumentedViralLoadExam, uuidNotDocumentedViralLoadExamDate, p_patientId, p_endDate, p_examResult);
+
+END$$ 
+DELIMITER ;
+
+-- mostRecentViralLoadExamIsBelow
+
+DROP FUNCTION IF EXISTS mostRecentViralLoadExamIsBelow;
+
+DELIMITER $$
+CREATE FUNCTION mostRecentViralLoadExamIsBelow(
+    p_uuidViralLoadExam VARCHAR(38),
+    p_uuidViralLoadExamDate VARCHAR(38),
+    p_patientId INT(11),
+    p_endDate DATE,
+    p_examResult INT(11)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+
+    DECLARE result TINYINT(1) DEFAULT 0;
+    DECLARE testDateFromForm DATE;
+    DECLARE testDateFromOpenElis DATE;
+    DECLARE useFormResult TINYINT(1) DEFAULT 0;
+    DECLARE testResultFromForm INT(11);
+    DECLARE testResultFromOpenElis INT(11);
+    DECLARE encounterIdOfFormResult INT(11);
+
+    -- Read and store latest test date and result from form "LAB RESULTS - ADD MANUALLY" that is before p_endDate
+    SELECT
+        o.value_datetime, o.encounter_id
+        INTO testDateFromForm, encounterIdOfFormResult
+    FROM obs o
+    JOIN concept c ON o.concept_id = c.concept_id AND c.retired = 0
+    WHERE voided = 0
+        AND o.order_id IS NULL
+        AND o.value_datetime IS NOT NULL
+        AND o.value_datetime < p_endDate
+        AND o.person_id = p_patientId
+        AND c.uuid = p_uuidViralLoadExamDate
+    ORDER BY o.value_datetime DESC
+    LIMIT 1;
+
+    SELECT o.value_numeric INTO testResultFromForm
+    FROM obs o
+    JOIN concept c ON o.concept_id = c.concept_id AND c.retired = 0
+    WHERE voided = 0
+        AND o.encounter_id = encounterIdOfFormResult
+        AND order_id IS NULL
+        AND o.value_numeric IS NOT NULL
+        AND o.person_id = p_patientId
+        AND c.uuid = p_uuidViralLoadExam
+    ORDER BY o.obs_id DESC
+    LIMIT 1;
+
+    -- read and store latest test date and result from elis that is before p_endDate
+    SELECT
+        o.obs_datetime, o.value_numeric
+        INTO testDateFromOpenElis, testResultFromOpenElis
+    FROM obs o
+    JOIN concept c ON o.concept_id = c.concept_id AND c.retired = 0
+    WHERE voided = 0
+        AND order_id IS NOT NULL
+        AND o.value_numeric IS NOT NULL
+        AND o.person_id = p_patientId
+        AND c.uuid = p_uuidViralLoadExam
+        AND o.obs_datetime < p_endDate
+    ORDER BY o.obs_datetime DESC
+    LIMIT 1;
+
+    -- return 0 if both dates are null
+    IF (testDateFromForm IS NULL AND testDateFromOpenElis IS NULL) THEN
+        RETURN 0;
+    END IF;
+
+    -- decide which result to use
+    IF (testDateFromOpenElis IS NULL OR (testDateFromForm IS NOT NULL AND testDateFromForm > testDateFromOpenElis)) THEN
+        SET useFormResult = 1;
+    END IF;
+
+    -- verify if result < p_examResult
+    IF (useFormResult) THEN
+        return testResultFromForm < p_examResult;
+    ELSE
+        return testResultFromOpenElis < p_examResult;
+    END IF;
+
 END$$ 
 DELIMITER ;
 
