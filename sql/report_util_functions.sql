@@ -1306,7 +1306,7 @@ proc_vital_load:BEGIN
             AND o.value_numeric IS NOT NULL
             AND o.person_id = p_patientId
             AND (c.uuid = routineViralLoadTestUuid OR c.uuid = targetedViralLoadTestUuid OR c.uuid = notDocumentedViralLoadTestUuid)
-        ORDER BY o.value_datetime DESC
+        ORDER BY o.obs_datetime DESC
         LIMIT 1;
     END IF;
 
