@@ -421,6 +421,26 @@ BEGIN
 END$$ 
 DELIMITER ;
 
+-- mostRecentRoutineViralLoadExamIsBelow
+
+DROP FUNCTION IF EXISTS mostRecentRoutineViralLoadExamIsBelow;
+
+DELIMITER $$
+CREATE FUNCTION mostRecentRoutineViralLoadExamIsBelow(
+    p_patientId INT(11),
+    p_endDate DATE,
+    p_examResult INT(11)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+
+    DECLARE uuidRoutineViralLoadExam VARCHAR(38) DEFAULT "9ee13a14-c7ce-11e9-a32f-2a2ae2dbcce4";
+    DECLARE uuidRoutineViralLoadExamDate VARCHAR(38) DEFAULT "e91915f5-bfda-42ca-bd03-25d2810ee82e";
+
+    return mostRecentViralLoadExamIsBelow(uuidRoutineViralLoadExam, uuidRoutineViralLoadExamDate, p_patientId, p_endDate, p_examResult);
+
+END$$ 
+DELIMITER ;
+
 -- mostRecentViralLoadExamIsBelow
 
 DROP FUNCTION IF EXISTS mostRecentViralLoadExamIsBelow;
