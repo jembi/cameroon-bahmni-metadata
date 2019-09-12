@@ -45,7 +45,6 @@ insert into result_limits (id,test_id,test_result_type_id,low_normal,high_normal
 insert into result_limits (id,test_id,test_result_type_id,low_normal,high_normal, always_validate,lastupdated) values (43,(select id from test where description = 'BH Titre'),4,20,160,'f', now());
 insert into result_limits (id,test_id,test_result_type_id,low_normal,high_normal, always_validate,lastupdated) values (44,(select id from test where description = 'CO Titre'),4,20,160,'f', now());
 insert into result_limits (id,test_id,test_result_type_id,low_normal,high_normal, always_validate,lastupdated) values (45,(select id from test where description = 'CH Titre'),4,20,160,'f', now());
-insert into result_limits (id,test_id,test_result_type_id,low_normal,high_normal, always_validate,lastupdated) values (46,(select id from test where description = 'Viral Load'),4,120,420,'f', now());
 insert into result_limits (id,test_id,test_result_type_id,low_normal,high_normal, always_validate,lastupdated) values (47,(select id from test where description = 'CO2 (total)'),4,22,29,'f', now());
 insert into result_limits (id,test_id,test_result_type_id,low_normal,high_normal, always_validate,lastupdated) values (48,(select id from test where description = 'Protein (serum) - Total'),4,60,80,'f', now());
 insert into result_limits (id,test_id,test_result_type_id,low_normal,high_normal, always_validate,lastupdated) values (49,(select id from test where description = 'Protein (serum) - Albumin'),4,35,55,'f', now());
