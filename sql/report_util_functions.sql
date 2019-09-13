@@ -158,6 +158,35 @@ BEGIN
 END$$
 DELIMITER ;
 
+-- patientHasStartedARVTreatmentBeforeExtendedEndDate
+
+DROP FUNCTION IF EXISTS patientHasStartedARVTreatmentBeforeExtendedEndDate;
+
+DELIMITER $$
+CREATE FUNCTION patientHasStartedARVTreatmentBeforeExtendedEndDate(
+    p_patientId INT(11),
+    p_endDate DATE,
+    p_extendedMonths INT(11)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE result TINYINT(1) DEFAULT 0;
+    DECLARE uuidARVTreatmentStartDate VARCHAR(38) DEFAULT "e3f9c7ee-aa3e-4224-9d18-42e09b095ac6";
+
+    SELECT
+        TRUE INTO result
+    FROM obs o
+    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
+    WHERE o.voided = 0
+        AND o.person_id = p_patientId
+        AND c.uuid = uuidARVTreatmentStartDate
+        AND o.value_datetime IS NOT NULL
+        AND timestampadd(MONTH, -p_extendedMonths, cast(o.value_datetime AS DATE)) < p_endDate
+    GROUP BY c.uuid;
+
+    RETURN (result);
+END$$
+DELIMITER ;
+
 -- patientHasStartedARVTreatmentDuringReportingPeriod
 
 DROP FUNCTION IF EXISTS patientHasStartedARVTreatmentDuringReportingPeriod;
@@ -326,7 +355,7 @@ BEGIN
     JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
     WHERE o.patient_id = p_patientId AND o.voided = 0
         AND drugIsARV(d.concept_id)
-        AND patientIsOnARV(p_patientId, p_protocolLineNumber)
+        AND patientHasTherapeuticLine(p_patientId, p_protocolLineNumber)
         AND o.scheduled_date < p_startDate
         AND calculateTreatmentEndDate(
             o.scheduled_date,
@@ -337,6 +366,182 @@ BEGIN
     GROUP BY o.patient_id;
 
     RETURN (result );
+END$$ 
+DELIMITER ;
+
+-- patientWasOnARVTreatmentAtEndReportingPeriod
+
+DROP FUNCTION IF EXISTS patientWasOnARVTreatmentAtEndReportingPeriod;
+
+DELIMITER $$
+CREATE FUNCTION patientWasOnARVTreatmentAtEndReportingPeriod(
+    p_patientId INT(11),
+    p_endDate DATE) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+
+    DECLARE result TINYINT(1) DEFAULT 0;
+
+    SELECT TRUE INTO result
+    FROM orders o
+    JOIN drug_order do ON do.order_id = o.order_id
+    JOIN concept c ON do.duration_units = c.concept_id AND c.retired = 0
+    JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
+    WHERE o.patient_id = p_patientId AND o.voided = 0
+        AND drugIsARV(d.concept_id)
+        AND calculateTreatmentEndDate(
+            o.scheduled_date,
+            do.duration,
+            c.uuid -- uuid of the duration unit concept
+            ) >= p_endDate
+        AND drugOrderIsDispensed(p_patientId, o.order_id)
+    GROUP BY o.patient_id;
+
+    RETURN (result);
+END$$ 
+DELIMITER ;
+
+-- mostRecentNotDocumentedViralLoadExamIsBelow
+
+DROP FUNCTION IF EXISTS mostRecentNotDocumentedViralLoadExamIsBelow;
+
+DELIMITER $$
+CREATE FUNCTION mostRecentNotDocumentedViralLoadExamIsBelow(
+    p_patientId INT(11),
+    p_endDate DATE,
+    p_examResult INT(11)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+
+    DECLARE uuidNotDocumentedViralLoadExam VARCHAR(38) DEFAULT "9ee140e0-c7ce-11e9-a32f-2a2ae2dbcce4";
+    DECLARE uuidNotDocumentedViralLoadExamDate VARCHAR(38) DEFAULT "ac4797de-c891-11e9-a32f-2a2ae2dbcce4";
+
+    return mostRecentViralLoadExamIsBelow(uuidNotDocumentedViralLoadExam, uuidNotDocumentedViralLoadExamDate, p_patientId, p_endDate, p_examResult);
+
+END$$ 
+DELIMITER ;
+
+-- mostRecentRoutineViralLoadExamIsBelow
+
+DROP FUNCTION IF EXISTS mostRecentRoutineViralLoadExamIsBelow;
+
+DELIMITER $$
+CREATE FUNCTION mostRecentRoutineViralLoadExamIsBelow(
+    p_patientId INT(11),
+    p_endDate DATE,
+    p_examResult INT(11)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+
+    DECLARE uuidRoutineViralLoadExam VARCHAR(38) DEFAULT "9ee13a14-c7ce-11e9-a32f-2a2ae2dbcce4";
+    DECLARE uuidRoutineViralLoadExamDate VARCHAR(38) DEFAULT "e91915f5-bfda-42ca-bd03-25d2810ee82e";
+
+    return mostRecentViralLoadExamIsBelow(uuidRoutineViralLoadExam, uuidRoutineViralLoadExamDate, p_patientId, p_endDate, p_examResult);
+
+END$$ 
+DELIMITER ;
+
+-- mostRecentTargetedViralLoadExamIsBelow
+
+DROP FUNCTION IF EXISTS mostRecentTargetedViralLoadExamIsBelow;
+
+DELIMITER $$
+CREATE FUNCTION mostRecentTargetedViralLoadExamIsBelow(
+    p_patientId INT(11),
+    p_endDate DATE,
+    p_examResult INT(11)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+
+    DECLARE uuidTargetedViralLoadExam VARCHAR(38) DEFAULT "9ee13e38-c7ce-11e9-a32f-2a2ae2dbcce4";
+    DECLARE uuidTargetedViralLoadExamDate VARCHAR(38) DEFAULT "ac479522-c891-11e9-a32f-2a2ae2dbcce4";
+
+    return mostRecentViralLoadExamIsBelow(uuidTargetedViralLoadExam, uuidTargetedViralLoadExamDate, p_patientId, p_endDate, p_examResult);
+
+END$$ 
+DELIMITER ;
+
+-- mostRecentViralLoadExamIsBelow
+
+DROP FUNCTION IF EXISTS mostRecentViralLoadExamIsBelow;
+
+DELIMITER $$
+CREATE FUNCTION mostRecentViralLoadExamIsBelow(
+    p_uuidViralLoadExam VARCHAR(38),
+    p_uuidViralLoadExamDate VARCHAR(38),
+    p_patientId INT(11),
+    p_endDate DATE,
+    p_examResult INT(11)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+
+    DECLARE result TINYINT(1) DEFAULT 0;
+    DECLARE testDateFromForm DATE;
+    DECLARE testDateFromOpenElis DATE;
+    DECLARE useFormResult TINYINT(1) DEFAULT 0;
+    DECLARE testResultFromForm INT(11);
+    DECLARE testResultFromOpenElis INT(11);
+    DECLARE encounterIdOfFormResult INT(11);
+
+    -- Read and store latest test date and result from form "LAB RESULTS - ADD MANUALLY" that is before p_endDate
+    SELECT
+        o.value_datetime, o.encounter_id
+        INTO testDateFromForm, encounterIdOfFormResult
+    FROM obs o
+    JOIN concept c ON o.concept_id = c.concept_id AND c.retired = 0
+    WHERE voided = 0
+        AND o.order_id IS NULL
+        AND o.value_datetime IS NOT NULL
+        AND o.value_datetime < p_endDate
+        AND o.person_id = p_patientId
+        AND c.uuid = p_uuidViralLoadExamDate
+    ORDER BY o.value_datetime DESC
+    LIMIT 1;
+
+    SELECT o.value_numeric INTO testResultFromForm
+    FROM obs o
+    JOIN concept c ON o.concept_id = c.concept_id AND c.retired = 0
+    WHERE voided = 0
+        AND o.encounter_id = encounterIdOfFormResult
+        AND order_id IS NULL
+        AND o.value_numeric IS NOT NULL
+        AND o.person_id = p_patientId
+        AND c.uuid = p_uuidViralLoadExam
+    ORDER BY o.obs_id DESC
+    LIMIT 1;
+
+    -- read and store latest test date and result from elis that is before p_endDate
+    SELECT
+        o.obs_datetime, o.value_numeric
+        INTO testDateFromOpenElis, testResultFromOpenElis
+    FROM obs o
+    JOIN concept c ON o.concept_id = c.concept_id AND c.retired = 0
+    WHERE voided = 0
+        AND order_id IS NOT NULL
+        AND o.value_numeric IS NOT NULL
+        AND o.person_id = p_patientId
+        AND c.uuid = p_uuidViralLoadExam
+        AND o.obs_datetime < p_endDate
+    ORDER BY o.obs_datetime DESC
+    LIMIT 1;
+
+    -- return 0 if both dates are null
+    IF (testDateFromForm IS NULL AND testDateFromOpenElis IS NULL) THEN
+        RETURN 0;
+    END IF;
+
+    -- decide which result to use
+    IF (testDateFromOpenElis IS NULL OR (testDateFromForm IS NOT NULL AND testDateFromForm > testDateFromOpenElis)) THEN
+        SET useFormResult = 1;
+    END IF;
+
+    -- verify if result < p_examResult
+    IF (useFormResult) THEN
+        return testResultFromForm < p_examResult;
+    ELSE
+        return testResultFromOpenElis < p_examResult;
+    END IF;
+
 END$$ 
 DELIMITER ;
 
@@ -437,7 +642,7 @@ BEGIN
     JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
     WHERE o.patient_id = p_patientId AND o.voided = 0
         AND drugIsARV(d.concept_id)
-        AND patientIsOnARV(p_patientId, 0)
+        AND patientHasTherapeuticLine(p_patientId, 0)
         AND o.scheduled_date <= p_endDate
         AND calculateTreatmentEndDate(
             o.scheduled_date,
@@ -464,6 +669,25 @@ CREATE FUNCTION patientPickedARVDrugDuringReportingPeriod(
     DETERMINISTIC
 BEGIN
 
+    RETURN
+        patientPickedARVDrugDuringReportingPeriodWithNoTherapeuticLine(p_patientId, p_startDate, p_endDate)
+        AND
+        patientHasTherapeuticLine(p_patientId, p_protocolLineNumber);
+END$$ 
+DELIMITER ;
+
+-- patientPickedARVDrugDuringReportingPeriodWithNoTherapeuticLine
+
+DROP FUNCTION IF EXISTS patientPickedARVDrugDuringReportingPeriodWithNoTherapeuticLine;
+
+DELIMITER $$
+CREATE FUNCTION patientPickedARVDrugDuringReportingPeriodWithNoTherapeuticLine(
+    p_patientId INT(11),
+    p_startDate DATE,
+    p_endDate DATE) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+
     DECLARE result TINYINT(1) DEFAULT 0;
 
     SELECT TRUE INTO result
@@ -473,7 +697,6 @@ BEGIN
     JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
     WHERE o.patient_id = p_patientId AND o.voided = 0
         AND drugIsARV(d.concept_id)
-        AND patientIsOnARV(p_patientId, p_protocolLineNumber)
         AND o.scheduled_date BETWEEN p_startDate AND p_endDate
         AND drugOrderIsDispensed(p_patientId, o.order_id)
     GROUP BY o.patient_id;
@@ -505,7 +728,7 @@ BEGIN
     JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
     WHERE o.patient_id = p_patientId AND o.voided = 0
         AND drugIsARV(d.concept_id)
-        AND patientIsOnARV(p_patientId, p_protocolLineNumber)
+        AND patientHasTherapeuticLine(p_patientId, p_protocolLineNumber)
         AND o.scheduled_date BETWEEN TIMESTAMPADD(MONTH,p_monthOffset,p_startDate) AND TIMESTAMPADD(MONTH,p_monthOffset,p_endDate)
         AND !drugOrderIsDispensed(p_patientId, o.order_id)
     GROUP BY o.patient_id;
@@ -517,7 +740,7 @@ BEGIN
     JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
     WHERE o.patient_id = p_patientId AND o.voided = 0
         AND drugIsARV(d.concept_id)
-        AND patientIsOnARV(p_patientId, p_protocolLineNumber)
+        AND patientHasTherapeuticLine(p_patientId, p_protocolLineNumber)
         AND o.scheduled_date BETWEEN TIMESTAMPADD(MONTH,p_monthOffset,p_startDate) AND TIMESTAMPADD(MONTH,p_monthOffset,p_endDate)
     GROUP BY o.patient_id;
 
@@ -549,94 +772,6 @@ BEGIN
     GROUP BY pa.patient_id;
 
     RETURN (result );
-END$$ 
-DELIMITER ;
-
--- patientHadViralLoadTest3MonthsBeforeOrAfterReportingPeriod
-
-DROP FUNCTION IF EXISTS patientHadViralLoadTest3MonthsBeforeOrAfterReportingPeriod;
-
-DELIMITER $$
-CREATE FUNCTION patientHadViralLoadTest3MonthsBeforeOrAfterReportingPeriod(
-    p_patientId INT(11),
-    p_startDate DATE,
-    p_endDate DATE) RETURNS TINYINT(1)
-    DETERMINISTIC
-BEGIN
-    DECLARE result TINYINT(1);
-    DECLARE testDate DATE;
-
-    -- retrieve the test date
-    SET testDate = retrieveViralLoadTestDate(p_patientId);
-
-    -- if the test date is null, return FALSE (because the patient didn't have a viral load test)
-    IF testDate IS NULL THEN
-        RETURN 0;
-    END IF;
-
-    -- return true if the viral load test date is 3 months before or after the reporting period
-    IF timestampdiff(MONTH, testDate, p_startDate) BETWEEN 0 AND 3 OR timestampdiff(MONTH, p_endDate, testDate) BETWEEN 0 AND 3 THEN
-        RETURN 1;
-    ELSE
-        RETURN 0;
-    END IF;
-
-END$$ 
-DELIMITER ;
-
--- retrieveViralLoadTestDate
-DROP FUNCTION IF EXISTS retrieveViralLoadTestDate;
-
-DELIMITER $$
-CREATE FUNCTION retrieveViralLoadTestDate(
-    p_patientId INT(11)) RETURNS DATE
-    DETERMINISTIC
-BEGIN
-    DECLARE viralLoadTestDateUuid VARCHAR(38) DEFAULT 'cac6bf44-f671-4f85-ab76-71e7f099d3cb';
-    DECLARE viralLoadTestUuid VARCHAR(38) DEFAULT '4d80e0ce-5465-4041-9d1e-d281d25a9b50';
-    DECLARE testDate DATE;
-    DECLARE testDateFromForm DATE;
-    DECLARE testDateFromOpenElis DATE;
-
-    -- Read and store latest test date from form "LAB RESULTS - ADD MANUALLY"
-    SELECT o.value_datetime INTO testDateFromForm
-    FROM obs o
-    JOIN concept c ON o.concept_id = c.concept_id AND c.retired = 0
-    WHERE voided = 0
-        AND order_id IS NULL
-        AND o.value_datetime IS NOT NULL
-        AND o.person_id = p_patientId
-        AND c.uuid = viralLoadTestDateUuid
-    ORDER BY o.value_datetime DESC
-    LIMIT 1;
-
-    -- read and store latest test date from elis
-    SELECT o.obs_datetime INTO testDateFromOpenElis
-    FROM obs o
-    JOIN concept c ON o.concept_id = c.concept_id AND c.retired = 0
-    WHERE voided = 0
-        AND order_id IS NOT NULL
-        AND o.value_numeric IS NOT NULL
-        AND o.person_id = p_patientId
-        AND c.uuid = viralLoadTestUuid
-    ORDER BY o.obs_datetime DESC
-    LIMIT 1;
-
-    -- if both dates are null, return NULL
-    IF (testDateFromForm IS NULL AND testDateFromOpenElis IS NULL) THEN
-        RETURN NULL;
-    END IF;
-
-    -- select the test date to use
-    IF (testDateFromForm IS NULL) THEN -- if date from form is null, use date from elis as test date
-        SET testDate = testDateFromOpenElis;
-    ELSEIF (testDateFromOpenElis IS NULL) THEN -- else if date from elis is null, use date from form
-        SET testDate = testDateFromForm;
-    ELSEIF (DATE(testDateFromForm) = DATE(testDateFromOpenElis)) THEN -- if date from form = date from elis, use the date from elis
-        SET testDate = testDateFromOpenElis;
-    END IF;
-
-    RETURN (testDate);
 END$$ 
 DELIMITER ;
 
@@ -899,14 +1034,14 @@ BEGIN
 END$$
 DELIMITER ;
 
--- _patientIsOnARV
+-- patientHasTherapeuticLine
 -- This is a util function to avoid duplicating the SQL code on 
--- patientIsOnARVFirstLine, patientIsOnARVSecondLine and patientIsOnARVThirdLine
+-- patientHasTherapeuticLineFirstLine, patientHasTherapeuticLineSecondLine and patientHasTherapeuticLineThirdLine
 
-DROP FUNCTION IF EXISTS _patientIsOnARV;
+DROP FUNCTION IF EXISTS _patientHasTherapeuticLine;
 
 DELIMITER $$
-CREATE FUNCTION _patientIsOnARV(
+CREATE FUNCTION _patientHasTherapeuticLine(
     p_patientId INT(11),
     p_uuidConceptARVLineNumber VARCHAR(38)) RETURNS TINYINT(1)
     DETERMINISTIC
@@ -929,57 +1064,57 @@ BEGIN
 END$$
 DELIMITER ;
 
--- patientIsOnARVFirstLine
+-- patientHasTherapeuticLineFirstLine
 
-DROP FUNCTION IF EXISTS patientIsOnARVFirstLine;
+DROP FUNCTION IF EXISTS patientHasTherapeuticLineFirstLine;
 
 DELIMITER $$
-CREATE FUNCTION patientIsOnARVFirstLine(
+CREATE FUNCTION patientHasTherapeuticLineFirstLine(
     p_patientId INT(11)) RETURNS TINYINT(1)
     DETERMINISTIC
 BEGIN
     DECLARE p_uuidConceptFirstLine VARCHAR(38) DEFAULT "9d928a3f-95cb-487f-96ef-86cf960503a9";
 
-    RETURN _patientIsOnARV(p_patientId, p_uuidConceptFirstLine);
+    RETURN _patientHasTherapeuticLine(p_patientId, p_uuidConceptFirstLine);
 END$$
 DELIMITER ;
 
--- patientIsOnARVSecondLine
+-- patientHasTherapeuticLineSecondLine
 
-DROP FUNCTION IF EXISTS patientIsOnARVSecondLine;
+DROP FUNCTION IF EXISTS patientHasTherapeuticLineSecondLine;
 
 DELIMITER $$
-CREATE FUNCTION patientIsOnARVSecondLine(
+CREATE FUNCTION patientHasTherapeuticLineSecondLine(
     p_patientId INT(11)) RETURNS TINYINT(1)
     DETERMINISTIC
 BEGIN
     DECLARE p_uuidConceptSecondLine VARCHAR(38) DEFAULT "d0ee855d-f0b4-49d2-be02-1d1457d5c8bf";
 
-    RETURN _patientIsOnARV(p_patientId, p_uuidConceptSecondLine);
+    RETURN _patientHasTherapeuticLine(p_patientId, p_uuidConceptSecondLine);
 END$$
 DELIMITER ;
 
--- patientIsOnARVThirdLine
+-- patientHasTherapeuticLineThirdLine
 
-DROP FUNCTION IF EXISTS patientIsOnARVThirdLine;
+DROP FUNCTION IF EXISTS patientHasTherapeuticLineThirdLine;
 
 DELIMITER $$
-CREATE FUNCTION patientIsOnARVThirdLine(
+CREATE FUNCTION patientHasTherapeuticLineThirdLine(
     p_patientId INT(11)) RETURNS TINYINT(1)
     DETERMINISTIC
 BEGIN
     DECLARE p_uuidConceptThirdLine VARCHAR(38) DEFAULT "d1661aa5-9a4f-4b31-b816-6973aa604289";
 
-    RETURN _patientIsOnARV(p_patientId, p_uuidConceptThirdLine);
+    RETURN _patientHasTherapeuticLine(p_patientId, p_uuidConceptThirdLine);
 END$$
 DELIMITER ;
 
--- patientIsOnARV
+-- patientHasTherapeuticLine
 
-DROP FUNCTION IF EXISTS patientIsOnARV;
+DROP FUNCTION IF EXISTS patientHasTherapeuticLine;
 
 DELIMITER $$
-CREATE FUNCTION patientIsOnARV(
+CREATE FUNCTION patientHasTherapeuticLine(
     p_patientId INT(11),
     p_protocolLineNumber INT(11)) RETURNS TINYINT(1)
     DETERMINISTIC
@@ -988,16 +1123,16 @@ BEGIN
     DECLARE result TINYINT(1);
     
     IF p_protocolLineNumber = 1 THEN
-        SET result = patientIsOnARVFirstLine(p_patientId);
+        SET result = patientHasTherapeuticLineFirstLine(p_patientId);
     ELSEIF p_protocolLineNumber = 2 THEN
-        SET result = patientIsOnARVSecondLine(p_patientId);
+        SET result = patientHasTherapeuticLineSecondLine(p_patientId);
     ELSEIF p_protocolLineNumber = 3 THEN
-        SET result = patientIsOnARVThirdLine(p_patientId);
+        SET result = patientHasTherapeuticLineThirdLine(p_patientId);
     ELSE
         SET result =  
-            patientIsOnARVFirstLine(p_patientId) OR
-            patientIsOnARVSecondLine(p_patientId) OR
-            patientIsOnARVThirdLine(p_patientId);
+            patientHasTherapeuticLineFirstLine(p_patientId) OR
+            patientHasTherapeuticLineSecondLine(p_patientId) OR
+            patientHasTherapeuticLineThirdLine(p_patientId);
     END IF;
 
     RETURN (result);
@@ -1124,7 +1259,7 @@ BEGIN
 END$$ 
 DELIMITER ;
 
--- retrieveViralLoadTestDate
+-- retrieveViralLoadTestDateAndResult
 DROP PROCEDURE IF EXISTS retrieveViralLoadTestDateAndResult;
 
 DELIMITER $$
@@ -1135,8 +1270,12 @@ CREATE PROCEDURE retrieveViralLoadTestDateAndResult(
     )
     DETERMINISTIC
 proc_vital_load:BEGIN
-    DECLARE viralLoadTestDateUuid VARCHAR(38) DEFAULT 'cac6bf44-f671-4f85-ab76-71e7f099d3cb';
-    DECLARE viralLoadTestUuid VARCHAR(38) DEFAULT '4d80e0ce-5465-4041-9d1e-d281d25a9b50';
+    DECLARE routineViralLoadTestDateUuid VARCHAR(38) DEFAULT 'e91915f5-bfda-42ca-bd03-25d2810ee82e';
+    DECLARE routineViralLoadTestUuid VARCHAR(38) DEFAULT '9ee13a14-c7ce-11e9-a32f-2a2ae2dbcce4';
+    DECLARE targetedViralLoadTestDateUuid VARCHAR(38) DEFAULT 'ac479522-c891-11e9-a32f-2a2ae2dbcce4';
+    DECLARE targetedViralLoadTestUuid VARCHAR(38) DEFAULT '9ee13e38-c7ce-11e9-a32f-2a2ae2dbcce4';
+    DECLARE notDocumentedViralLoadTestDateUuid VARCHAR(38) DEFAULT 'ac4797de-c891-11e9-a32f-2a2ae2dbcce4';
+    DECLARE notDocumentedViralLoadTestUuid VARCHAR(38) DEFAULT '9ee140e0-c7ce-11e9-a32f-2a2ae2dbcce4';
     DECLARE testDate DATE;
     DECLARE testDateFromForm DATE;
     DECLARE testDateFromOpenElis DATE;
@@ -1150,7 +1289,7 @@ proc_vital_load:BEGIN
         AND order_id IS NULL
         AND o.value_datetime IS NOT NULL
         AND o.person_id = p_patientId
-        AND c.uuid = viralLoadTestDateUuid
+        AND (c.uuid = routineViralLoadTestDateUuid OR c.uuid = targetedViralLoadTestDateUuid OR c.uuid = notDocumentedViralLoadTestDateUuid)
     ORDER BY o.value_datetime DESC
     LIMIT 1;
 
@@ -1162,7 +1301,7 @@ proc_vital_load:BEGIN
         AND order_id IS NOT NULL
         AND o.value_numeric IS NOT NULL
         AND o.person_id = p_patientId
-        AND c.uuid = viralLoadTestUuid
+        AND (c.uuid = routineViralLoadTestUuid OR c.uuid = targetedViralLoadTestUuid OR c.uuid = notDocumentedViralLoadTestUuid)
     ORDER BY o.obs_datetime DESC
     LIMIT 1;
 
@@ -1180,7 +1319,7 @@ proc_vital_load:BEGIN
     ELSEIF (testDateFromOpenElis IS NULL) THEN -- else if date from elis is null, use date from form
         SET testDate = testDateFromForm;
         SET useFormResult = 1;
-    ELSEIF (DATE(testDateFromForm) = DATE(testDateFromOpenElis)) THEN -- if date from form = date from elis, use the date from elis
+    ELSE -- if date from form and date from openelis are both not null, use the date from elis
         SET testDate = testDateFromOpenElis;
         SET useFormResult = 0;
     END IF;
@@ -1195,7 +1334,7 @@ proc_vital_load:BEGIN
             AND order_id IS NULL
             AND o.value_numeric IS NOT NULL
             AND o.person_id = p_patientId
-            AND c.uuid = viralLoadTestUuid
+            AND (c.uuid = routineViralLoadTestUuid OR c.uuid = targetedViralLoadTestUuid OR c.uuid = notDocumentedViralLoadTestUuid)
         ORDER BY o.value_datetime DESC
         LIMIT 1;
     ELSE
@@ -1206,8 +1345,8 @@ proc_vital_load:BEGIN
             AND order_id IS NOT NULL
             AND o.value_numeric IS NOT NULL
             AND o.person_id = p_patientId
-            AND c.uuid = viralLoadTestUuid
-        ORDER BY o.value_datetime DESC
+            AND (c.uuid = routineViralLoadTestUuid OR c.uuid = targetedViralLoadTestUuid OR c.uuid = notDocumentedViralLoadTestUuid)
+        ORDER BY o.obs_datetime DESC
         LIMIT 1;
     END IF;
 
