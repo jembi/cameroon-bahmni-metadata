@@ -421,6 +421,26 @@ BEGIN
 END$$ 
 DELIMITER ;
 
+-- mostRecentRoutineViralLoadExamIsBelow
+
+DROP FUNCTION IF EXISTS mostRecentRoutineViralLoadExamIsBelow;
+
+DELIMITER $$
+CREATE FUNCTION mostRecentRoutineViralLoadExamIsBelow(
+    p_patientId INT(11),
+    p_endDate DATE,
+    p_examResult INT(11)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+
+    DECLARE uuidRoutineViralLoadExam VARCHAR(38) DEFAULT "9ee13a14-c7ce-11e9-a32f-2a2ae2dbcce4";
+    DECLARE uuidRoutineViralLoadExamDate VARCHAR(38) DEFAULT "e91915f5-bfda-42ca-bd03-25d2810ee82e";
+
+    return mostRecentViralLoadExamIsBelow(uuidRoutineViralLoadExam, uuidRoutineViralLoadExamDate, p_patientId, p_endDate, p_examResult);
+
+END$$ 
+DELIMITER ;
+
 -- mostRecentTargetedViralLoadExamIsBelow
 
 DROP FUNCTION IF EXISTS mostRecentTargetedViralLoadExamIsBelow;
@@ -752,94 +772,6 @@ BEGIN
     GROUP BY pa.patient_id;
 
     RETURN (result );
-END$$ 
-DELIMITER ;
-
--- patientHadViralLoadTest3MonthsBeforeOrAfterReportingPeriod
-
-DROP FUNCTION IF EXISTS patientHadViralLoadTest3MonthsBeforeOrAfterReportingPeriod;
-
-DELIMITER $$
-CREATE FUNCTION patientHadViralLoadTest3MonthsBeforeOrAfterReportingPeriod(
-    p_patientId INT(11),
-    p_startDate DATE,
-    p_endDate DATE) RETURNS TINYINT(1)
-    DETERMINISTIC
-BEGIN
-    DECLARE result TINYINT(1);
-    DECLARE testDate DATE;
-
-    -- retrieve the test date
-    SET testDate = retrieveViralLoadTestDate(p_patientId);
-
-    -- if the test date is null, return FALSE (because the patient didn't have a viral load test)
-    IF testDate IS NULL THEN
-        RETURN 0;
-    END IF;
-
-    -- return true if the viral load test date is 3 months before or after the reporting period
-    IF timestampdiff(MONTH, testDate, p_startDate) BETWEEN 0 AND 3 OR timestampdiff(MONTH, p_endDate, testDate) BETWEEN 0 AND 3 THEN
-        RETURN 1;
-    ELSE
-        RETURN 0;
-    END IF;
-
-END$$ 
-DELIMITER ;
-
--- retrieveViralLoadTestDate
-DROP FUNCTION IF EXISTS retrieveViralLoadTestDate;
-
-DELIMITER $$
-CREATE FUNCTION retrieveViralLoadTestDate(
-    p_patientId INT(11)) RETURNS DATE
-    DETERMINISTIC
-BEGIN
-    DECLARE viralLoadTestDateUuid VARCHAR(38) DEFAULT 'cac6bf44-f671-4f85-ab76-71e7f099d3cb';
-    DECLARE viralLoadTestUuid VARCHAR(38) DEFAULT '4d80e0ce-5465-4041-9d1e-d281d25a9b50';
-    DECLARE testDate DATE;
-    DECLARE testDateFromForm DATE;
-    DECLARE testDateFromOpenElis DATE;
-
-    -- Read and store latest test date from form "LAB RESULTS - ADD MANUALLY"
-    SELECT o.value_datetime INTO testDateFromForm
-    FROM obs o
-    JOIN concept c ON o.concept_id = c.concept_id AND c.retired = 0
-    WHERE voided = 0
-        AND order_id IS NULL
-        AND o.value_datetime IS NOT NULL
-        AND o.person_id = p_patientId
-        AND c.uuid = viralLoadTestDateUuid
-    ORDER BY o.value_datetime DESC
-    LIMIT 1;
-
-    -- read and store latest test date from elis
-    SELECT o.obs_datetime INTO testDateFromOpenElis
-    FROM obs o
-    JOIN concept c ON o.concept_id = c.concept_id AND c.retired = 0
-    WHERE voided = 0
-        AND order_id IS NOT NULL
-        AND o.value_numeric IS NOT NULL
-        AND o.person_id = p_patientId
-        AND c.uuid = viralLoadTestUuid
-    ORDER BY o.obs_datetime DESC
-    LIMIT 1;
-
-    -- if both dates are null, return NULL
-    IF (testDateFromForm IS NULL AND testDateFromOpenElis IS NULL) THEN
-        RETURN NULL;
-    END IF;
-
-    -- select the test date to use
-    IF (testDateFromForm IS NULL) THEN -- if date from form is null, use date from elis as test date
-        SET testDate = testDateFromOpenElis;
-    ELSEIF (testDateFromOpenElis IS NULL) THEN -- else if date from elis is null, use date from form
-        SET testDate = testDateFromForm;
-    ELSEIF (DATE(testDateFromForm) = DATE(testDateFromOpenElis)) THEN -- if date from form = date from elis, use the date from elis
-        SET testDate = testDateFromOpenElis;
-    END IF;
-
-    RETURN (testDate);
 END$$ 
 DELIMITER ;
 
@@ -1327,7 +1259,7 @@ BEGIN
 END$$ 
 DELIMITER ;
 
--- retrieveViralLoadTestDate
+-- retrieveViralLoadTestDateAndResult
 DROP PROCEDURE IF EXISTS retrieveViralLoadTestDateAndResult;
 
 DELIMITER $$
@@ -1338,8 +1270,12 @@ CREATE PROCEDURE retrieveViralLoadTestDateAndResult(
     )
     DETERMINISTIC
 proc_vital_load:BEGIN
-    DECLARE viralLoadTestDateUuid VARCHAR(38) DEFAULT 'cac6bf44-f671-4f85-ab76-71e7f099d3cb';
-    DECLARE viralLoadTestUuid VARCHAR(38) DEFAULT '4d80e0ce-5465-4041-9d1e-d281d25a9b50';
+    DECLARE routineViralLoadTestDateUuid VARCHAR(38) DEFAULT 'e91915f5-bfda-42ca-bd03-25d2810ee82e';
+    DECLARE routineViralLoadTestUuid VARCHAR(38) DEFAULT '9ee13a14-c7ce-11e9-a32f-2a2ae2dbcce4';
+    DECLARE targetedViralLoadTestDateUuid VARCHAR(38) DEFAULT 'ac479522-c891-11e9-a32f-2a2ae2dbcce4';
+    DECLARE targetedViralLoadTestUuid VARCHAR(38) DEFAULT '9ee13e38-c7ce-11e9-a32f-2a2ae2dbcce4';
+    DECLARE notDocumentedViralLoadTestDateUuid VARCHAR(38) DEFAULT 'ac4797de-c891-11e9-a32f-2a2ae2dbcce4';
+    DECLARE notDocumentedViralLoadTestUuid VARCHAR(38) DEFAULT '9ee140e0-c7ce-11e9-a32f-2a2ae2dbcce4';
     DECLARE testDate DATE;
     DECLARE testDateFromForm DATE;
     DECLARE testDateFromOpenElis DATE;
@@ -1353,7 +1289,7 @@ proc_vital_load:BEGIN
         AND order_id IS NULL
         AND o.value_datetime IS NOT NULL
         AND o.person_id = p_patientId
-        AND c.uuid = viralLoadTestDateUuid
+        AND (c.uuid = routineViralLoadTestDateUuid OR c.uuid = targetedViralLoadTestDateUuid OR c.uuid = notDocumentedViralLoadTestDateUuid)
     ORDER BY o.value_datetime DESC
     LIMIT 1;
 
@@ -1365,7 +1301,7 @@ proc_vital_load:BEGIN
         AND order_id IS NOT NULL
         AND o.value_numeric IS NOT NULL
         AND o.person_id = p_patientId
-        AND c.uuid = viralLoadTestUuid
+        AND (c.uuid = routineViralLoadTestUuid OR c.uuid = targetedViralLoadTestUuid OR c.uuid = notDocumentedViralLoadTestUuid)
     ORDER BY o.obs_datetime DESC
     LIMIT 1;
 
@@ -1383,7 +1319,7 @@ proc_vital_load:BEGIN
     ELSEIF (testDateFromOpenElis IS NULL) THEN -- else if date from elis is null, use date from form
         SET testDate = testDateFromForm;
         SET useFormResult = 1;
-    ELSEIF (DATE(testDateFromForm) = DATE(testDateFromOpenElis)) THEN -- if date from form = date from elis, use the date from elis
+    ELSE -- if date from form and date from openelis are both not null, use the date from elis
         SET testDate = testDateFromOpenElis;
         SET useFormResult = 0;
     END IF;
@@ -1398,7 +1334,7 @@ proc_vital_load:BEGIN
             AND order_id IS NULL
             AND o.value_numeric IS NOT NULL
             AND o.person_id = p_patientId
-            AND c.uuid = viralLoadTestUuid
+            AND (c.uuid = routineViralLoadTestUuid OR c.uuid = targetedViralLoadTestUuid OR c.uuid = notDocumentedViralLoadTestUuid)
         ORDER BY o.value_datetime DESC
         LIMIT 1;
     ELSE
@@ -1409,8 +1345,8 @@ proc_vital_load:BEGIN
             AND order_id IS NOT NULL
             AND o.value_numeric IS NOT NULL
             AND o.person_id = p_patientId
-            AND c.uuid = viralLoadTestUuid
-        ORDER BY o.value_datetime DESC
+            AND (c.uuid = routineViralLoadTestUuid OR c.uuid = targetedViralLoadTestUuid OR c.uuid = notDocumentedViralLoadTestUuid)
+        ORDER BY o.obs_datetime DESC
         LIMIT 1;
     END IF;
 
