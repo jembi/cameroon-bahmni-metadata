@@ -745,5 +745,51 @@ WHERE
     patientIsNotLostToFollowUp(pat.patient_id) AND
     patientIsNotTransferredOut(pat.patient_id);
     RETURN (result);
+END$$
+DELIMITER ;
+
+DROP FUNCTION IF EXISTS Testing_Indicator4a;
+
+DELIMITER $$
+CREATE FUNCTION Testing_Indicator4a(
+    p_startDate DATE,
+    p_endDate DATE,
+    p_startAge INT(11),
+    p_endAge INT (11),
+    p_includeEndAge TINYINT(1),
+    p_gender VARCHAR(1)) RETURNS INT(11)
+    DETERMINISTIC
+BEGIN
+    DECLARE result INT(11) DEFAULT 0;
+
+SELECT
+    COUNT(DISTINCT pat.patient_id) INTO result
+FROM
+    patient pat
+WHERE
+    patientDiagnosedHIVPositiveBeforeReportEndDate(pat.patient_id, p_endDate) AND
+    patientHadANCVisitWithinReportPeriod(pat.patient_id, p_startDate, p_endDate) AND
+    patientAgeIsBetween(pat.patient_id, p_startAge, p_endAge, p_includeEndAge) AND
+    patientIsNotDead(pat.patient_id) AND
+    patientIsNotLostToFollowUp(pat.patient_id) AND
+    patientIsNotTransferredOut(pat.patient_id) AND 
+    patientIsFemale(pat.patient_id, p_gender) AND
+    (
+        hivStatusKnown3MonthsOrLessBeforeReportEndDate(pat.patient_id, p_endDate, 3) 
+        OR
+        (
+            hivStatusKnownMoreThan3MonthsBeforeReportEndDate(pat.patient_id, p_endDate, 3) AND
+            patientRetestedForHIVWIthinReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
+            patientHIVRetestResultIsPositive(pat.patient_id) AND
+            patientStatusIsAlreadyOnART(pat.patient_id) 
+        )
+        OR
+        (
+            hivStatusKnownMoreThan3MonthsBeforeReportEndDate(pat.patient_id, p_endDate, 3) AND
+            patientStatusIsNotAlreadyOnART(pat.patient_id)
+        )
+    );
+
+    RETURN (result);
 END$$ 
-DELIMITER ; 
+DELIMITER ;
