@@ -421,6 +421,46 @@ BEGIN
 END$$ 
 DELIMITER ;
 
+-- mostRecentRoutineViralLoadExamIsBelow
+
+DROP FUNCTION IF EXISTS mostRecentRoutineViralLoadExamIsBelow;
+
+DELIMITER $$
+CREATE FUNCTION mostRecentRoutineViralLoadExamIsBelow(
+    p_patientId INT(11),
+    p_endDate DATE,
+    p_examResult INT(11)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+
+    DECLARE uuidRoutineViralLoadExam VARCHAR(38) DEFAULT "9ee13a14-c7ce-11e9-a32f-2a2ae2dbcce4";
+    DECLARE uuidRoutineViralLoadExamDate VARCHAR(38) DEFAULT "e91915f5-bfda-42ca-bd03-25d2810ee82e";
+
+    return mostRecentViralLoadExamIsBelow(uuidRoutineViralLoadExam, uuidRoutineViralLoadExamDate, p_patientId, p_endDate, p_examResult);
+
+END$$ 
+DELIMITER ;
+
+-- mostRecentTargetedViralLoadExamIsBelow
+
+DROP FUNCTION IF EXISTS mostRecentTargetedViralLoadExamIsBelow;
+
+DELIMITER $$
+CREATE FUNCTION mostRecentTargetedViralLoadExamIsBelow(
+    p_patientId INT(11),
+    p_endDate DATE,
+    p_examResult INT(11)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+
+    DECLARE uuidTargetedViralLoadExam VARCHAR(38) DEFAULT "9ee13e38-c7ce-11e9-a32f-2a2ae2dbcce4";
+    DECLARE uuidTargetedViralLoadExamDate VARCHAR(38) DEFAULT "ac479522-c891-11e9-a32f-2a2ae2dbcce4";
+
+    return mostRecentViralLoadExamIsBelow(uuidTargetedViralLoadExam, uuidTargetedViralLoadExamDate, p_patientId, p_endDate, p_examResult);
+
+END$$ 
+DELIMITER ;
+
 -- mostRecentViralLoadExamIsBelow
 
 DROP FUNCTION IF EXISTS mostRecentViralLoadExamIsBelow;
@@ -1306,7 +1346,7 @@ proc_vital_load:BEGIN
             AND o.value_numeric IS NOT NULL
             AND o.person_id = p_patientId
             AND (c.uuid = routineViralLoadTestUuid OR c.uuid = targetedViralLoadTestUuid OR c.uuid = notDocumentedViralLoadTestUuid)
-        ORDER BY o.value_datetime DESC
+        ORDER BY o.obs_datetime DESC
         LIMIT 1;
     END IF;
 
