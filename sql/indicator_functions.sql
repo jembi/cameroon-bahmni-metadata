@@ -687,7 +687,7 @@ END$$
 DELIMITER ; 
 
 
-DROP FUNCTION IF EXISTS Testing_Indicator1a;
+DROP FUNCTION IF EXISTS Testing_Indicator4a;
 
 DELIMITER $$
 CREATE FUNCTION Testing_Indicator1a(
