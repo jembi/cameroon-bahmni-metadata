@@ -747,3 +747,45 @@ WHERE
     RETURN (result);
 END$$ 
 DELIMITER ; 
+
+DROP FUNCTION IF EXISTS TESTING_Indicator4b;
+
+DELIMITER $$
+CREATE FUNCTION TESTING_Indicator4b(
+    p_startDate DATE,
+    p_endDate DATE,
+    p_startAge INT(11),
+    p_endAge INT (11),
+    p_includeEndAge TINYINT(1),
+    p_gender VARCHAR(1)) RETURNS INT(11)
+    DETERMINISTIC
+BEGIN
+    DECLARE result INT(11) DEFAULT 0;
+
+SELECT
+    COUNT(DISTINCT pat.patient_id) INTO result
+FROM
+    patient pat
+WHERE
+    patientIsFemale(pat.patient_id, p_gender) AND
+    patientAgeWhenRegisteredForHivProgramIsBetween(pat.patient_id, p_startAge, p_endAge, p_includeEndAge) AND
+    patientHadANCVisitWithinReportPeriod(pat.patient_id, p_startDate, p_endDate) AND
+    patientIsNotDead(pat.patient_id) AND
+    patientIsNotLostToFollowUp(pat.patient_id) AND
+    patientIsNotTransferredOut(pat.patient_id) AND
+    (
+        (
+        patientWasTestedForHIVAtANC1DuringTheReportingQuarter(pat.patient_id, p_endDate, 3) AND
+        patientDiagnosedHIVPositiveBeforeReportEndDate(pat.patient_id, p_endDate) 
+        )
+        OR
+        (
+         patientDiagnosedHIVNegativeBeforeReportStartDate(pat.patient_id, p_endDate, 3) AND
+         patientHIVRetestResultIsPositive(pat.patient_id) AND
+         patientRetestedForHIVWIthinReportingPeriod(pat.patient_id, p_startDate, p_endDate)
+        )
+    );
+
+    RETURN (result);
+END$$ 
+DELIMITER ; 
