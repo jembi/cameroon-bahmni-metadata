@@ -1600,18 +1600,60 @@ BEGIN
 END$$
 DELIMITER ;
 
--- patientRetestedForHIVWIthinReportingPeriod
+-- patientHIVRetestPositiveWithinReportingPeriod
 
-DROP FUNCTION IF EXISTS patientRetestedForHIVWIthinReportingPeriod;
+DROP FUNCTION IF EXISTS patientHIVRetestPositiveWithinReportingPeriod;
 
 DELIMITER $$
-CREATE FUNCTION patientRetestedForHIVWIthinReportingPeriod(
+CREATE FUNCTION patientHIVRetestPositiveWithinReportingPeriod(
     p_patientId INT(11),
     p_startDate DATE,
     p_endDate DATE) RETURNS TINYINT(1)
     DETERMINISTIC
 BEGIN
-    RETURN (patientRepeatTestDone(p_patientId, p_startDate, p_endDate) && patientRepeatTestDateIsBetweenReportingPeriod(p_patientId, p_startDate, p_endDate));
+    DECLARE patientRetestedForHIVWIthinReportingPeriod TINYINT(1) DEFAULT 0;
+    DECLARE patientHIVRetestResultIsPositive TINYINT(1) DEFAULT 0;
+    DECLARE patientRepeatTestDateIsBetweenReportingPeriod TINYINT(1) DEFAULT 0;
+    DECLARE uuidRepeatTestDone VARCHAR(38) DEFAULT "4026c752-ecfe-43b0-9cf9-14a74d961fd1";
+    DECLARE uuidRepeatTestIfYes VARCHAR(38) DEFAULT "a2065636-5326-40f5-aed6-0cc2cca81ccc";
+    DECLARE uuidRepeatTestResult VARCHAR(38) DEFAULT "7682c09b-8e81-4e30-8afd-636fb9fcd4a1";
+    DECLARE uuidRepeatTestResultIsPositive VARCHAR(38) DEFAULT "7acfafa4-f19b-485e-97a7-c9e002dbe37a";
+    DECLARE uuidRepeatTestDate VARCHAR(38) DEFAULT "541d9f7b-f622-4ebc-a3a3-50c970d4cce0";
+
+    SELECT
+        TRUE INTO patientRetestedForHIVWIthinReportingPeriod
+    FROM obs o
+    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
+    WHERE o.voided = 0
+        AND o.person_id = p_patientId
+        AND c.uuid = uuidRepeatTestDone
+        AND o.value_coded IS NOT NULL
+        AND o.value_coded = (SELECT concept_id FROM concept WHERE uuid = uuidRepeatTestIfYes)
+        AND DATE(o.obs_datetime) BETWEEN p_startDate AND p_endDate
+        LIMIT 1;
+    
+    SELECT
+        TRUE INTO patientHIVRetestResultIsPositive
+    FROM obs o
+    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
+    WHERE o.voided = 0
+        AND o.person_id = p_patientId
+        AND c.uuid = uuidRepeatTestResult
+        AND o.value_coded IS NOT NULL
+        AND o.value_coded = (SELECT concept_id FROM concept WHERE uuid = uuidRepeatTestResultIsPositive)
+        LIMIT 1;
+
+    SELECT
+        TRUE INTO patientRepeatTestDateIsBetweenReportingPeriod
+    FROM obs o
+    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
+    WHERE o.voided = 0
+        AND o.person_id = p_patientId
+        AND c.uuid = uuidRepeatTestDate
+        AND DATE(o.value_datetime) BETWEEN p_startDate AND p_endDate
+        LIMIT 1;
+
+    RETURN (patientRetestedForHIVWIthinReportingPeriod && patientHIVRetestResultIsPositive && patientRepeatTestDateIsBetweenReportingPeriod);
 END$$
 DELIMITER ;
 
@@ -1622,8 +1664,7 @@ DROP FUNCTION IF EXISTS hivStatusKnownMoreThan3MonthsBeforeReportEndDate;
 DELIMITER $$
 CREATE FUNCTION hivStatusKnownMoreThan3MonthsBeforeReportEndDate(
     p_patientId INT(11),
-    p_endDate DATE,
-    p_extendedMonths INT(11)) RETURNS TINYINT(1)
+    p_endDate DATE) RETURNS TINYINT(1)
     DETERMINISTIC
 BEGIN
     DECLARE result TINYINT(1) DEFAULT 0;
@@ -1637,7 +1678,7 @@ BEGIN
         AND o.person_id = p_patientId
         AND c.uuid = uuidHIVTestDate
         AND o.value_datetime IS NOT NULL
-        AND timestampdiff(MONTH, CAST(o.value_datetime AS DATE), p_endDate) > p_extendedMonths
+        AND timestampdiff(MONTH, CAST(o.value_datetime AS DATE), p_endDate) > 3
         LIMIT 1;
 
     RETURN (result );
@@ -1672,8 +1713,7 @@ DROP FUNCTION IF EXISTS hivStatusKnown3MonthsOrLessBeforeReportEndDate;
 DELIMITER $$
 CREATE FUNCTION hivStatusKnown3MonthsOrLessBeforeReportEndDate(
     p_patientId INT(11),
-    p_endDate DATE,
-    p_extendedMonths INT(11)) RETURNS TINYINT(1)
+    p_endDate DATE) RETURNS TINYINT(1)
     DETERMINISTIC
 BEGIN
     DECLARE result TINYINT(1) DEFAULT 0;
@@ -1687,34 +1727,7 @@ BEGIN
         AND o.person_id = p_patientId
         AND c.uuid = uuidHIVTestDate
         AND o.value_datetime IS NOT NULL
-        AND timestampdiff(MONTH, CAST(o.value_datetime AS DATE), p_endDate) <= p_extendedMonths
-        LIMIT 1;
-
-    RETURN (result );
-END$$
-DELIMITER ;
-
--- patientHIVRetestResultIsPositive
-
-DROP FUNCTION IF EXISTS patientHIVRetestResultIsPositive;
-
-DELIMITER $$
-CREATE FUNCTION patientHIVRetestResultIsPositive(
-    p_patientId INT(11)) RETURNS TINYINT(1)
-    DETERMINISTIC
-BEGIN
-    DECLARE result TINYINT(1) DEFAULT 0;
-    DECLARE uuidRepeatTestResult VARCHAR(38) DEFAULT "7682c09b-8e81-4e30-8afd-636fb9fcd4a1";
-    DECLARE uuidRepeatTestResultIsPositive VARCHAR(38) DEFAULT "7acfafa4-f19b-485e-97a7-c9e002dbe37a";
-    SELECT
-        TRUE INTO result
-    FROM obs o
-    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
-    WHERE o.voided = 0
-        AND o.person_id = p_patientId
-        AND c.uuid = uuidRepeatTestResult
-        AND o.value_coded IS NOT NULL
-        AND o.value_coded = (SELECT concept_id FROM concept WHERE uuid = uuidRepeatTestResultIsPositive)
+        AND timestampdiff(MONTH, CAST(o.value_datetime AS DATE), p_endDate) <= 3
         LIMIT 1;
 
     RETURN (result );
@@ -1745,33 +1758,5 @@ BEGIN
     LIMIT 1;
 
     RETURN (isAlreadyOnART );
-END$$
-DELIMITER ;
-
-
--- patientStatusIsNotAlreadyOnART
-
-DROP FUNCTION IF EXISTS patientStatusIsNotAlreadyOnART;
-
-DELIMITER $$
-CREATE FUNCTION patientStatusIsNotAlreadyOnART(
-    p_patientId INT(11)) RETURNS TINYINT(1)
-    DETERMINISTIC
-BEGIN
-    DECLARE isNotAlreadyOnART TINYINT(1) DEFAULT 0;
-    DECLARE uuidARTStatus VARCHAR(38) DEFAULT "f961ec41-cd5d-4b45-91e0-0f5a408fea4b";
-    DECLARE uuidAlreadyOnART VARCHAR(38) DEFAULT "6122279f-93a8-4e5a-ac5e-b347b60c989b";
-
-    SELECT
-        TRUE INTO isNotAlreadyOnART
-    FROM obs o
-    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
-    WHERE o.voided = 0
-        AND o.person_id = p_patientId
-        AND c.uuid = uuidARTStatus
-        AND o.value_coded = (SELECT concept_id FROM concept WHERE uuid = uuidAlreadyOnART)
-    LIMIT 1;
-
-    RETURN (!isNotAlreadyOnART );
 END$$
 DELIMITER ;
