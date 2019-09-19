@@ -775,18 +775,17 @@ WHERE
     patientIsNotTransferredOut(pat.patient_id) AND 
     patientIsFemale(pat.patient_id, p_gender) AND
     (
-        hivStatusKnown3MonthsOrLessBeforeReportEndDate(pat.patient_id, p_endDate, 3) 
+        hivStatusKnown3MonthsOrLessBeforeReportEndDate(pat.patient_id, p_endDate) 
         OR
         (
-            hivStatusKnownMoreThan3MonthsBeforeReportEndDate(pat.patient_id, p_endDate, 3) AND
-            patientRetestedForHIVWIthinReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
-            patientHIVRetestResultIsPositive(pat.patient_id) AND
+            hivStatusKnownMoreThan3MonthsBeforeReportEndDate(pat.patient_id, p_endDate) AND
+            patientHIVRetestPositiveWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
             patientStatusIsAlreadyOnART(pat.patient_id) 
         )
         OR
         (
-            hivStatusKnownMoreThan3MonthsBeforeReportEndDate(pat.patient_id, p_endDate, 3) AND
-            patientStatusIsNotAlreadyOnART(pat.patient_id)
+            hivStatusKnownMoreThan3MonthsBeforeReportEndDate(pat.patient_id, p_endDate) AND
+            NOT patientStatusIsAlreadyOnART(pat.patient_id)
         )
     );
 
