@@ -130,6 +130,104 @@ BEGIN
 END$$
 DELIMITER ;
 
+-- patientHasEnrolledIntoHivProgram
+
+DROP FUNCTION IF EXISTS patientHasEnrolledIntoHivProgram;
+
+DELIMITER $$
+CREATE FUNCTION patientHasEnrolledIntoHivProgram(
+    p_patientId INT(11)) RETURNS VARCHAR(3)
+    DETERMINISTIC
+BEGIN
+    DECLARE result VARCHAR(3) DEFAULT "No";
+
+    SELECT
+        "Yes" INTO result
+    FROM person p
+    JOIN patient_program pp ON pp.patient_id = p.person_id AND pp.voided = 0
+    JOIN program pro ON pro.program_id = pp.program_id AND pro.retired = 0
+    WHERE p.person_id = p_patientId
+        AND p.voided = 0
+        AND pro.name = "HIV_PROGRAM_KEY"
+    GROUP BY pro.name;
+
+    RETURN (result);
+END$$
+DELIMITER ;
+
+-- arvInitiationDateSpecified
+
+DROP FUNCTION IF EXISTS arvInitiationDateSpecified;
+
+DELIMITER $$
+CREATE FUNCTION arvInitiationDateSpecified(
+    p_patientId INT(11)) RETURNS VARCHAR(3)
+    DETERMINISTIC
+BEGIN
+    DECLARE result VARCHAR(3) DEFAULT "No";
+    DECLARE uuidARVTreatmentStartDate VARCHAR(38) DEFAULT "e3f9c7ee-aa3e-4224-9d18-42e09b095ac6";
+
+    SELECT
+        "Yes" INTO result
+    FROM obs o
+    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
+    WHERE o.voided = 0
+        AND o.person_id = p_patientId
+        AND c.uuid = uuidARVTreatmentStartDate
+        AND o.value_datetime IS NOT NULL
+    GROUP BY c.uuid;
+
+    RETURN (result);
+END$$
+DELIMITER ;
+
+-- patientHasAtLeastOneArvDrugPrescribed
+
+DROP FUNCTION IF EXISTS patientHasAtLeastOneArvDrugPrescribed;
+
+DELIMITER $$
+CREATE FUNCTION patientHasAtLeastOneArvDrugPrescribed(
+    p_patientId INT(11)) RETURNS VARCHAR(3)
+    DETERMINISTIC
+BEGIN
+    DECLARE result VARCHAR(3) DEFAULT "No";
+
+    SELECT "Yes" INTO result
+    FROM orders o
+    JOIN drug_order do ON do.order_id = o.order_id
+    JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
+    WHERE o.patient_id = p_patientId AND o.voided = 0
+        AND drugIsARV(d.concept_id)
+    GROUP BY o.patient_id;
+
+    RETURN (result);
+END$$
+DELIMITER ;
+
+-- patientLatestArvDrugWasDispensed
+
+DROP FUNCTION IF EXISTS patientLatestArvDrugWasDispensed;
+
+DELIMITER $$
+CREATE FUNCTION patientLatestArvDrugWasDispensed(
+    p_patientId INT(11)) RETURNS VARCHAR(3)
+    DETERMINISTIC
+BEGIN
+    DECLARE result VARCHAR(3) DEFAULT "No";
+
+    SELECT "Yes" INTO result
+    FROM orders o
+    JOIN drug_order do ON do.order_id = o.order_id
+    JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
+    WHERE o.patient_id = p_patientId AND o.voided = 0
+        AND drugIsARV(d.concept_id)
+        AND drugOrderIsDispensed(p_patientId, o.order_id)
+    GROUP BY o.patient_id;
+
+    RETURN (result);
+END$$
+DELIMITER ;
+
 -- patientHasStartedARVTreatmentBefore
 
 DROP FUNCTION IF EXISTS patientHasStartedARVTreatmentBefore;
