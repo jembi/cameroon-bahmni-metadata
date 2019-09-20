@@ -773,7 +773,7 @@ WHERE
     patientIsNotDead(pat.patient_id) AND
     patientIsNotLostToFollowUp(pat.patient_id) AND
     patientIsNotTransferredOut(pat.patient_id) AND 
-    patientIsFemale(pat.patient_id, p_gender) AND
+    patientGenderIs(pat.patient_id, 'F') AND
     (
         hivStatusKnown3MonthsOrLessBeforeReportEndDate(pat.patient_id, p_endDate) 
         OR

@@ -1695,26 +1695,11 @@ CREATE FUNCTION patientHIVRetestPositiveWithinReportingPeriod(
     p_endDate DATE) RETURNS TINYINT(1)
     DETERMINISTIC
 BEGIN
-    DECLARE patientRetestedForHIVWIthinReportingPeriod TINYINT(1) DEFAULT 0;
     DECLARE patientHIVRetestResultIsPositive TINYINT(1) DEFAULT 0;
     DECLARE patientRepeatTestDateIsBetweenReportingPeriod TINYINT(1) DEFAULT 0;
-    DECLARE uuidRepeatTestDone VARCHAR(38) DEFAULT "4026c752-ecfe-43b0-9cf9-14a74d961fd1";
-    DECLARE uuidRepeatTestIfYes VARCHAR(38) DEFAULT "a2065636-5326-40f5-aed6-0cc2cca81ccc";
     DECLARE uuidRepeatTestResult VARCHAR(38) DEFAULT "7682c09b-8e81-4e30-8afd-636fb9fcd4a1";
     DECLARE uuidRepeatTestResultIsPositive VARCHAR(38) DEFAULT "7acfafa4-f19b-485e-97a7-c9e002dbe37a";
     DECLARE uuidRepeatTestDate VARCHAR(38) DEFAULT "541d9f7b-f622-4ebc-a3a3-50c970d4cce0";
-
-    SELECT
-        TRUE INTO patientRetestedForHIVWIthinReportingPeriod
-    FROM obs o
-    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
-    WHERE o.voided = 0
-        AND o.person_id = p_patientId
-        AND c.uuid = uuidRepeatTestDone
-        AND o.value_coded IS NOT NULL
-        AND o.value_coded = (SELECT concept_id FROM concept WHERE uuid = uuidRepeatTestIfYes)
-        AND DATE(o.obs_datetime) BETWEEN p_startDate AND p_endDate
-        LIMIT 1;
     
     SELECT
         TRUE INTO patientHIVRetestResultIsPositive
@@ -1737,7 +1722,7 @@ BEGIN
         AND DATE(o.value_datetime) BETWEEN p_startDate AND p_endDate
         LIMIT 1;
 
-    RETURN (patientRetestedForHIVWIthinReportingPeriod && patientHIVRetestResultIsPositive && patientRepeatTestDateIsBetweenReportingPeriod);
+    RETURN (patientHIVRetestResultIsPositive && patientRepeatTestDateIsBetweenReportingPeriod);
 END$$
 DELIMITER ;
 
@@ -1766,27 +1751,6 @@ BEGIN
         LIMIT 1;
 
     RETURN (result );
-END$$
-DELIMITER ;
-
--- patientIsFemale
-
-DROP FUNCTION IF EXISTS patientIsFemale;
-
-DELIMITER $$
-CREATE FUNCTION patientIsFemale(
-    p_patientId INT(11),
-    p_gender VARCHAR(1)) RETURNS TINYINT(1)
-    DETERMINISTIC
-BEGIN 
-    DECLARE patientIsFemale TINYINT(1) DEFAULT 0;
-
-    SELECT TRUE INTO patientIsFemale
-    FROM person p
-    WHERE p.person_id = p_patientId
-        AND p.gender = p_gender;
-        
-    RETURN (patientIsFemale );
 END$$
 DELIMITER ;
 
