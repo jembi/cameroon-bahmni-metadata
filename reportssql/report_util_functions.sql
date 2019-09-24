@@ -130,6 +130,30 @@ BEGIN
 END$$
 DELIMITER ;
 
+-- patientHasRegisteredWithinReportingPeriod
+
+DROP FUNCTION IF EXISTS patientHasRegisteredWithinReportingPeriod;
+
+DELIMITER $$
+CREATE FUNCTION patientHasRegisteredWithinReportingPeriod(
+    p_patientId INT(11),
+    p_startDate DATE,
+    p_endDate DATE) RETURNS VARCHAR(3)
+    DETERMINISTIC
+BEGIN
+    DECLARE result VARCHAR(3) DEFAULT "No";
+
+    SELECT
+        "Yes" INTO result
+    FROM patient p
+    WHERE p.patient_id = p_patientId
+        AND p.voided = 0
+        AND CAST(p.date_created AS DATE) BETWEEN p_startDate AND p_endDate;
+
+    RETURN (result );
+END$$
+DELIMITER ;
+
 -- patientHasEnrolledIntoHivProgram
 
 DROP FUNCTION IF EXISTS patientHasEnrolledIntoHivProgram;
