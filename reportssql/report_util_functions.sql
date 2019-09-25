@@ -1613,67 +1613,6 @@ BEGIN
 END$$ 
 DELIMITER ;
 
--- patientDiagnosedHIVPositiveBeforeReportEndDate
-
-DROP FUNCTION IF EXISTS patientDiagnosedHIVPositiveBeforeReportEndDate;
-
-DELIMITER $$
-CREATE FUNCTION patientDiagnosedHIVPositiveBeforeReportEndDate(
-    p_patientId INT(11),
-    p_endDate DATE) RETURNS TINYINT(1)
-    DETERMINISTIC
-BEGIN
-    DECLARE result TINYINT(1) DEFAULT 0;
-    DECLARE uuidHIVTestResult VARCHAR(38) DEFAULT "85dadffe-5714-4210-8632-6fb51ef593b6";
-    DECLARE uuidHIVTestResultPositive VARCHAR(38) DEFAULT "7acfafa4-f19b-485e-97a7-c9e002dbe37a";
-
-    SELECT
-        TRUE INTO result
-    FROM obs o
-    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
-    WHERE o.voided = 0
-        AND o.person_id = p_patientId
-        AND c.uuid = uuidHIVTestResult
-        AND o.value_coded IS NOT NULL
-        AND o.value_coded = (SELECT concept_id FROM concept WHERE uuid = uuidHIVTestResultPositive)
-        AND cast(o.obs_datetime AS DATE) < p_endDate
-    LIMIT 1;
-
-    RETURN (result );
-END$$
-DELIMITER ;
-
--- patientDiagnosedHIVNegativeBeforeReportStartDate
-
-DROP FUNCTION IF EXISTS patientDiagnosedHIVNegativeBeforeReportStartDate;
-
-DELIMITER $$
-CREATE FUNCTION patientDiagnosedHIVNegativeBeforeReportStartDate(
-    p_patientId INT(11),
-    p_endDate DATE,
-    p_extendedMonths INT(11)) RETURNS TINYINT(1)
-    DETERMINISTIC
-BEGIN
-    DECLARE result TINYINT(1) DEFAULT 0;
-    DECLARE uuidHIVTestResult VARCHAR(38) DEFAULT "85dadffe-5714-4210-8632-6fb51ef593b6";
-    DECLARE conceptIdHIVTestResultNegative VARCHAR(38) DEFAULT "718b4589-2a11-4355-b8dc-aa668a93e098";
-
-    SELECT
-        TRUE INTO result
-    FROM obs o
-    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
-    WHERE o.voided = 0
-        AND o.person_id = p_patientId
-        AND c.uuid = uuidHIVTestResult
-        AND o.value_coded IS NOT NULL
-        AND o.value_coded = (SELECT concept_id FROM concept WHERE uuid = conceptIdHIVTestResultNegative)
-        AND timestampadd(MONTH, -p_extendedMonths, cast(o.value_datetime AS DATE)) < p_endDate
-    ORDER BY o.obs_datetime DESC;
-
-    RETURN (result );
-END$$
-DELIMITER ;
-
 -- patientHadANCVisitWithinReportPeriod
 
 DROP FUNCTION IF EXISTS patientHadANCVisitWithinReportPeriod;
@@ -1702,78 +1641,6 @@ BEGIN
 END$$
 DELIMITER ;
 
--- patientRepeatTestDone
-
-DROP FUNCTION IF EXISTS patientRepeatTestDone;
-
-DELIMITER $$
-CREATE FUNCTION patientRepeatTestDone(
-    p_patientId INT(11),
-    p_startDate DATE,
-    p_endDate DATE) RETURNS TINYINT(1)
-    DETERMINISTIC
-BEGIN
-    DECLARE result TINYINT(1) DEFAULT 0;
-    DECLARE uuidRepeatTestDone VARCHAR(38) DEFAULT "4026c752-ecfe-43b0-9cf9-14a74d961fd1";
-    DECLARE uuidRepeatTestIfYes VARCHAR(38) DEFAULT "a2065636-5326-40f5-aed6-0cc2cca81ccc";
-    SELECT
-        TRUE INTO result
-    FROM obs o
-    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
-    WHERE o.voided = 0
-        AND o.person_id = p_patientId
-        AND c.uuid = uuidRepeatTestDone
-        AND o.value_coded IS NOT NULL
-        AND o.value_coded = (SELECT concept_id FROM concept WHERE uuid = uuidRepeatTestIfYes)
-        AND DATE(o.obs_datetime) BETWEEN p_startDate AND p_endDate
-        LIMIT 1;
-
-    RETURN (result );
-END$$
-DELIMITER ;
-
--- patientRepeatTestDateIsBetweenReportingPeriod
-
-DROP FUNCTION IF EXISTS patientRepeatTestDateIsBetweenReportingPeriod;
-
-DELIMITER $$
-CREATE FUNCTION patientRepeatTestDateIsBetweenReportingPeriod(
-    p_patientId INT(11),
-    p_startDate DATE,
-    p_endDate DATE) RETURNS TINYINT(1)
-    DETERMINISTIC
-BEGIN
-    DECLARE result TINYINT(1) DEFAULT 0;
-    DECLARE uuidRepeatTestDate VARCHAR(38) DEFAULT "541d9f7b-f622-4ebc-a3a3-50c970d4cce0";
-    SELECT
-        TRUE INTO result
-    FROM obs o
-    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
-    WHERE o.voided = 0
-        AND o.person_id = p_patientId
-        AND c.uuid = uuidRepeatTestDate
-        AND DATE(o.value_datetime) BETWEEN p_startDate AND p_endDate
-        LIMIT 1;
-
-    RETURN (result );
-END$$
-DELIMITER ;
-
--- patientRetestedForHIVWIthinReportingPeriod
-
-DROP FUNCTION IF EXISTS patientRetestedForHIVWIthinReportingPeriod;
-
-DELIMITER $$
-CREATE FUNCTION patientRetestedForHIVWIthinReportingPeriod(
-    p_patientId INT(11),
-    p_startDate DATE,
-    p_endDate DATE) RETURNS TINYINT(1)
-    DETERMINISTIC
-BEGIN
-    RETURN (patientRepeatTestDone(p_patientId, p_startDate, p_endDate) && patientRepeatTestDateIsBetweenReportingPeriod(p_patientId, p_startDate, p_endDate));
-END$$
-DELIMITER ;
-
 -- patientIsFemale
 
 DROP FUNCTION IF EXISTS patientIsFemale;
@@ -1795,30 +1662,131 @@ BEGIN
 END$$
 DELIMITER ;
 
+-- patientTestedAndDiagnosedHIVPositiveDuringReportingPeriod
 
--- patientHIVRetestResultIsPositive
-
-DROP FUNCTION IF EXISTS patientHIVRetestResultIsPositive;
+DROP FUNCTION IF EXISTS patientTestedAndDiagnosedHIVPositiveDuringReportingPeriod;
 
 DELIMITER $$
-CREATE FUNCTION patientHIVRetestResultIsPositive(
-    p_patientId INT(11)) RETURNS TINYINT(1)
+CREATE FUNCTION patientTestedAndDiagnosedHIVPositiveDuringReportingPeriod(
+    p_patientId INT(11),
+    p_startDate DATE,
+    p_endDate DATE) RETURNS TINYINT(1)
     DETERMINISTIC
 BEGIN
     DECLARE result TINYINT(1) DEFAULT 0;
-    DECLARE uuidRepeatTestResult VARCHAR(38) DEFAULT "7682c09b-8e81-4e30-8afd-636fb9fcd4a1";
-    DECLARE uuidRepeatTestResultIsPositive VARCHAR(38) DEFAULT "7acfafa4-f19b-485e-97a7-c9e002dbe37a";
+    DECLARE hivTestDateStartedDuringReportingPeriod TINYINT(1) DEFAULT 0;
+    DECLARE uuidHIVTestResult VARCHAR(38) DEFAULT "85dadffe-5714-4210-8632-6fb51ef593b6";
+    DECLARE uuidHIVTestResultPositive VARCHAR(38) DEFAULT "7acfafa4-f19b-485e-97a7-c9e002dbe37a";
+    DECLARE uuidHIVTestDate VARCHAR(38) DEFAULT "c6c08cdc-18dc-4f42-809c-959621bc9a6c";
+
     SELECT
         TRUE INTO result
     FROM obs o
     JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
     WHERE o.voided = 0
         AND o.person_id = p_patientId
-        AND c.uuid = uuidRepeatTestResult
+        AND c.uuid = uuidHIVTestResult
         AND o.value_coded IS NOT NULL
-        AND o.value_coded = (SELECT concept_id FROM concept WHERE uuid = uuidRepeatTestResultIsPositive)
-        LIMIT 1;
+        AND o.value_coded = (SELECT concept_id FROM concept WHERE uuid = uuidHIVTestResultPositive)
+    LIMIT 1;
+
+    SELECT
+        TRUE INTO hivTestDateStartedDuringReportingPeriod
+    FROM obs o
+    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
+    WHERE o.voided = 0
+        AND o.person_id = p_patientId
+        AND c.uuid = uuidHIVTestDate
+        AND atANCEnrolment(p_patientId)
+        AND cast(o.value_datetime AS DATE) BETWEEN p_startDate AND p_endDate
+    LIMIT 1;
+
+    RETURN (result && hivTestDateStartedDuringReportingPeriod);
+END$$
+DELIMITER ;
+
+-- atANCEnrolment
+
+DROP FUNCTION IF EXISTS atANCEnrolment;
+
+DELIMITER $$
+CREATE FUNCTION atANCEnrolment(
+    p_patientId INT(11)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE result TINYINT(1) DEFAULT 0;
+    DECLARE uuidAtANCEnrolment VARCHAR(38) DEFAULT "d6cc3709-ffa0-42eb-b388-d7def4df30cf";
+    SELECT
+        TRUE INTO result
+    FROM concept c
+    JOIN  obs o on o.concept_id=c.concept_id AND c.retired = 0 AND c.uuid = uuidAtANCEnrolment
+    WHERE o.voided = 0
+        AND  o.person_id = p_patientId ;
 
     RETURN (result );
+END$$
+DELIMITER ;
+
+-- priorToANCEnrolment
+
+DROP FUNCTION IF EXISTS priorToANCEnrolment;
+
+DELIMITER $$
+CREATE FUNCTION priorToANCEnrolment(
+    p_patientId INT(11)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE result TINYINT(1) DEFAULT 0;
+    DECLARE uuidPriorToANCEnrolment VARCHAR(38) DEFAULT "130e05df-8283-453b-a611-d4f884fac8e0";
+    SELECT
+        TRUE INTO result
+    FROM concept c
+    JOIN  obs o on o.concept_id=c.concept_id AND c.retired = 0 AND c.uuid = uuidPriorToANCEnrolment
+    WHERE o.voided = 0
+        AND  o.person_id = p_patientId ;
+
+    RETURN (result );
+END$$
+DELIMITER ;
+
+-- patientTestedAndDiagnosedHIVNegativeBeforeReportingPeriod
+
+DROP FUNCTION IF EXISTS patientTestedAndDiagnosedHIVNegativeBeforeReportingPeriod;
+
+DELIMITER $$
+CREATE FUNCTION patientTestedAndDiagnosedHIVNegativeBeforeReportingPeriod(
+    p_patientId INT(11),
+    p_startDate DATE) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE result TINYINT(1) DEFAULT 0;
+    DECLARE hivTestDateStartedBeforeReportingPeriod TINYINT(1) DEFAULT 0;
+    DECLARE uuidHIVTestResult VARCHAR(38) DEFAULT "85dadffe-5714-4210-8632-6fb51ef593b6";
+    DECLARE uuidHIVTestResultNegative VARCHAR(38) DEFAULT "718b4589-2a11-4355-b8dc-aa668a93e098";
+    DECLARE uuidHIVTestDate VARCHAR(38) DEFAULT "c6c08cdc-18dc-4f42-809c-959621bc9a6c";
+
+    SELECT
+        TRUE INTO result
+    FROM obs o
+    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
+    WHERE o.voided = 0
+        AND o.person_id = p_patientId
+        AND c.uuid = uuidHIVTestResult
+        AND o.value_coded IS NOT NULL
+        AND o.value_coded = (SELECT concept_id FROM concept WHERE uuid = uuidHIVTestResultNegative)
+    LIMIT 1;
+
+    SELECT
+        TRUE INTO hivTestDateStartedBeforeReportingPeriod
+    FROM obs o
+    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
+    WHERE o.voided = 0
+        AND o.person_id = p_patientId
+        AND c.uuid = uuidHIVTestDate
+        AND priorToANCEnrolment(p_patientId)
+        AND cast(o.value_datetime AS DATE) < p_startDate
+    LIMIT 1;
+
+    RETURN (result && hivTestDateStartedBeforeReportingPeriod);
 END$$
 DELIMITER ;

@@ -770,22 +770,15 @@ WHERE
     patientIsFemale(pat.patient_id, p_gender) AND
     patientAgeWhenRegisteredForHivProgramIsBetween(pat.patient_id, p_startAge, p_endAge, p_includeEndAge) AND
     patientHadANCVisitWithinReportPeriod(pat.patient_id, p_startDate, p_endDate) AND
+    patientWasTestedForHIVAtANC1DuringTheReportingQuarter(pat.patient_id, p_endDate, 3) AND
     patientIsNotDead(pat.patient_id) AND
     patientIsNotLostToFollowUp(pat.patient_id) AND
     patientIsNotTransferredOut(pat.patient_id) AND
     (
-        (
-        patientWasTestedForHIVAtANC1DuringTheReportingQuarter(pat.patient_id, p_endDate, 3) AND
-        patientDiagnosedHIVPositiveBeforeReportEndDate(pat.patient_id, p_endDate) 
-        )
-        OR
-        (
-         patientDiagnosedHIVNegativeBeforeReportStartDate(pat.patient_id, p_endDate, 3) AND
-         patientHIVRetestResultIsPositive(pat.patient_id) AND
-         patientRetestedForHIVWIthinReportingPeriod(pat.patient_id, p_startDate, p_endDate)
-        )
+        patientTestedAndDiagnosedHIVPositiveDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate) OR
+        patientTestedAndDiagnosedHIVNegativeBeforeReportingPeriod(pat.patient_id, p_startDate)
     );
-
+   
     RETURN (result);
 END$$ 
 DELIMITER ; 
