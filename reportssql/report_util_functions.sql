@@ -138,13 +138,13 @@ DELIMITER $$
 CREATE FUNCTION patientHasRegisteredWithinReportingPeriod(
     p_patientId INT(11),
     p_startDate DATE,
-    p_endDate DATE) RETURNS VARCHAR(3)
+    p_endDate DATE) RETURNS TINYINT(1)
     DETERMINISTIC
 BEGIN
-    DECLARE result VARCHAR(3) DEFAULT "No";
+    DECLARE result TINYINT(1) DEFAULT 0;
 
     SELECT
-        "Yes" INTO result
+        TRUE INTO result
     FROM patient p
     WHERE p.patient_id = p_patientId
         AND p.voided = 0
