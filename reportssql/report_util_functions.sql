@@ -798,6 +798,25 @@ BEGIN
 END$$ 
 DELIMITER ;
 
+-- patientTherapeuticLineSpecified
+
+DROP FUNCTION IF EXISTS patientTherapeuticLineSpecified;
+
+DELIMITER $$
+CREATE FUNCTION patientTherapeuticLineSpecified(
+    p_patientId INT(11)) RETURNS VARCHAR(3)
+    DETERMINISTIC
+BEGIN
+
+    IF patientHasTherapeuticLine(p_patientId, 0) = 1 THEN
+        RETURN 'Yes';
+    ELSE
+        RETURN 'No';
+    END IF;
+
+END$$
+DELIMITER ;
+
 -- patientPickedARVDrugDuringReportingPeriodWithNoTherapeuticLine
 
 DROP FUNCTION IF EXISTS patientPickedARVDrugDuringReportingPeriodWithNoTherapeuticLine;
