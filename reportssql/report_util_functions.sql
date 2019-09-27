@@ -555,8 +555,8 @@ CREATE FUNCTION mostRecentRoutineViralLoadExamIsBelow(
     DETERMINISTIC
 BEGIN
 
-    DECLARE uuidRoutineViralLoadExam VARCHAR(38) DEFAULT "9ee13a14-c7ce-11e9-a32f-2a2ae2dbcce4";
-    DECLARE uuidRoutineViralLoadExamDate VARCHAR(38) DEFAULT "e91915f5-bfda-42ca-bd03-25d2810ee82e";
+    DECLARE uuidRoutineViralLoadExam VARCHAR(38) DEFAULT "4d80e0ce-5465-4041-9d1e-d281d25a9b50";
+    DECLARE uuidRoutineViralLoadExamDate VARCHAR(38) DEFAULT "cac6bf44-f671-4f85-ab76-71e7f099d3cb";
 
     return mostRecentViralLoadExamIsBelow(uuidRoutineViralLoadExam, uuidRoutineViralLoadExamDate, p_patientId, p_endDate, p_examResult);
 
@@ -1411,8 +1411,8 @@ CREATE PROCEDURE retrieveViralLoadTestDateAndResult(
     )
     DETERMINISTIC
 proc_vital_load:BEGIN
-    DECLARE routineViralLoadTestDateUuid VARCHAR(38) DEFAULT 'e91915f5-bfda-42ca-bd03-25d2810ee82e';
-    DECLARE routineViralLoadTestUuid VARCHAR(38) DEFAULT '9ee13a14-c7ce-11e9-a32f-2a2ae2dbcce4';
+    DECLARE routineViralLoadTestDateUuid VARCHAR(38) DEFAULT 'cac6bf44-f671-4f85-ab76-71e7f099d3cb';
+    DECLARE routineViralLoadTestUuid VARCHAR(38) DEFAULT '4d80e0ce-5465-4041-9d1e-d281d25a9b50';
     DECLARE targetedViralLoadTestDateUuid VARCHAR(38) DEFAULT 'ac479522-c891-11e9-a32f-2a2ae2dbcce4';
     DECLARE targetedViralLoadTestUuid VARCHAR(38) DEFAULT '9ee13e38-c7ce-11e9-a32f-2a2ae2dbcce4';
     DECLARE notDocumentedViralLoadTestDateUuid VARCHAR(38) DEFAULT 'ac4797de-c891-11e9-a32f-2a2ae2dbcce4';
