@@ -11,10 +11,10 @@ addons:
   - cmr-staging.jembi.org
 deploy:
 - provider: script
-  script: ssh bahmni@cmr-dev.jembi.org 'cd ~/git/cameroon-bahmni-metadata;git reset --hard;git checkout dev;git pull;mysql -uroot -p$mysql_password openmrs < <(cat sql/*.sql);/sbin/service openmrs restart;'
+  script: bash scripts/deploy.sh dev $mysql_password
   on:
     branch: dev
 - provider: script
-  script: ssh bahmni@cmr-staging.jembi.org 'cd ~/git/cameroon-bahmni-metadata;git reset --hard;git checkout staging;git pull;mysql -uroot -p$mysql_password openmrs < <(cat sql/*.sql);/sbin/service openmrs restart;'
+  script: bash scripts/deploy.sh staging $mysql_password
   on:
     branch: staging
