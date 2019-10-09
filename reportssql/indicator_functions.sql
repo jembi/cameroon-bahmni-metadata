@@ -756,7 +756,7 @@ CREATE FUNCTION Testing_Indicator4a(
     p_endDate DATE,
     p_startAge INT(11),
     p_endAge INT (11),
-    p_includeEndAge TINYINT(1)
+    p_includeEndAge TINYINT(1)) RETURNS INT(11)
     DETERMINISTIC
 BEGIN
     DECLARE result INT(11) DEFAULT 0;
@@ -766,25 +766,25 @@ SELECT
 FROM
     patient pat
 WHERE
-    patientDiagnosedHIVPositiveBeforeReportEndDate(pat.patient_id, p_endDate) AND
-    patientHadANCVisitWithinReportPeriod(pat.patient_id, p_startDate, p_endDate) AND
+    patientHIVPosPriorToEnrolOnANCFormBeforeReportEndDate(pat.patient_id, p_endDate) AND
+    patientHadANCVisitWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
     patientAgeIsBetween(pat.patient_id, p_startAge, p_endAge, p_includeEndAge) AND
     patientIsNotDead(pat.patient_id) AND
     patientIsNotLostToFollowUp(pat.patient_id) AND
     patientIsNotTransferredOut(pat.patient_id) AND 
     patientGenderIs(pat.patient_id, 'F') AND
     (
-        hivStatusKnown3MonthsOrLessBeforeReportEndDate(pat.patient_id, p_endDate) 
+        patientHIVPosPriorToEnrolOnANCForm3MOrLessBeforeReportEndDate(pat.patient_id, p_endDate) 
         OR
         (
-            hivStatusKnownMoreThan3MonthsBeforeReportEndDate(pat.patient_id, p_endDate) AND
-            patientHIVRetestPositiveWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
-            patientStatusIsAlreadyOnART(pat.patient_id) 
+            patientHIVPosPriorToEnrolOnANCFormMoreThan3MBeforeReportEndDate(pat.patient_id, p_endDate) AND
+            patientHIVRetestPosPriorToEnrolOnANCFormWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
+            patientAlreadyOnARTPriorToEnrolOnANCForm(pat.patient_id) 
         )
         OR
         (
-            hivStatusKnownMoreThan3MonthsBeforeReportEndDate(pat.patient_id, p_endDate) AND
-            NOT patientStatusIsAlreadyOnART(pat.patient_id)
+            patientHIVPosPriorToEnrolOnANCFormMoreThan3MBeforeReportEndDate(pat.patient_id, p_endDate) AND
+            NOT patientAlreadyOnARTOnANCForm(pat.patient_id)
         )
     );
 

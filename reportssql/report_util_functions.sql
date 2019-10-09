@@ -1626,12 +1626,12 @@ BEGIN
 END$$
 DELIMITER ;
 
--- patientDiagnosedHIVPositiveBeforeReportEndDate
+-- patientHIVPosPriorToEnrolOnANCFormBeforeReportEndDate
 
-DROP FUNCTION IF EXISTS patientDiagnosedHIVPositiveBeforeReportEndDate;
+DROP FUNCTION IF EXISTS patientHIVPosPriorToEnrolOnANCFormBeforeReportEndDate;
 
 DELIMITER $$
-CREATE FUNCTION patientDiagnosedHIVPositiveBeforeReportEndDate(
+CREATE FUNCTION patientHIVPosPriorToEnrolOnANCFormBeforeReportEndDate(
     p_patientId INT(11),
     p_endDate DATE) RETURNS TINYINT(1)
     DETERMINISTIC
@@ -1656,12 +1656,12 @@ BEGIN
 END$$
 DELIMITER ;
 
--- patientHadANCVisitWithinReportPeriod
+-- patientHadANCVisitWithinReportingPeriod
 
-DROP FUNCTION IF EXISTS patientHadANCVisitWithinReportPeriod;
+DROP FUNCTION IF EXISTS patientHadANCVisitWithinReportingPeriod;
 
 DELIMITER $$
-CREATE FUNCTION patientHadANCVisitWithinReportPeriod(
+CREATE FUNCTION patientHadANCVisitWithinReportingPeriod(
     p_patientId INT(11),
     p_startDate DATE,
     p_endDate DATE) RETURNS TINYINT(1)
@@ -1684,12 +1684,12 @@ BEGIN
 END$$
 DELIMITER ;
 
--- patientHIVRetestPositiveWithinReportingPeriod
+-- patientHIVRetestPosPriorToEnrolOnANCFormWithinReportingPeriod
 
-DROP FUNCTION IF EXISTS patientHIVRetestPositiveWithinReportingPeriod;
+DROP FUNCTION IF EXISTS patientHIVRetestPosPriorToEnrolOnANCFormWithinReportingPeriod;
 
 DELIMITER $$
-CREATE FUNCTION patientHIVRetestPositiveWithinReportingPeriod(
+CREATE FUNCTION patientHIVRetestPosPriorToEnrolOnANCFormWithinReportingPeriod(
     p_patientId INT(11),
     p_startDate DATE,
     p_endDate DATE) RETURNS TINYINT(1)
@@ -1726,12 +1726,12 @@ BEGIN
 END$$
 DELIMITER ;
 
--- hivStatusKnownMoreThan3MonthsBeforeReportEndDate
+-- patientHIVPosPriorToEnrolOnANCFormMoreThan3MBeforeReportEndDate
 
-DROP FUNCTION IF EXISTS hivStatusKnownMoreThan3MonthsBeforeReportEndDate;
+DROP FUNCTION IF EXISTS patientHIVPosPriorToEnrolOnANCFormMoreThan3MBeforeReportEndDate;
 
 DELIMITER $$
-CREATE FUNCTION hivStatusKnownMoreThan3MonthsBeforeReportEndDate(
+CREATE FUNCTION patientHIVPosPriorToEnrolOnANCFormMoreThan3MBeforeReportEndDate(
     p_patientId INT(11),
     p_endDate DATE) RETURNS TINYINT(1)
     DETERMINISTIC
@@ -1754,12 +1754,12 @@ BEGIN
 END$$
 DELIMITER ;
 
--- hivStatusKnown3MonthsOrLessBeforeReportEndDate
+-- patientHIVPosPriorToEnrolOnANCForm3MOrLessBeforeReportEndDate
 
-DROP FUNCTION IF EXISTS hivStatusKnown3MonthsOrLessBeforeReportEndDate;
+DROP FUNCTION IF EXISTS patientHIVPosPriorToEnrolOnANCForm3MOrLessBeforeReportEndDate;
 
 DELIMITER $$
-CREATE FUNCTION hivStatusKnown3MonthsOrLessBeforeReportEndDate(
+CREATE FUNCTION patientHIVPosPriorToEnrolOnANCForm3MOrLessBeforeReportEndDate(
     p_patientId INT(11),
     p_endDate DATE) RETURNS TINYINT(1)
     DETERMINISTIC
@@ -1782,12 +1782,12 @@ BEGIN
 END$$
 DELIMITER ;
 
--- patientStatusIsAlreadyOnART
+-- patientAlreadyOnARTOnANCForm
 
-DROP FUNCTION IF EXISTS patientStatusIsAlreadyOnART;
+DROP FUNCTION IF EXISTS patientAlreadyOnARTOnANCForm;
 
 DELIMITER $$
-CREATE FUNCTION patientStatusIsAlreadyOnART(
+CREATE FUNCTION patientAlreadyOnARTOnANCForm(
     p_patientId INT(11)) RETURNS TINYINT(1)
     DETERMINISTIC
 BEGIN
