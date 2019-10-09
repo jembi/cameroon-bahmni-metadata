@@ -1626,33 +1626,58 @@ BEGIN
 END$$
 DELIMITER ;
 
--- patientHIVPosPriorToEnrolOnANCFormBeforeReportEndDate
-
-DROP FUNCTION IF EXISTS patientHIVPosPriorToEnrolOnANCFormBeforeReportEndDate;
+-- getLatestPriorToANCEnrolmentObsGroupIdForPatient
+DROP FUNCTION IF EXISTS getLatestPriorToANCEnrolmentObsGroupIdForPatient;
 
 DELIMITER $$
-CREATE FUNCTION patientHIVPosPriorToEnrolOnANCFormBeforeReportEndDate(
-    p_patientId INT(11),
-    p_endDate DATE) RETURNS TINYINT(1)
+CREATE FUNCTION getLatestPriorToANCEnrolmentObsGroupIdForPatient(
+    p_patientId INT(11)) RETURNS INT(11)
     DETERMINISTIC
 BEGIN
-    DECLARE result TINYINT(1) DEFAULT 0;
-    DECLARE uuidHIVTestResult VARCHAR(38) DEFAULT "85dadffe-5714-4210-8632-6fb51ef593b6";
-    DECLARE uuidHIVTestResultPositive VARCHAR(38) DEFAULT "7acfafa4-f19b-485e-97a7-c9e002dbe37a";
+    DECLARE priorToANCEnrolmentObsGroupId INT(11) DEFAULT NULL;
+    DECLARE uuidPriorToANCEnrolment VARCHAR(38) DEFAULT "130e05df-8283-453b-a611-d4f884fac8e0";
 
     SELECT
-        TRUE INTO result
+        o.obs_id INTO priorToANCEnrolmentObsGroupId
     FROM obs o
     JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
     WHERE o.voided = 0
         AND o.person_id = p_patientId
+        AND c.uuid = uuidPriorToANCEnrolment
+        ORDER BY o.obs_datetime DESC
+        LIMIT 1;
+    RETURN priorToANCEnrolmentObsGroupId;
+END$$
+DELIMITER ;
+
+-- patientHIVPosPriorToEnrolOnANCForm
+
+DROP FUNCTION IF EXISTS patientHIVPosPriorToEnrolOnANCForm;
+
+DELIMITER $$
+CREATE FUNCTION patientHIVPosPriorToEnrolOnANCForm(
+    p_patientId INT(11)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE patientHIVResultIsPositive TINYINT(1) DEFAULT 0;
+    DECLARE uuidHIVTestResult VARCHAR(38) DEFAULT "85dadffe-5714-4210-8632-6fb51ef593b6";
+    DECLARE uuidHIVTestResultPositive VARCHAR(38) DEFAULT "7acfafa4-f19b-485e-97a7-c9e002dbe37a";
+    DECLARE priorToANCEnrolmentObsGroupId INT(11) DEFAULT getLatestPriorToANCEnrolmentObsGroupIdForPatient(p_patientId);
+    
+    SELECT
+        TRUE INTO patientHIVResultIsPositive
+    FROM obs o
+    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
+    WHERE priorToANCEnrolmentObsGroupId IS NOT NULL
+        AND o.obs_group_id = priorToANCEnrolmentObsGroupId
+        AND o.voided = 0 
+        AND o.person_id = p_patientId
         AND c.uuid = uuidHIVTestResult
         AND o.value_coded IS NOT NULL
         AND o.value_coded = (SELECT concept_id FROM concept WHERE uuid = uuidHIVTestResultPositive)
-        AND cast(o.obs_datetime AS DATE) < p_endDate
-    LIMIT 1;
+        LIMIT 1;
 
-    RETURN (result );
+    RETURN (patientHIVResultIsPositive);
 END$$
 DELIMITER ;
 
@@ -1695,22 +1720,12 @@ CREATE FUNCTION patientHIVRetestPosPriorToEnrolOnANCFormWithinReportingPeriod(
     p_endDate DATE) RETURNS TINYINT(1)
     DETERMINISTIC
 BEGIN
-    DECLARE priorToANCEnrolmentObsGroupId INT(11) DEFAULT NULL;
     DECLARE patientHIVRetestResultIsPositive TINYINT(1) DEFAULT 0;
     DECLARE patientRepeatTestDateIsBetweenReportingPeriod TINYINT(1) DEFAULT 0;
-    DECLARE uuidPriorToANCEnrolment VARCHAR(38) DEFAULT "130e05df-8283-453b-a611-d4f884fac8e0";
     DECLARE uuidRepeatTestResult VARCHAR(38) DEFAULT "7682c09b-8e81-4e30-8afd-636fb9fcd4a1";
     DECLARE uuidRepeatTestResultIsPositive VARCHAR(38) DEFAULT "7acfafa4-f19b-485e-97a7-c9e002dbe37a";
     DECLARE uuidRepeatTestDate VARCHAR(38) DEFAULT "541d9f7b-f622-4ebc-a3a3-50c970d4cce0";
-
-    SELECT
-        o.obs_id INTO priorToANCEnrolmentObsGroupId
-    FROM obs o
-    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
-    WHERE o.voided = 0
-        AND o.person_id = p_patientId
-        AND c.uuid = uuidPriorToANCEnrolment
-        LIMIT 1;
+    DECLARE priorToANCEnrolmentObsGroupId INT(11) DEFAULT getLatestPriorToANCEnrolmentObsGroupIdForPatient(p_patientId);
     
     SELECT
         TRUE INTO patientHIVRetestResultIsPositive
@@ -1741,24 +1756,27 @@ BEGIN
 END$$
 DELIMITER ;
 
--- patientHIVPosPriorToEnrolOnANCFormMoreThan3MBeforeReportEndDate
+-- patientHIVDatePriorToEnrolOnANCFormMoreThan3MBeforeReportEndDate
 
-DROP FUNCTION IF EXISTS patientHIVPosPriorToEnrolOnANCFormMoreThan3MBeforeReportEndDate;
+DROP FUNCTION IF EXISTS patientHIVDatePriorToEnrolOnANCFormMoreThan3MBeforeReportEndDate;
 
 DELIMITER $$
-CREATE FUNCTION patientHIVPosPriorToEnrolOnANCFormMoreThan3MBeforeReportEndDate(
+CREATE FUNCTION patientHIVDatePriorToEnrolOnANCFormMoreThan3MBeforeReportEndDate(
     p_patientId INT(11),
     p_endDate DATE) RETURNS TINYINT(1)
     DETERMINISTIC
 BEGIN
     DECLARE result TINYINT(1) DEFAULT 0;
     DECLARE uuidHIVTestDate VARCHAR(38) DEFAULT "c6c08cdc-18dc-4f42-809c-959621bc9a6c";
+    DECLARE priorToANCEnrolmentObsGroupId INT(11) DEFAULT getLatestPriorToANCEnrolmentObsGroupIdForPatient(p_patientId);
 
     SELECT
         TRUE INTO result
     FROM obs o
     JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
-    WHERE o.voided = 0
+    WHERE priorToANCEnrolmentObsGroupId IS NOT NULL
+        AND o.obs_group_id = priorToANCEnrolmentObsGroupId
+        AND o.voided = 0
         AND o.person_id = p_patientId
         AND c.uuid = uuidHIVTestDate
         AND o.value_datetime IS NOT NULL
@@ -1769,24 +1787,27 @@ BEGIN
 END$$
 DELIMITER ;
 
--- patientHIVPosPriorToEnrolOnANCForm3MOrLessBeforeReportEndDate
+-- patientHIVDatePriorToEnrolOnANCForm3MOrLessBeforeReportEndDate
 
-DROP FUNCTION IF EXISTS patientHIVPosPriorToEnrolOnANCForm3MOrLessBeforeReportEndDate;
+DROP FUNCTION IF EXISTS patientHIVDatePriorToEnrolOnANCForm3MOrLessBeforeReportEndDate;
 
 DELIMITER $$
-CREATE FUNCTION patientHIVPosPriorToEnrolOnANCForm3MOrLessBeforeReportEndDate(
+CREATE FUNCTION patientHIVDatePriorToEnrolOnANCForm3MOrLessBeforeReportEndDate(
     p_patientId INT(11),
     p_endDate DATE) RETURNS TINYINT(1)
     DETERMINISTIC
 BEGIN
     DECLARE result TINYINT(1) DEFAULT 0;
     DECLARE uuidHIVTestDate VARCHAR(38) DEFAULT "c6c08cdc-18dc-4f42-809c-959621bc9a6c";
+    DECLARE priorToANCEnrolmentObsGroupId INT(11) DEFAULT getLatestPriorToANCEnrolmentObsGroupIdForPatient(p_patientId);
     
     SELECT
         TRUE INTO result
     FROM obs o
     JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
-    WHERE o.voided = 0
+    WHERE priorToANCEnrolmentObsGroupId IS NOT NULL
+        AND o.obs_group_id = priorToANCEnrolmentObsGroupId
+        AND o.voided = 0
         AND o.person_id = p_patientId
         AND c.uuid = uuidHIVTestDate
         AND o.value_datetime IS NOT NULL

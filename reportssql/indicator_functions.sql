@@ -766,7 +766,7 @@ SELECT
 FROM
     patient pat
 WHERE
-    patientHIVPosPriorToEnrolOnANCFormBeforeReportEndDate(pat.patient_id, p_endDate) AND
+    patientHIVPosPriorToEnrolOnANCForm(pat.patient_id) AND
     patientHadANCVisitWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
     patientAgeIsBetween(pat.patient_id, p_startAge, p_endAge, p_includeEndAge) AND
     patientIsNotDead(pat.patient_id) AND
@@ -774,17 +774,17 @@ WHERE
     patientIsNotTransferredOut(pat.patient_id) AND 
     patientGenderIs(pat.patient_id, 'F') AND
     (
-        patientHIVPosPriorToEnrolOnANCForm3MOrLessBeforeReportEndDate(pat.patient_id, p_endDate) 
+        patientHIVDatePriorToEnrolOnANCForm3MOrLessBeforeReportEndDate(pat.patient_id, p_endDate) 
         OR
         (
-            patientHIVPosPriorToEnrolOnANCFormMoreThan3MBeforeReportEndDate(pat.patient_id, p_endDate) AND
+            patientHIVDatePriorToEnrolOnANCFormMoreThan3MBeforeReportEndDate(pat.patient_id, p_endDate) AND
             patientHIVRetestPosPriorToEnrolOnANCFormWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
-            patientAlreadyOnARTPriorToEnrolOnANCForm(pat.patient_id) 
+            NOT patientAlreadyOnARTOnANCForm(pat.patient_id) 
         )
         OR
         (
-            patientHIVPosPriorToEnrolOnANCFormMoreThan3MBeforeReportEndDate(pat.patient_id, p_endDate) AND
-            NOT patientAlreadyOnARTOnANCForm(pat.patient_id)
+            patientHIVDatePriorToEnrolOnANCFormMoreThan3MBeforeReportEndDate(pat.patient_id, p_endDate) AND
+            patientAlreadyOnARTOnANCForm(pat.patient_id)
         )
     );
 
