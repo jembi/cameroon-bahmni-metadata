@@ -779,12 +779,12 @@ WHERE
         (
             patientHIVDatePriorToEnrolOnANCFormMoreThan3MBeforeReportEndDate(pat.patient_id, p_endDate) AND
             patientHIVRetestPosPriorToEnrolOnANCFormWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
-            NOT patientAlreadyOnARTOnANCForm(pat.patient_id) 
+            NOT patientAlreadyOnARTOnANCFormBeforeReportEndDate(pat.patient_id, p_endDate) 
         )
         OR
         (
             patientHIVDatePriorToEnrolOnANCFormMoreThan3MBeforeReportEndDate(pat.patient_id, p_endDate) AND
-            patientAlreadyOnARTOnANCForm(pat.patient_id)
+            patientAlreadyOnARTOnANCFormBeforeReportEndDate(pat.patient_id, p_endDate)
         )
     );
 

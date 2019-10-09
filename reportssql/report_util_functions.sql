@@ -1818,21 +1818,25 @@ BEGIN
 END$$
 DELIMITER ;
 
--- patientAlreadyOnARTOnANCForm
+-- patientAlreadyOnARTOnANCFormBeforeReportEndDate
 
-DROP FUNCTION IF EXISTS patientAlreadyOnARTOnANCForm;
+DROP FUNCTION IF EXISTS patientAlreadyOnARTOnANCFormBeforeReportEndDate;
 
 DELIMITER $$
-CREATE FUNCTION patientAlreadyOnARTOnANCForm(
-    p_patientId INT(11)) RETURNS TINYINT(1)
+CREATE FUNCTION patientAlreadyOnARTOnANCFormBeforeReportEndDate(
+    p_patientId INT(11),
+    p_endDate DATE) RETURNS TINYINT(1)
     DETERMINISTIC
 BEGIN
-    DECLARE isAlreadyOnART TINYINT(1) DEFAULT 0;
+    DECLARE ARTStartedBeforeReportEndDate TINYINT(1) DEFAULT 0;
     DECLARE uuidARTStatus VARCHAR(38) DEFAULT "f961ec41-cd5d-4b45-91e0-0f5a408fea4b";
     DECLARE uuidAlreadyOnART VARCHAR(38) DEFAULT "6122279f-93a8-4e5a-ac5e-b347b60c989b";
+    DECLARE uuidARTStartDate VARCHAR(38) DEFAULT "d986e715-14fd-4ae1-9ef2-7a60e3a6a54e";
+    DECLARE uuidArvsArt VARCHAR(38) DEFAULT "89b1cd66-c33a-4ef4-b208-5d86502f14ec";
+    DECLARE arvsArtObsGroupId INT(11) DEFAULT NULL;
 
     SELECT
-        TRUE INTO isAlreadyOnART
+        o.obs_group_id INTO arvsArtObsGroupId
     FROM obs o
     JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
     WHERE o.voided = 0
@@ -1841,6 +1845,18 @@ BEGIN
         AND o.value_coded = (SELECT concept_id FROM concept WHERE uuid = uuidAlreadyOnART)
     LIMIT 1;
 
-    RETURN (isAlreadyOnART );
+    SELECT
+        TRUE INTO ARTStartedBeforeReportEndDate
+    FROM obs o
+    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
+    WHERE arvsArtObsGroupId IS NOT NULL
+        AND o.obs_group_id = arvsArtObsGroupId
+        AND o.voided = 0
+        AND o.person_id = p_patientId
+        AND c.uuid = uuidARTStartDate
+        AND DATE(o.value_datetime) < p_endDate
+        LIMIT 1;
+
+    RETURN ARTStartedBeforeReportEndDate;
 END$$
 DELIMITER ;
