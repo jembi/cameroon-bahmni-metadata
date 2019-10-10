@@ -791,3 +791,34 @@ WHERE
     RETURN (result);
 END$$ 
 DELIMITER ;
+
+DROP FUNCTION IF EXISTS Testing_Indicator4b;
+
+DELIMITER $$
+CREATE FUNCTION Testing_Indicator4b(
+    p_startDate DATE,
+    p_endDate DATE,
+    p_startAge INT(11),
+    p_endAge INT (11),
+    p_includeEndAge TINYINT(1)) RETURNS INT(11)
+    DETERMINISTIC
+BEGIN
+    DECLARE result INT(11) DEFAULT 0;
+
+SELECT
+    COUNT(DISTINCT pat.patient_id) INTO result
+FROM
+    patient pat
+WHERE
+    patientHIVPosAtEnrolOnANCFormWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
+    NOT patientHIVPosPriorToEnrolOnANCForm(pat.patient_id) AND
+    patientDateOfFirstANCVisitOnANCFormWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
+    patientAgeIsBetween(pat.patient_id, p_startAge, p_endAge, p_includeEndAge) AND
+    patientIsNotDead(pat.patient_id) AND
+    patientIsNotLostToFollowUp(pat.patient_id) AND
+    patientIsNotTransferredOut(pat.patient_id) AND 
+    patientGenderIs(pat.patient_id, 'F');
+
+    RETURN (result);
+END$$ 
+DELIMITER ;
