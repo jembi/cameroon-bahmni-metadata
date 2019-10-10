@@ -1,4 +1,5 @@
 -- getLatestPriorToANCEnrolmentObsGroupIdForPatient
+
 DROP FUNCTION IF EXISTS getLatestPriorToANCEnrolmentObsGroupIdForPatient;
 
 DELIMITER $$
@@ -183,7 +184,7 @@ BEGIN
         AND o.person_id = p_patientId
         AND c.uuid = uuidHIVTestDate
         AND o.value_datetime IS NOT NULL
-        AND timestampdiff(MONTH, CAST(o.value_datetime AS DATE), p_endDate) <= 3
+        AND timestampdiff(MONTH, p_endDate, CAST(o.value_datetime AS DATE)) BETWEEN 0 AND 3
         LIMIT 1;
 
     RETURN (result );
