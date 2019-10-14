@@ -42,7 +42,7 @@ e44bd5a8-1c18-4e52-b86f-a16e48c07576,,Negative;Positive;Indeterminate,Final Resu
 b70dfca0-db21-4533-8c08-4626ff0de265,"HTC, Informed Consent;First Test;Second Test;Final Result",,"HTC, HIV Test","HTC, test du VIH",HIV Test,"HTC, test du VIH",ConvSet,N/A,,
 06525d22-279b-45b1-aa9b-b240c8599aa6,,,"HTC, Post-test Counseling","HTC, Counselling post-test",Post-test Counseling,"HTC, Counselling post-test",Misc,Boolean,,
 55d59198-1d83-45db-9e92-dc3b9af25ca6,,,"HTC, Result Recieved","HTC, Résultat reçu",Result Recieved,"HTC, Résultat reçu",Misc,Boolean,,
-85dadffe-5714-4210-8632-6fb51ef593b6,,Negative;Positive;Unknown;Indeterminate,"HTC, Result","HTC, Résultat",Test Result,"HTC, Résultat",Misc,Coded,,
+85dadffe-5714-4210-8632-6fb51ef593b6,,Negative;Positive;Indeterminate;Unknown,"HTC, Result",Résultat du test,"HTC, Result",Résultat du test,Misc,Coded,,
 dda9cda0-9704-4ae0-a672-33a70751cc2b,,,"HTC, Partner Counseling","HTC, Partenaire Conseillé",Partner Counseling,"HTC, Partenaire Conseillé",Misc,Boolean,,
 c1090f51-3ea4-4220-ac8a-66d23eee8f61,,Stage I;Stage II;Stage III;Stage IV,"HTC, WHO Staging","HTC, Stade Clinique OMS",WHO Staging,"HTC, Stade Clinique OMS",Misc,Coded,,
 7f4ac69f-a091-45c2-9972-70e2511a01f5,,,"HTC, CD4 Count","HTC, Taux de CD4",CD4 Count,"HTC, Taux de CD4",Misc,Numeric,,
