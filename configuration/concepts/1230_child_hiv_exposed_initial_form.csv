@@ -1,5 +1,4 @@
 uuid,Members,Answers,Fully specified name:fr,Fully specified name:en,Short name:fr,Short name:en,Units,Data class,Data type,_version:1,_order:1230
-74311df5-09bb-4653-8368-837e849ff99a,Mother;Father;Child's carer;Siblings,,1. Identification parentale,1. Parental identification,1. Identification parentale,1. Parental identification,,Misc,N/A,,
 377802ac-8386-4629-a8e2-9d8b70fb211c,HIV+ Pregnancy;a271bb6e-d4f0-457d-80bb-b360a2a65719;ARV in Mother;ARV in child;Infant Feeding,,2. PTME,2. PMTCT,2. PTME,2. PMTCT,,Misc,N/A,,
 82ef1f6c-4d4e-4163-8b75-016a77b05c25,,,Périmètre thoracique,Chest circumference,Périmètre thoracique,Chest circumference,cm,Misc,Numeric,,
 bbb08c51-92ca-4401-b057-7520c0d6e3d9,,,Périmètre crânien,Cranial circumference,Périmètre crânien,Cranial circumference,cm,Misc,Numeric,,
