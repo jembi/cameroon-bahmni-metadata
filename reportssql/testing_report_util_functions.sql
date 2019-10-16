@@ -380,3 +380,81 @@ BEGIN
     RETURN (patientHIVResultIsNegative && hivTestDateWithinReportingPeriod);
 END$$
 DELIMITER ;
+
+-- patientHIVNegPriorToEnrolOnANCFormWithinReportingPeriod
+
+DROP FUNCTION IF EXISTS patientHIVNegPriorToEnrolOnANCFormWithinReportingPeriod;
+
+DELIMITER $$
+CREATE FUNCTION patientHIVNegPriorToEnrolOnANCFormWithinReportingPeriod(
+    p_patientId INT(11),
+    p_startDate DATE,
+    p_endDate DATE) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE patientHIVResultIsNegative TINYINT(1) DEFAULT 0;
+    DECLARE hivTestDateWithinReportingPeriod TINYINT(1) DEFAULT 0;
+    DECLARE uuidHIVTestResult VARCHAR(38) DEFAULT "85dadffe-5714-4210-8632-6fb51ef593b6";
+    DECLARE uuidHIVTestResultNegative VARCHAR(38) DEFAULT "718b4589-2a11-4355-b8dc-aa668a93e098";
+    DECLARE uuidHIVTestDate VARCHAR(38) DEFAULT "c6c08cdc-18dc-4f42-809c-959621bc9a6c";
+    DECLARE priorToANCEnrolmentObsGroupId INT(11) DEFAULT getLatestPriorToANCEnrolmentObsGroupIdForPatient(p_patientId);
+    
+    SELECT
+        TRUE INTO patientHIVResultIsNegative
+    FROM obs o
+    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
+    WHERE priorToANCEnrolmentObsGroupId IS NOT NULL
+        AND o.obs_group_id = priorToANCEnrolmentObsGroupId
+        AND o.voided = 0 
+        AND o.person_id = p_patientId
+        AND c.uuid = uuidHIVTestResult
+        AND o.value_coded IS NOT NULL
+        AND o.value_coded = (SELECT concept_id FROM concept WHERE uuid = uuidHIVTestResultNegative)
+        LIMIT 1;
+
+    SELECT
+        TRUE INTO hivTestDateWithinReportingPeriod
+    FROM obs o
+    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
+    WHERE priorToANCEnrolmentObsGroupId IS NOT NULL
+        AND o.obs_group_id = priorToANCEnrolmentObsGroupId
+        AND o.voided = 0
+        AND o.person_id = p_patientId
+        AND c.uuid = uuidHIVTestDate
+        AND DATE(o.value_datetime) BETWEEN p_startDate AND p_endDate
+        LIMIT 1;
+
+    RETURN (patientHIVResultIsNegative && hivTestDateWithinReportingPeriod);
+END$$
+DELIMITER ;
+
+-- patientNotEligibleForHIVRetestOnANCFormWithinReportingPeriod
+
+DROP FUNCTION IF EXISTS patientNotEligibleForHIVRetestOnANCFormWithinReportingPeriod;
+
+DELIMITER $$
+CREATE FUNCTION patientNotEligibleForHIVRetestOnANCFormWithinReportingPeriod(
+    p_patientId INT(11),
+    p_startDate DATE,
+    p_endDate DATE) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE patientNotEligibleWithinReportingPeriod TINYINT(1) DEFAULT 0;
+    DECLARE uuidRetestEligibleQuestion VARCHAR(38) DEFAULT "9fda317c-9fd4-4423-a09b-dd4ba86a8a61";
+    DECLARE uuidNo VARCHAR(38) DEFAULT "b497171e-0410-4d8d-bbd4-7e1a8f8b504e";
+
+    SELECT
+        TRUE INTO patientNotEligibleWithinReportingPeriod
+    FROM obs o
+    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
+    WHERE o.voided = 0 
+        AND o.person_id = p_patientId
+        AND c.uuid = uuidRetestEligibleQuestion
+        AND o.value_coded IS NOT NULL
+        AND o.value_coded = (SELECT concept_id FROM concept WHERE uuid = uuidNo)
+        AND DATE(o.obs_datetime) BETWEEN p_startDate AND p_endDate
+        LIMIT 1;
+
+    RETURN patientNotEligibleWithinReportingPeriod;
+END$$
+DELIMITER ;
