@@ -872,7 +872,7 @@ SELECT
 FROM
     patient pat
 WHERE
-    patientHIVNegPriorToEnrolOnANCFormWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
+    patientHIVNegPriorToEnrolOnANCFormBeforeReportEndDate(pat.patient_id, p_endDate) AND
     patientNotEligibleForHIVRetestOnANCFormWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
     patientDateOfFirstANCVisitOnANCFormWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
     patientAgeIsBetween(pat.patient_id, p_startAge, p_endAge, p_includeEndAge) AND
