@@ -75,3 +75,5 @@ insert into result_limits (id,test_id,test_result_type_id,low_normal,high_normal
 insert into result_limits (id,test_id,test_result_type_id,low_normal,high_normal, always_validate,lastupdated) values (74,(select id from test where description = 'Growth hormone (hGH) fasting'),4,0,10,'f', now());
 insert into result_limits (id,test_id,test_result_type_id,low_normal,high_normal, always_validate,lastupdated) values (75,(select id from test where description = 'Sperm count'),4,20,150,'f', now());
 insert into result_limits (id,test_id,test_result_type_id,low_normal,high_normal, always_validate,lastupdated) values (76,(select id from test where description = 'Gama GT'),4,9,48,'f', now());
+insert into result_limits (id,test_id,test_result_type_id,low_normal,high_normal, always_validate,lastupdated) values (77,(select id from test where description = 'Lipase'),4,0,1.6,'f', now());
+insert into result_limits (id,test_id,test_result_type_id,low_normal,high_normal, always_validate,lastupdated) values (78,(select id from test where description = 'Glucose-6-phosphate dehydrogenase'),4,5.5,20.5,'f', now());
