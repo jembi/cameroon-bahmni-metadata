@@ -1,3 +1,0 @@
-Uuid,Members,Fully specified name:en,Fully specified name:fr,Short name:en,Short name:fr,Data class,Data type,Normal high,Normal low,Units,Allow decimals,Display precision,_version:1,_order:1120
-c37bd733-3f10-11e4-adec-0800271c1b75,,Temperature,Température,Temperature,Température,Misc,Numeric,37.5,36.5,°C,Yes,1,,
-c37afa71-3f10-11e4-adec-0800271c1b75,c37bd733-3f10-11e4-adec-0800271c1b75;c37c942d-3f10-11e4-adec-0800271c1b75,Temperature Data,Données de Température,Temperature,Données de Température,Concept Details,N/A,,,,,,,
