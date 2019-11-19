@@ -121,3 +121,6 @@ INSERT IGNORE INTO user_role (user_id, role)
 INSERT IGNORE INTO user_role (user_id, role)
     VALUES 
         (@superman_user_id, 'Appointments:FullAccess');
+
+-- Update roles so that they don't have permission to view dhis apps by default:
+DELETE FROM role_privilege WHERE privilege = "app:dhis";
