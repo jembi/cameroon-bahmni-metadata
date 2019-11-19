@@ -1,4 +1,10 @@
 uuid,Members,Answers,Fully specified name:fr,Fully specified name:en,Short name:fr,Short name:en,Data class,Data type,Normal high,Normal low,Units,Allow decimals,_version:1,_order:1180
+8207b3e9-3f10-11e4-adec-0800271c1b75,,,LAB_ABNORMAL,LAB_ABNORMAL,LAB_ABNORMAL,LAB_ABNORMAL,Finding,Boolean,,,,,,
+8206f0cb-3f10-11e4-adec-0800271c1b75,,,LAB_MAXNORMAL,LAB_MAXNORMAL,LAB_MAXNORMAL,LAB_MAXNORMAL,Finding,Numeric,,,yes,,
+82063446-3f10-11e4-adec-0800271c1b75,,,LAB_MINNORMAL,LAB_MINNORMAL,LAB_MINNORMAL,LAB_MINNORMAL,Finding,Numeric,,,,,yes,,
+8205710d-3f10-11e4-adec-0800271c1b75,,,LAB_NOTES,LAB_NOTES,LAB_NOTES,LAB_NOTES,Finding,Text,,,,,,
+bb5e4849-3f10-11e4-adec-0800271c1b75,,,LAB_REPORT,LAB_REPORT,LAB_REPORT,LAB_REPORT,URL,Text,,,,,,
+820496d3-3f10-11e4-adec-0800271c1b75,,,LAB_RESULT,LAB_RESULT,LAB_RESULT,LAB_RESULT,Finding,Text,,,,,,
 c3d078ae-0dcf-4e69-bc59-a7eef9343b93,,,GR,Total Leucocyte count,GR,WBC,LabTest,Numeric,12,3.5,x10^9/L,yes,,
 5c700088-9e98-489f-a2f2-0e442fbd38b7,,,GR Date de résultat,Total Leucocyte count Test Date,Date de résultat,Test Date,Misc,Date,,,,,,
 bf9bb06c-f749-4e14-bfe0-86fee8c87a1c,,,GB,RBC,GB,RBC,LabTest,Numeric,5.4,4.2,x 10^12/L,yes,,
