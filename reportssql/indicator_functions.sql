@@ -884,3 +884,32 @@ WHERE
     RETURN (result);
 END$$ 
 DELIMITER ;
+
+DROP FUNCTION IF EXISTS Testing_Indicator2;
+
+DELIMITER $$
+CREATE FUNCTION Testing_Indicator2(
+    p_startDate DATE,
+    p_endDate DATE,
+    p_startAge INT(11),
+    p_endAge INT (11),
+    p_includeStartAge TINYINT(1)) RETURNS INT(11)
+    DETERMINISTIC
+BEGIN
+    DECLARE result INT(11) DEFAULT 0;
+
+SELECT
+    COUNT(DISTINCT pat.patient_id) INTO result
+FROM
+    patient pat
+WHERE
+    patientRegisteredBeforeReportStartDate(pat.patient_id, p_startDate) AND
+    patientHadAVirologicHIVTestDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
+    patientAgeAtVirologicHIVTestIsBetween(pat.patient_id, p_startAge, p_endAge, p_startDate, p_endDate, p_includeStartAge) AND
+    patientIsNotDead(pat.patient_id) AND
+    patientIsNotLostToFollowUp(pat.patient_id) AND
+    patientIsNotTransferredOut(pat.patient_id);
+
+    RETURN (result);
+END$$ 
+DELIMITER ;
