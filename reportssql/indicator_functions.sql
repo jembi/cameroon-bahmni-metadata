@@ -903,7 +903,6 @@ SELECT
 FROM
     patient pat
 WHERE
-    patientRegisteredBeforeReportStartDate(pat.patient_id, p_startDate) AND
     patientHadAVirologicHIVTestDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
     patientAgeAtVirologicHIVTestIsBetween(pat.patient_id, p_startAge, p_endAge, p_startDate, p_endDate, p_includeStartAge) AND
     patientIsNotDead(pat.patient_id) AND

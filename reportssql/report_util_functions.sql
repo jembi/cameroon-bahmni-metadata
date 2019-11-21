@@ -1626,28 +1626,6 @@ BEGIN
 END$$
 DELIMITER ;
 
--- patientRegisteredBeforeReportStartDate
-
-DROP FUNCTION IF EXISTS patientRegisteredBeforeReportStartDate;
-
-DELIMITER $$
-CREATE FUNCTION patientRegisteredBeforeReportStartDate(
-    p_patientId INT(11),
-    p_startDate DATE) RETURNS TINYINT(1)
-    DETERMINISTIC
-BEGIN
-    DECLARE result TINYINT(1) DEFAULT 0;
-
-    SELECT TRUE INTO result
-    FROM patient p
-    WHERE p.patient_id = p_patientId
-    AND  p.date_created < p_startDate
-    AND p.voided = 0;
-
-    RETURN result;
-END$$
-DELIMITER ;
-
 -- patientHadAVirologicHIVTestDuringReportingPeriod
 
 DROP FUNCTION IF EXISTS patientHadAVirologicHIVTestDuringReportingPeriod;
