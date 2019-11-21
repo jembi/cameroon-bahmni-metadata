@@ -3,8 +3,8 @@ DROP FUNCTION IF EXISTS countRegPatientsByServiceType;
 
 DELIMITER $$
 CREATE FUNCTION countRegPatientsByServiceType(
-    p_startDate DATE,
-    p_endDate DATE,
+    p_startDate DATETIME,
+    p_endDate DATETIME,
     visitType VARCHAR(255)) RETURNS INT(11)
     DETERMINISTIC
 BEGIN
@@ -25,8 +25,8 @@ DROP FUNCTION IF EXISTS countHivEncountersByForm;
 
 DELIMITER $$
 CREATE FUNCTION countHivEncountersByForm(
-    p_startDate DATE,
-    p_endDate DATE,
+    p_startDate DATETIME,
+    p_endDate DATETIME,
     formUuid VARCHAR(255)) RETURNS INT(11)
     DETERMINISTIC
 BEGIN
