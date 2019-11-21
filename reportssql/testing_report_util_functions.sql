@@ -469,12 +469,10 @@ CREATE FUNCTION patientHadAVirologicHIVTestDuringReportingPeriod(
     p_endDate DATE) RETURNS TINYINT(1)
     DETERMINISTIC
 BEGIN
-    IF
-        getDateOfVirologicHIVTestFromLabForm(p_patientId, p_startDate, p_endDate) IS NOT NULL
+    RETURN
+        (getDateOfVirologicHIVTestFromLabForm(p_patientId, p_startDate, p_endDate) IS NOT NULL
         OR
-        getDateOfVirologicHIVTestFromElis(p_patientId, p_startDate, p_endDate) IS NOT NULL THEN
-        RETURN TRUE;
-    END IF;
+        getDateOfVirologicHIVTestFromElis(p_patientId, p_startDate, p_endDate) IS NOT NULL); 
 END$$
 DELIMITER ;
 
@@ -492,11 +490,11 @@ BEGIN
     DECLARE pcrExamDateUuid VARCHAR(38) DEFAULT "9bb7b360-3790-4e1a-8aca-0d1341663040";
     DECLARE result DATE;
 
-    SELECT value_datetime INTO result
+    SELECT o.value_datetime INTO result
     FROM obs o
     JOIN concept c ON o.concept_id = c.concept_id AND c.retired = 0
-    WHERE voided = 0
-        AND order_id IS NULL
+    WHERE o.voided = 0
+        AND o.order_id IS NULL
         AND o.person_id = p_patientId
         AND c.uuid = pcrExamDateUuid
         AND o.value_datetime BETWEEN p_startDate AND p_endDate
@@ -542,8 +540,8 @@ DROP FUNCTION IF EXISTS patientAgeAtVirologicHIVTestIsBetween;
 DELIMITER $$ 
 CREATE FUNCTION patientAgeAtVirologicHIVTestIsBetween(
     p_patientId INT(11),
-    p_startAge INT(11),
-    p_endAge INT(11),
+    p_startAgeInMonths INT(11),
+    p_endAgeInMonths INT(11),
     p_startDate DATE,
     p_endDate DATE,
     p_includeStartAge TINYINT(1)) RETURNS TINYINT(1) 
@@ -567,9 +565,9 @@ BEGIN
 
     SELECT  
         IF (p_includeStartAge, 
-            timestampdiff(MONTH, p.birthdate, dateAtVirologicHIVTest) BETWEEN p_startAge AND p_endAge, 
-            timestampdiff(MONTH, p.birthdate, dateAtVirologicHIVTest) > p_startAge
-                AND timestampdiff(MONTH, p.birthdate, dateAtVirologicHIVTest) <= p_endAge
+            timestampdiff(MONTH, p.birthdate, dateAtVirologicHIVTest) BETWEEN p_startAgeInMonths AND p_endAgeInMonths, 
+            timestampdiff(MONTH, p.birthdate, dateAtVirologicHIVTest) > p_startAgeInMonths
+                AND timestampdiff(MONTH, p.birthdate, dateAtVirologicHIVTest) <= p_endAgeInMonths
         ) INTO result
         FROM person p 
         WHERE p.person_id = p_patientId AND p.voided = 0;
