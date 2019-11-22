@@ -570,7 +570,7 @@ DELIMITER $$
 CREATE FUNCTION getDateOfVirologicTest(
     p_patientId INT(11),
     p_startDate DATE,
-    p_endDate DATE) RETURNS TINYINT(1)
+    p_endDate DATE) RETURNS DATE
     DETERMINISTIC
 BEGIN
 
@@ -593,12 +593,12 @@ BEGIN
 END$$
 DELIMITER ;
 
--- patientWasNotEnrolledToHIVProgramBeforeVirologicTest
+-- patientWasEnrolledToHIVProgramBeforeVirologicTest
 
-DROP FUNCTION IF EXISTS patientWasNotEnrolledToHIVProgramBeforeVirologicTest;
+DROP FUNCTION IF EXISTS patientWasEnrolledToHIVProgramBeforeVirologicTest;
 
 DELIMITER $$
-CREATE FUNCTION patientWasNotEnrolledToHIVProgramBeforeVirologicTest(
+CREATE FUNCTION patientWasEnrolledToHIVProgramBeforeVirologicTest(
     p_patientId INT(11),
     p_startDate DATE,
     p_endDate DATE) RETURNS TINYINT(1)
@@ -609,16 +609,16 @@ BEGIN
 
     SET dateOfVirologicHIVTest = getDateOfVirologicTest(p_patientId, p_startDate, p_endDate);
 
-    RETURN (NOT patientHasEnrolledIntoHivProgramBefore(p_patientId, dateOfVirologicHIVTest));
+    RETURN (patientHasEnrolledIntoHivProgramBefore(p_patientId, dateOfVirologicHIVTest));
 END$$
 DELIMITER ;
 
--- patientWasNotInitiatedToARVBeforeVirologicTest
+-- patientWasInitiatedToARVBeforeVirologicTest
 
-DROP FUNCTION IF EXISTS patientWasNotInitiatedToARVBeforeVirologicTest;
+DROP FUNCTION IF EXISTS patientWasInitiatedToARVBeforeVirologicTest;
 
 DELIMITER $$
-CREATE FUNCTION patientWasNotInitiatedToARVBeforeVirologicTest(
+CREATE FUNCTION patientWasInitiatedToARVBeforeVirologicTest(
     p_patientId INT(11),
     p_startDate DATE,
     p_endDate DATE) RETURNS TINYINT(1)
@@ -629,16 +629,16 @@ BEGIN
 
     SET dateOfVirologicHIVTest = getDateOfVirologicTest(p_patientId, p_startDate, p_endDate);
 
-    RETURN (NOT patientHasStartedARVTreatmentBefore(p_patientId, dateOfVirologicHIVTest));
+    RETURN (patientHasStartedARVTreatmentBefore(p_patientId, dateOfVirologicHIVTest));
 END$$
 DELIMITER ;
 
--- patientNotTakingARVAtDateOfVirologicTest
+-- patientTakingARVAtDateOfVirologicTest
 
-DROP FUNCTION IF EXISTS patientNotTakingARVAtDateOfVirologicTest;
+DROP FUNCTION IF EXISTS patientTakingARVAtDateOfVirologicTest;
 
 DELIMITER $$
-CREATE FUNCTION patientNotTakingARVAtDateOfVirologicTest(
+CREATE FUNCTION patientTakingARVAtDateOfVirologicTest(
     p_patientId INT(11),
     p_startDate DATE,
     p_endDate DATE) RETURNS TINYINT(1)
@@ -649,7 +649,7 @@ BEGIN
 
     SET dateOfVirologicHIVTest = getDateOfVirologicTest(p_patientId, p_startDate, p_endDate);
 
-    RETURN (NOT patientWasOnARVTreatmentOrHasPickedUpADrugWithinReportingPeriod(p_patientId, dateOfVirologicHIVTest, dateOfVirologicHIVTest, 0));
+    RETURN (patientWasOnARVTreatmentOrHasPickedUpADrugWithinReportingPeriod(p_patientId, dateOfVirologicHIVTest, dateOfVirologicHIVTest, 0));
 END$$
 DELIMITER ;
 

@@ -935,9 +935,43 @@ WHERE
     patientHadAVirologicHIVTestDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
     patientHadAPositiveVirologicHIVTestResultDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
     patientMostRecentVirologicHIVTestResultIsPositive(pat.patient_id) AND
-    patientWasNotEnrolledToHIVProgramBeforeVirologicTest(pat.patient_id, p_startDate, p_endDate) AND
-    patientWasNotInitiatedToARVBeforeVirologicTest(pat.patient_id, p_startDate, p_endDate) AND
-    patientNotTakingARVAtDateOfVirologicTest(pat.patient_id, p_startDate, p_endDate) AND
+    NOT patientWasEnrolledToHIVProgramBeforeVirologicTest(pat.patient_id, p_startDate, p_endDate) AND
+    NOT patientWasInitiatedToARVBeforeVirologicTest(pat.patient_id, p_startDate, p_endDate) AND
+    NOT patientTakingARVAtDateOfVirologicTest(pat.patient_id, p_startDate, p_endDate) AND
+    patientAgeAtVirologicHIVTestIsBetween(pat.patient_id, p_startAgeInMonths, p_endAgeInMonths, p_startDate, p_endDate, p_includeStartAge) AND
+    patientIsNotDead(pat.patient_id) AND
+    patientIsNotLostToFollowUp(pat.patient_id) AND
+    patientIsNotTransferredOut(pat.patient_id);
+
+    RETURN (result);
+END$$ 
+DELIMITER ;
+
+DROP FUNCTION IF EXISTS Testing_Indicator3b;
+
+DELIMITER $$
+CREATE FUNCTION Testing_Indicator3b(
+    p_startDate DATE,
+    p_endDate DATE,
+    p_startAgeInMonths INT(11),
+    p_endAgeInMonths INT (11),
+    p_includeStartAge TINYINT(1)) RETURNS INT(11)
+    DETERMINISTIC
+BEGIN
+    DECLARE result INT(11) DEFAULT 0;
+
+SELECT
+    COUNT(DISTINCT pat.patient_id) INTO result
+FROM
+    patient pat
+WHERE
+    patientAgeAtReportEndDateIsBetween(pat.patient_id, p_endDate, p_startAgeInMonths, p_endAgeInMonths) AND
+    patientHadAVirologicHIVTestDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
+    patientHadAPositiveVirologicHIVTestResultDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
+    patientMostRecentVirologicHIVTestResultIsPositive(pat.patient_id) AND
+    patientWasEnrolledToHIVProgramBeforeVirologicTest(pat.patient_id, p_startDate, p_endDate) AND
+    patientWasInitiatedToARVBeforeVirologicTest(pat.patient_id, p_startDate, p_endDate) AND
+    patientTakingARVAtDateOfVirologicTest(pat.patient_id, p_startDate, p_endDate) AND
     patientAgeAtVirologicHIVTestIsBetween(pat.patient_id, p_startAgeInMonths, p_endAgeInMonths, p_startDate, p_endDate, p_includeStartAge) AND
     patientIsNotDead(pat.patient_id) AND
     patientIsNotLostToFollowUp(pat.patient_id) AND
