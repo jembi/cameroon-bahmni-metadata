@@ -912,3 +912,25 @@ WHERE
     RETURN (result);
 END$$ 
 DELIMITER ;
+
+
+DROP FUNCTION IF EXISTS PMTCT_Indicator1;
+
+DELIMITER $$
+CREATE FUNCTION PMTCT_Indicator1(
+    p_startDate DATE,
+    p_endDate DATE) RETURNS INT(11)
+    DETERMINISTIC
+BEGIN
+    DECLARE result INT(11) DEFAULT 0;
+
+SELECT
+    COUNT(DISTINCT pat.patient_id) INTO result
+FROM
+    patient pat
+WHERE
+    patientDateOfFirstANCVisitOnANCFormWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate);
+
+    RETURN (result);
+END$$ 
+DELIMITER ;
