@@ -963,13 +963,11 @@ SELECT
 FROM
     patient pat
 WHERE
-    patientAgeAtReportEndDateIsBetween(pat.patient_id, p_endDate, p_startAgeInMonths, p_endAgeInMonths) AND
-    patientHadAVirologicHIVTestDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
     patientHadAPositiveVirologicHIVTestResultDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
     patientMostRecentVirologicHIVTestResultIsPositive(pat.patient_id) AND
-    patientWasEnrolledToHIVProgramBeforeVirologicTest(pat.patient_id, p_startDate, p_endDate) AND
-    patientWasInitiatedToARVBeforeVirologicTest(pat.patient_id, p_startDate, p_endDate) AND
-    patientTakingARVAtDateOfVirologicTest(pat.patient_id, p_startDate, p_endDate) AND
+    patientHasEnrolledIntoHivProgramBefore(pat.patient_id, getDateOfVirologicTest(pat.patient_id, p_startDate, p_endDate)) AND
+    patientHasStartedARVTreatmentBefore(pat.patient_id, getDateOfVirologicTest(pat.patient_id, p_startDate, p_endDate)) AND
+    patientWasOnARVTreatmentAtEndReportingPeriod(pat.patient_id, getDateOfVirologicTest(pat.patient_id, p_startDate, p_endDate)) AND
     patientAgeAtVirologicHIVTestIsBetween(pat.patient_id, p_startAgeInMonths, p_endAgeInMonths, p_startDate, p_endDate, p_includeStartAge) AND
     patientIsNotDead(pat.patient_id) AND
     patientIsNotLostToFollowUp(pat.patient_id) AND
