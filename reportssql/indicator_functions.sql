@@ -925,19 +925,17 @@ CREATE FUNCTION Testing_Indicator3a(
     DETERMINISTIC
 BEGIN
     DECLARE result INT(11) DEFAULT 0;
-    DECLARE dateOfVirologicHIVTest DATE;
 
 SELECT
-    COUNT(DISTINCT pat.patient_id), getDateOfVirologicTest(pat.patient_id, p_startDate, p_endDate)
-     INTO result, dateOfVirologicHIVTest
+    COUNT(DISTINCT pat.patient_id) INTO result
 FROM
     patient pat
 WHERE
     patientHadAPositiveVirologicHIVTestResultDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
     patientMostRecentVirologicHIVTestResultIsPositive(pat.patient_id) AND
-    NOT patientHasEnrolledIntoHivProgramBefore(pat.patient_id, dateOfVirologicHIVTest) AND
-    NOT patientHasStartedARVTreatmentBefore(pat.patient_id, dateOfVirologicHIVTest) AND
-    NOT patientWasOnARVTreatmentOrHasPickedUpADrugWithinReportingPeriod(pat.patient_id, dateOfVirologicHIVTest, dateOfVirologicHIVTest, 0) AND
+    NOT patientHasEnrolledIntoHivProgramBefore(pat.patient_id, getDateOfVirologicTest(pat.patient_id, p_startDate, p_endDate)) AND
+    NOT patientHasStartedARVTreatmentBefore(pat.patient_id, getDateOfVirologicTest(pat.patient_id, p_startDate, p_endDate)) AND
+    NOT patientWasOnARVTreatmentAtEndReportingPeriod(pat.patient_id, getDateOfVirologicTest(pat.patient_id, p_startDate, p_endDate)) AND
     patientAgeAtVirologicHIVTestIsBetween(pat.patient_id, p_startAgeInMonths, p_endAgeInMonths, p_startDate, p_endDate, p_includeStartAge) AND
     patientIsNotDead(pat.patient_id) AND
     patientIsNotLostToFollowUp(pat.patient_id) AND
