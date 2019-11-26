@@ -458,29 +458,6 @@ BEGIN
 END$$
 DELIMITER ;
 
--- patientAgeAtReportEndDateIsBetween
-
-DROP FUNCTION IF EXISTS patientAgeAtReportEndDateIsBetween;  
-
-DELIMITER $$ 
-CREATE FUNCTION patientAgeAtReportEndDateIsBetween(
-    p_patientId INT(11),
-    p_endDate DATE,
-    p_startAge INT(11),
-    p_endAge INT(11)) RETURNS TINYINT(1) 
-    DETERMINISTIC 
-BEGIN
-    DECLARE result TINYINT(1);
-
-    SELECT TRUE INTO result
-    FROM person p
-    WHERE timestampdiff(MONTH, p.birthdate, p_endDate) BETWEEN p_startAge AND p_endAge
-    LIMIT 1;
-
-    RETURN (result); 
-END$$ 
-DELIMITER ;
-
 -- patientHadAPositiveVirologicHIVTestResultDuringReportingPeriod
 
 DROP FUNCTION IF EXISTS patientHadAPositiveVirologicHIVTestResultDuringReportingPeriod;  
