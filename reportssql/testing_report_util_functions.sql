@@ -536,7 +536,7 @@ BEGIN
     WHERE o.voided = 0
         AND o.person_id = p_patientId
         AND c.uuid = pcrExamUuid
-    ORDER BY o.date_created DESC
+    ORDER BY o.obs_datetime DESC
     LIMIT 1;
 
     RETURN (result);
