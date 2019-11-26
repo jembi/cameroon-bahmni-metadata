@@ -551,26 +551,22 @@ DELIMITER $$
 CREATE FUNCTION getDateOfVirologicTest(
     p_patientId INT(11),
     p_startDate DATE,
-    p_endDate DATE) RETURNS TINYINT(1)
+    p_endDate DATE) RETURNS DATE
     DETERMINISTIC
 BEGIN
 
     DECLARE dateAtVirologicHIVTestLabForm DATE;
     DECLARE dateAtVirologicHIVTestElis DATE;
-    DECLARE dateAtVirologicHIVTest DATE;
 
     SET dateAtVirologicHIVTestLabForm = getDateOfVirologicHIVTestFromLabForm(p_patientId, p_startDate, p_endDate);
     SET dateAtVirologicHIVTestElis = getDateOfVirologicHIVTestFromElis(p_patientId, p_startDate, p_endDate);
 
-    IF dateAtVirologicHIVTestLabForm IS NULL AND dateAtVirologicHIVTestElis IS NULL THEN
-        RETURN FALSE;
-    ELSEIF dateAtVirologicHIVTestElis IS NOT NULL THEN
-        SET dateAtVirologicHIVTest = dateAtVirologicHIVTestElis;
+    IF dateAtVirologicHIVTestElis IS NOT NULL THEN
+        RETURN dateAtVirologicHIVTestElis;
     ELSE
-        SET dateAtVirologicHIVTest = dateAtVirologicHIVTestLabForm;
+        RETURN dateAtVirologicHIVTestLabForm;
     END IF;
 
-    RETURN (dateAtVirologicHIVTest);
 END$$
 DELIMITER ;
 
