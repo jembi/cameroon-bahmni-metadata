@@ -458,21 +458,115 @@ BEGIN
 END$$
 DELIMITER ;
 
--- patientHadAVirologicHIVTestDuringReportingPeriod
+-- patientHadAPositiveVirologicHIVTestResultDuringReportingPeriod
 
-DROP FUNCTION IF EXISTS patientHadAVirologicHIVTestDuringReportingPeriod;
+DROP FUNCTION IF EXISTS patientHadAPositiveVirologicHIVTestResultDuringReportingPeriod;  
 
-DELIMITER $$
-CREATE FUNCTION patientHadAVirologicHIVTestDuringReportingPeriod(
+DELIMITER $$ 
+CREATE FUNCTION patientHadAPositiveVirologicHIVTestResultDuringReportingPeriod(
     p_patientId INT(11),
     p_startDate DATE,
-    p_endDate DATE) RETURNS TINYINT(1)
+    p_endDate DATE) RETURNS TINYINT(1) 
+    DETERMINISTIC 
+BEGIN
+    DECLARE pcrExamUuid VARCHAR(38) DEFAULT "a5239a85-6f75-4882-9b9b-60168e54b7da";
+    DECLARE pcrExamDateUuid VARCHAR(38) DEFAULT "9bb7b360-3790-4e1a-8aca-0d1341663040";
+    DECLARE positiveUuid VARCHAR(38) DEFAULT "7acfafa4-f19b-485e-97a7-c9e002dbe37a";
+    DECLARE result TINYINT(1) DEFAULT 0;
+
+    SELECT TRUE INTO result
+    FROM obs o
+    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
+    WHERE o.voided = 0
+        AND o.person_id = p_patientId
+        AND c.uuid = pcrExamUuid
+        AND o.value_coded = (SELECT concept.concept_id FROM concept WHERE concept.uuid = positiveUuid)
+        AND o.date_created BETWEEN p_startDate AND p_endDate
+        AND o.order_id IS NOT NULL
+    LIMIT 1;
+
+    IF (result) THEN
+        return result;
+    END IF;
+
+    SELECT TRUE INTO result
+    FROM obs o
+    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
+    WHERE o.voided = 0
+        AND o.person_id = p_patientId
+        AND c.uuid = pcrExamUuid
+        AND o.value_coded = (SELECT concept.concept_id FROM concept WHERE concept.uuid = positiveUuid)
+        AND o.order_id IS NULL
+        AND (
+            SELECT obs.value_datetime
+            FROM obs
+            JOIN concept ON concept.concept_id = obs.concept_id AND concept.retired = 0
+            WHERE obs.person_id = o.person_id
+                AND obs.value_datetime IS NOT NULL
+                AND obs.encounter_id = o.encounter_id
+                AND concept.uuid = pcrExamDateUuid
+            LIMIT 1) BETWEEN p_startDate AND p_endDate
+    LIMIT 1;
+
+    RETURN (result);
+END$$
+DELIMITER ;
+
+-- patientMostRecentVirologicHIVTestResultIsPositive
+
+DROP FUNCTION IF EXISTS patientMostRecentVirologicHIVTestResultIsPositive;  
+
+DELIMITER $$
+CREATE FUNCTION patientMostRecentVirologicHIVTestResultIsPositive(
+    p_patientId INT(11)) RETURNS TINYINT(1)
     DETERMINISTIC
 BEGIN
-    RETURN
-        (getDateOfVirologicHIVTestFromLabForm(p_patientId, p_startDate, p_endDate) IS NOT NULL
-        OR
-        getDateOfVirologicHIVTestFromElis(p_patientId, p_startDate, p_endDate) IS NOT NULL); 
+    DECLARE pcrExamUuid VARCHAR(38) DEFAULT "a5239a85-6f75-4882-9b9b-60168e54b7da";
+    DECLARE positiveUuid VARCHAR(38) DEFAULT "7acfafa4-f19b-485e-97a7-c9e002dbe37a";
+    DECLARE result TINYINT(1) DEFAULT 0;
+
+    DECLARE positiveConceptId INT(11);
+
+    SELECT concept.concept_id INTO positiveConceptId
+    FROM concept WHERE concept.uuid = positiveUuid;
+
+    SELECT o.value_coded = positiveConceptId INTO result
+    FROM obs o
+    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
+    WHERE o.voided = 0
+        AND o.person_id = p_patientId
+        AND c.uuid = pcrExamUuid
+    ORDER BY o.obs_datetime DESC
+    LIMIT 1;
+
+    RETURN (result);
+END$$
+DELIMITER ;
+
+-- getDateOfVirologicTest
+
+DROP FUNCTION IF EXISTS getDateOfVirologicTest;
+
+DELIMITER $$
+CREATE FUNCTION getDateOfVirologicTest(
+    p_patientId INT(11),
+    p_startDate DATE,
+    p_endDate DATE) RETURNS DATE
+    DETERMINISTIC
+BEGIN
+
+    DECLARE dateAtVirologicHIVTestLabForm DATE;
+    DECLARE dateAtVirologicHIVTestElis DATE;
+
+    SET dateAtVirologicHIVTestLabForm = getDateOfVirologicHIVTestFromLabForm(p_patientId, p_startDate, p_endDate);
+    SET dateAtVirologicHIVTestElis = getDateOfVirologicHIVTestFromElis(p_patientId, p_startDate, p_endDate);
+
+    IF dateAtVirologicHIVTestElis IS NOT NULL THEN
+        RETURN dateAtVirologicHIVTestElis;
+    ELSE
+        RETURN dateAtVirologicHIVTestLabForm;
+    END IF;
+
 END$$
 DELIMITER ;
 
@@ -575,3 +669,4 @@ BEGIN
     RETURN (result); 
 END$$ 
 DELIMITER ;
+
