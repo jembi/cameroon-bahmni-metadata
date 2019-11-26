@@ -935,7 +935,6 @@ FROM
     patient pat
 WHERE
     patientAgeAtReportEndDateIsBetween(pat.patient_id, p_endDate, p_startAgeInMonths, p_endAgeInMonths) AND
-    patientHadAVirologicHIVTestDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
     patientHadAPositiveVirologicHIVTestResultDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
     patientMostRecentVirologicHIVTestResultIsPositive(pat.patient_id) AND
     NOT patientHasEnrolledIntoHivProgramBefore(pat.patient_id, dateOfVirologicHIVTest) AND
