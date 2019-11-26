@@ -903,7 +903,7 @@ SELECT
 FROM
     patient pat
 WHERE
-    patientHadAVirologicHIVTestDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
+    getDateOfVirologicTest(pat.patient_id, p_startDate, p_endDate) IS NOT NULL AND
     patientAgeAtVirologicHIVTestIsBetween(pat.patient_id, p_startAgeInMonths, p_endAgeInMonths, p_startDate, p_endDate, p_includeStartAge) AND
     patientIsNotDead(pat.patient_id) AND
     patientIsNotLostToFollowUp(pat.patient_id) AND

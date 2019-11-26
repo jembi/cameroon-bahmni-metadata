@@ -593,24 +593,6 @@ BEGIN
 END$$
 DELIMITER ;
 
--- patientHadAVirologicHIVTestDuringReportingPeriod
-
-DROP FUNCTION IF EXISTS patientHadAVirologicHIVTestDuringReportingPeriod;
-
-DELIMITER $$
-CREATE FUNCTION patientHadAVirologicHIVTestDuringReportingPeriod(
-    p_patientId INT(11),
-    p_startDate DATE,
-    p_endDate DATE) RETURNS TINYINT(1)
-    DETERMINISTIC
-BEGIN
-    RETURN
-        (getDateOfVirologicHIVTestFromLabForm(p_patientId, p_startDate, p_endDate) IS NOT NULL
-        OR
-        getDateOfVirologicHIVTestFromElis(p_patientId, p_startDate, p_endDate) IS NOT NULL); 
-END$$
-DELIMITER ;
-
 -- getDateOfVirologicHIVTestFromLabForm
 
 DROP FUNCTION IF EXISTS getDateOfVirologicHIVTestFromLabForm;
