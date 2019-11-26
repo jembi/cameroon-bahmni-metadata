@@ -458,29 +458,6 @@ BEGIN
 END$$
 DELIMITER ;
 
--- patientAgeAtReportEndDateIsBetween
-
-DROP FUNCTION IF EXISTS patientAgeAtReportEndDateIsBetween;  
-
-DELIMITER $$ 
-CREATE FUNCTION patientAgeAtReportEndDateIsBetween(
-    p_patientId INT(11),
-    p_endDate DATE,
-    p_startAge INT(11),
-    p_endAge INT(11)) RETURNS TINYINT(1) 
-    DETERMINISTIC 
-BEGIN
-    DECLARE result TINYINT(1);
-
-    SELECT TRUE INTO result
-    FROM person p
-    WHERE timestampdiff(MONTH, p.birthdate, p_endDate) BETWEEN p_startAge AND p_endAge
-    LIMIT 1;
-
-    RETURN (result); 
-END$$ 
-DELIMITER ;
-
 -- patientHadAPositiveVirologicHIVTestResultDuringReportingPeriod
 
 DROP FUNCTION IF EXISTS patientHadAPositiveVirologicHIVTestResultDuringReportingPeriod;  
@@ -548,14 +525,18 @@ BEGIN
     DECLARE positiveUuid VARCHAR(38) DEFAULT "7acfafa4-f19b-485e-97a7-c9e002dbe37a";
     DECLARE result TINYINT(1) DEFAULT 0;
 
-    SELECT TRUE INTO result
+    DECLARE positiveConceptId INT(11);
+
+    SELECT concept.concept_id INTO positiveConceptId
+    FROM concept WHERE concept.uuid = positiveUuid;
+
+    SELECT o.value_coded = positiveConceptId INTO result
     FROM obs o
     JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
     WHERE o.voided = 0
         AND o.person_id = p_patientId
         AND c.uuid = pcrExamUuid
-        AND o.value_coded = (SELECT concept.concept_id FROM concept WHERE concept.uuid = positiveUuid)
-    ORDER BY o.date_created DESC
+    ORDER BY o.obs_datetime DESC
     LIMIT 1;
 
     RETURN (result);
@@ -576,98 +557,17 @@ BEGIN
 
     DECLARE dateAtVirologicHIVTestLabForm DATE;
     DECLARE dateAtVirologicHIVTestElis DATE;
-    DECLARE dateAtVirologicHIVTest DATE;
 
     SET dateAtVirologicHIVTestLabForm = getDateOfVirologicHIVTestFromLabForm(p_patientId, p_startDate, p_endDate);
     SET dateAtVirologicHIVTestElis = getDateOfVirologicHIVTestFromElis(p_patientId, p_startDate, p_endDate);
 
-    IF dateAtVirologicHIVTestLabForm IS NULL AND dateAtVirologicHIVTestElis IS NULL THEN
-        RETURN FALSE;
-    ELSEIF dateAtVirologicHIVTestElis IS NOT NULL THEN
-        SET dateAtVirologicHIVTest = dateAtVirologicHIVTestElis;
+    IF dateAtVirologicHIVTestElis IS NOT NULL THEN
+        RETURN dateAtVirologicHIVTestElis;
     ELSE
-        SET dateAtVirologicHIVTest = dateAtVirologicHIVTestLabForm;
+        RETURN dateAtVirologicHIVTestLabForm;
     END IF;
 
     RETURN (dateAtVirologicHIVTest);
-END$$
-DELIMITER ;
-
--- patientWasEnrolledToHIVProgramBeforeVirologicTest
-
-DROP FUNCTION IF EXISTS patientWasEnrolledToHIVProgramBeforeVirologicTest;
-
-DELIMITER $$
-CREATE FUNCTION patientWasEnrolledToHIVProgramBeforeVirologicTest(
-    p_patientId INT(11),
-    p_startDate DATE,
-    p_endDate DATE) RETURNS TINYINT(1)
-    DETERMINISTIC
-BEGIN
-
-    DECLARE dateOfVirologicHIVTest DATE;
-
-    SET dateOfVirologicHIVTest = getDateOfVirologicTest(p_patientId, p_startDate, p_endDate);
-
-    RETURN (patientHasEnrolledIntoHivProgramBefore(p_patientId, dateOfVirologicHIVTest));
-END$$
-DELIMITER ;
-
--- patientWasInitiatedToARVBeforeVirologicTest
-
-DROP FUNCTION IF EXISTS patientWasInitiatedToARVBeforeVirologicTest;
-
-DELIMITER $$
-CREATE FUNCTION patientWasInitiatedToARVBeforeVirologicTest(
-    p_patientId INT(11),
-    p_startDate DATE,
-    p_endDate DATE) RETURNS TINYINT(1)
-    DETERMINISTIC
-BEGIN
-
-    DECLARE dateOfVirologicHIVTest DATE;
-
-    SET dateOfVirologicHIVTest = getDateOfVirologicTest(p_patientId, p_startDate, p_endDate);
-
-    RETURN (patientHasStartedARVTreatmentBefore(p_patientId, dateOfVirologicHIVTest));
-END$$
-DELIMITER ;
-
--- patientTakingARVAtDateOfVirologicTest
-
-DROP FUNCTION IF EXISTS patientTakingARVAtDateOfVirologicTest;
-
-DELIMITER $$
-CREATE FUNCTION patientTakingARVAtDateOfVirologicTest(
-    p_patientId INT(11),
-    p_startDate DATE,
-    p_endDate DATE) RETURNS TINYINT(1)
-    DETERMINISTIC
-BEGIN
-
-    DECLARE dateOfVirologicHIVTest DATE;
-
-    SET dateOfVirologicHIVTest = getDateOfVirologicTest(p_patientId, p_startDate, p_endDate);
-
-    RETURN (patientWasOnARVTreatmentOrHasPickedUpADrugWithinReportingPeriod(p_patientId, dateOfVirologicHIVTest, dateOfVirologicHIVTest, 0));
-END$$
-DELIMITER ;
-
--- patientHadAVirologicHIVTestDuringReportingPeriod
-
-DROP FUNCTION IF EXISTS patientHadAVirologicHIVTestDuringReportingPeriod;
-
-DELIMITER $$
-CREATE FUNCTION patientHadAVirologicHIVTestDuringReportingPeriod(
-    p_patientId INT(11),
-    p_startDate DATE,
-    p_endDate DATE) RETURNS TINYINT(1)
-    DETERMINISTIC
-BEGIN
-    RETURN
-        (getDateOfVirologicHIVTestFromLabForm(p_patientId, p_startDate, p_endDate) IS NOT NULL
-        OR
-        getDateOfVirologicHIVTestFromElis(p_patientId, p_startDate, p_endDate) IS NOT NULL); 
 END$$
 DELIMITER ;
 

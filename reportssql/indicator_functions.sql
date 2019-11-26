@@ -903,7 +903,7 @@ SELECT
 FROM
     patient pat
 WHERE
-    patientHadAVirologicHIVTestDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
+    getDateOfVirologicTest(pat.patient_id, p_startDate, p_endDate) IS NOT NULL AND
     patientAgeAtVirologicHIVTestIsBetween(pat.patient_id, p_startAgeInMonths, p_endAgeInMonths, p_startDate, p_endDate, p_includeStartAge) AND
     patientIsNotDead(pat.patient_id) AND
     patientIsNotLostToFollowUp(pat.patient_id) AND
@@ -931,13 +931,11 @@ SELECT
 FROM
     patient pat
 WHERE
-    patientAgeAtReportEndDateIsBetween(pat.patient_id, p_endDate, p_startAgeInMonths, p_endAgeInMonths) AND
-    patientHadAVirologicHIVTestDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
     patientHadAPositiveVirologicHIVTestResultDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
     patientMostRecentVirologicHIVTestResultIsPositive(pat.patient_id) AND
-    NOT patientWasEnrolledToHIVProgramBeforeVirologicTest(pat.patient_id, p_startDate, p_endDate) AND
-    NOT patientWasInitiatedToARVBeforeVirologicTest(pat.patient_id, p_startDate, p_endDate) AND
-    NOT patientTakingARVAtDateOfVirologicTest(pat.patient_id, p_startDate, p_endDate) AND
+    NOT patientHasEnrolledIntoHivProgramBefore(pat.patient_id, getDateOfVirologicTest(pat.patient_id, p_startDate, p_endDate)) AND
+    NOT patientHasStartedARVTreatmentBefore(pat.patient_id, getDateOfVirologicTest(pat.patient_id, p_startDate, p_endDate)) AND
+    NOT patientWasOnARVTreatmentAtEndReportingPeriod(pat.patient_id, getDateOfVirologicTest(pat.patient_id, p_startDate, p_endDate)) AND
     patientAgeAtVirologicHIVTestIsBetween(pat.patient_id, p_startAgeInMonths, p_endAgeInMonths, p_startDate, p_endDate, p_includeStartAge) AND
     patientIsNotDead(pat.patient_id) AND
     patientIsNotLostToFollowUp(pat.patient_id) AND
@@ -980,3 +978,25 @@ WHERE
     RETURN (result);
 END$$ 
 DELIMITER ;
+
+DROP FUNCTION IF EXISTS PMTCT_Indicator1;
+
+DELIMITER $$
+CREATE FUNCTION PMTCT_Indicator1(
+    p_startDate DATE,
+    p_endDate DATE) RETURNS INT(11)
+    DETERMINISTIC
+BEGIN
+    DECLARE result INT(11) DEFAULT 0;
+
+SELECT
+    COUNT(DISTINCT pat.patient_id) INTO result
+FROM
+    patient pat
+WHERE
+    patientDateOfFirstANCVisitOnANCFormWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate);
+
+    RETURN (result);
+END$$ 
+DELIMITER ;
+
