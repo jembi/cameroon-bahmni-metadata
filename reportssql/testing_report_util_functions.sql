@@ -548,13 +548,17 @@ BEGIN
     DECLARE positiveUuid VARCHAR(38) DEFAULT "7acfafa4-f19b-485e-97a7-c9e002dbe37a";
     DECLARE result TINYINT(1) DEFAULT 0;
 
-    SELECT TRUE INTO result
+    DECLARE positiveConceptId INT(11);
+
+    SELECT concept.concept_id INTO positiveConceptId
+    FROM concept WHERE concept.uuid = positiveUuid;
+
+    SELECT o.value_coded = positiveConceptId INTO result
     FROM obs o
     JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
     WHERE o.voided = 0
         AND o.person_id = p_patientId
         AND c.uuid = pcrExamUuid
-        AND o.value_coded = (SELECT concept.concept_id FROM concept WHERE concept.uuid = positiveUuid)
     ORDER BY o.date_created DESC
     LIMIT 1;
 

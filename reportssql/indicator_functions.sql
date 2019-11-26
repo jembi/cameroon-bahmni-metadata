@@ -927,10 +927,9 @@ BEGIN
     DECLARE result INT(11) DEFAULT 0;
     DECLARE dateOfVirologicHIVTest DATE;
 
-    SET dateOfVirologicHIVTest = getDateOfVirologicTest(p_patientId, p_startDate, p_endDate);
-
 SELECT
-    COUNT(DISTINCT pat.patient_id) INTO result
+    COUNT(DISTINCT pat.patient_id), getDateOfVirologicTest(pat.patient_id, p_startDate, p_endDate)
+     INTO result, dateOfVirologicHIVTest
 FROM
     patient pat
 WHERE
@@ -938,8 +937,8 @@ WHERE
     patientHadAPositiveVirologicHIVTestResultDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
     patientMostRecentVirologicHIVTestResultIsPositive(pat.patient_id) AND
     NOT patientHasEnrolledIntoHivProgramBefore(pat.patient_id, dateOfVirologicHIVTest) AND
-    NOT patientHasStartedARVTreatmentBefore(p_patientId, dateOfVirologicHIVTest) AND
-    NOT patientWasOnARVTreatmentOrHasPickedUpADrugWithinReportingPeriod(p_patientId, dateOfVirologicHIVTest, dateOfVirologicHIVTest, 0) AND
+    NOT patientHasStartedARVTreatmentBefore(pat.patient_id, dateOfVirologicHIVTest) AND
+    NOT patientWasOnARVTreatmentOrHasPickedUpADrugWithinReportingPeriod(pat.patient_id, dateOfVirologicHIVTest, dateOfVirologicHIVTest, 0) AND
     patientAgeAtVirologicHIVTestIsBetween(pat.patient_id, p_startAgeInMonths, p_endAgeInMonths, p_startDate, p_endDate, p_includeStartAge) AND
     patientIsNotDead(pat.patient_id) AND
     patientIsNotLostToFollowUp(pat.patient_id) AND
