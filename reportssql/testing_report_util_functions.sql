@@ -474,6 +474,7 @@ BEGIN
     DECLARE positiveUuid VARCHAR(38) DEFAULT "7acfafa4-f19b-485e-97a7-c9e002dbe37a";
     DECLARE result TINYINT(1) DEFAULT 0;
 
+    -- openElis check
     SELECT TRUE INTO result
     FROM obs o
     JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
@@ -489,6 +490,7 @@ BEGIN
         return result;
     END IF;
 
+    -- lab form check
     SELECT TRUE INTO result
     FROM obs o
     JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
@@ -501,7 +503,8 @@ BEGIN
             SELECT obs.value_datetime
             FROM obs
             JOIN concept ON concept.concept_id = obs.concept_id AND concept.retired = 0
-            WHERE obs.person_id = o.person_id
+            WHERE obs.voided = 0 
+                AND obs.person_id = o.person_id 
                 AND obs.value_datetime IS NOT NULL
                 AND obs.encounter_id = o.encounter_id
                 AND concept.uuid = pcrExamDateUuid
