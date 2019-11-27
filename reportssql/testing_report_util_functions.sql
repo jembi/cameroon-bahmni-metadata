@@ -567,7 +567,6 @@ BEGIN
         RETURN dateAtVirologicHIVTestLabForm;
     END IF;
 
-    RETURN (dateAtVirologicHIVTest);
 END$$
 DELIMITER ;
 
