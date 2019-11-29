@@ -1003,6 +1003,32 @@ WHERE
 END$$ 
 DELIMITER ;
 
+DROP FUNCTION IF EXISTS PMTCT_Indicator2;
+
+DELIMITER $$
+CREATE FUNCTION PMTCT_Indicator2(
+    p_startDate DATE,
+    p_endDate DATE) RETURNS INT(11)
+    DETERMINISTIC
+BEGIN
+    DECLARE result INT(11) DEFAULT 0;
+
+SELECT
+    COUNT(DISTINCT pat.patient_id) INTO result
+FROM
+    patient pat
+WHERE
+    NOT patientHIVTestedPriorToEnrolOnANCFormWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
+    patientHIVTestedAtEnrolOnANCFormWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
+    patientIsNotDead(pat.patient_id) AND
+    patientIsNotLostToFollowUp(pat.patient_id) AND
+    patientIsNotTransferredOut(pat.patient_id) AND 
+    patientGenderIs(pat.patient_id, 'F');
+
+    RETURN (result);
+END$$ 
+DELIMITER ;
+
 DROP FUNCTION IF EXISTS PMTCT_Indicator3;
 
 DELIMITER $$
