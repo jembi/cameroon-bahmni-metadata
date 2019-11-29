@@ -26,39 +26,6 @@ BEGIN
 END$$
 DELIMITER ;
 
--- patientHIVPosPriorToEnrolOnANCForm
-
-DROP FUNCTION IF EXISTS patientHIVPosPriorToEnrolOnANCForm;
-
-DELIMITER $$
-CREATE FUNCTION patientHIVPosPriorToEnrolOnANCForm(
-    p_patientId INT(11),
-    p_startDate DATE,
-    p_endDate DATE) RETURNS TINYINT(1)
-    DETERMINISTIC
-BEGIN
-    DECLARE patientHIVResultIsPositive TINYINT(1) DEFAULT 0;
-    DECLARE uuidHIVTestResult VARCHAR(38) DEFAULT "85dadffe-5714-4210-8632-6fb51ef593b6";
-    DECLARE uuidHIVTestResultPositive VARCHAR(38) DEFAULT "7acfafa4-f19b-485e-97a7-c9e002dbe37a";
-    DECLARE priorToANCEnrolmentObsGroupId INT(11) DEFAULT getPriorToANCEnrolmentObsGroupId(p_patientId, p_startDate, p_endDate);
-    
-    SELECT
-        TRUE INTO patientHIVResultIsPositive
-    FROM obs o
-    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
-    WHERE priorToANCEnrolmentObsGroupId IS NOT NULL
-        AND o.obs_group_id = priorToANCEnrolmentObsGroupId
-        AND o.voided = 0 
-        AND o.person_id = p_patientId
-        AND c.uuid = uuidHIVTestResult
-        AND o.value_coded IS NOT NULL
-        AND o.value_coded = (SELECT concept_id FROM concept WHERE uuid = uuidHIVTestResultPositive)
-        LIMIT 1;
-
-    RETURN (patientHIVResultIsPositive);
-END$$
-DELIMITER ;
-
 -- patientHadANCVisitWithinReportingPeriod
 
 DROP FUNCTION IF EXISTS patientHadANCVisitWithinReportingPeriod;
@@ -266,50 +233,57 @@ BEGIN
 END$$
 DELIMITER ;
 
--- patientHIVPosAtEnrolOnANCFormWithinReportingPeriod
+-- patientHIVTestResultWithinReportingPeriodIs
 
-DROP FUNCTION IF EXISTS patientHIVPosAtEnrolOnANCFormWithinReportingPeriod;
+DROP FUNCTION IF EXISTS patientHIVTestResultWithinReportingPeriodIs;
 
 DELIMITER $$
-CREATE FUNCTION patientHIVPosAtEnrolOnANCFormWithinReportingPeriod(
+CREATE FUNCTION patientHIVTestResultWithinReportingPeriodIs(
     p_patientId INT(11),
     p_startDate DATE,
-    p_endDate DATE) RETURNS TINYINT(1)
+    p_endDate DATE,
+    p_uuidTestResult VARCHAR(38),
+    p_isPriorToEnrolOnANC TINYINT(1)) RETURNS TINYINT(1)
     DETERMINISTIC
 BEGIN
-    DECLARE patientHIVResultIsPositive TINYINT(1) DEFAULT 0;
+    DECLARE patientHIVResultMatchesInput TINYINT(1) DEFAULT 0;
     DECLARE hivTestDateWithinReportingPeriod TINYINT(1) DEFAULT 0;
     DECLARE uuidHIVTestResult VARCHAR(38) DEFAULT "85dadffe-5714-4210-8632-6fb51ef593b6";
-    DECLARE uuidHIVTestResultPositive VARCHAR(38) DEFAULT "7acfafa4-f19b-485e-97a7-c9e002dbe37a";
     DECLARE uuidHIVTestDate VARCHAR(38) DEFAULT "c6c08cdc-18dc-4f42-809c-959621bc9a6c";
-    DECLARE atANCEnrolmentObsGroupId INT(11) DEFAULT getAtEnrolOnANCFormObsGroupId(p_patientId, p_startDate, p_endDate);
-    
+    DECLARE enrolmentObsGroupId INT(11);
+
+    IF (p_isPriorToEnrolOnANC) THEN
+        SET enrolmentObsGroupId = getPriorToANCEnrolmentObsGroupId(p_patientId, p_startDate, p_endDate);
+    ELSE
+        SET enrolmentObsGroupId = getAtEnrolOnANCFormObsGroupId(p_patientId, p_startDate, p_endDate);
+    END IF;
+
     SELECT
-        TRUE INTO patientHIVResultIsPositive
+        TRUE INTO patientHIVResultMatchesInput
     FROM obs o
     JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
-    WHERE atANCEnrolmentObsGroupId IS NOT NULL
-        AND o.obs_group_id = atANCEnrolmentObsGroupId
+    WHERE enrolmentObsGroupId IS NOT NULL
+        AND o.obs_group_id = enrolmentObsGroupId
         AND o.voided = 0 
         AND o.person_id = p_patientId
         AND c.uuid = uuidHIVTestResult
         AND o.value_coded IS NOT NULL
-        AND o.value_coded = (SELECT concept_id FROM concept WHERE uuid = uuidHIVTestResultPositive)
+        AND o.value_coded = (SELECT concept_id FROM concept WHERE uuid = p_uuidTestResult)
         LIMIT 1;
 
     SELECT
         TRUE INTO hivTestDateWithinReportingPeriod
     FROM obs o
     JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
-    WHERE atANCEnrolmentObsGroupId IS NOT NULL
-        AND o.obs_group_id = atANCEnrolmentObsGroupId
+    WHERE enrolmentObsGroupId IS NOT NULL
+        AND o.obs_group_id = enrolmentObsGroupId
         AND o.voided = 0
         AND o.person_id = p_patientId
         AND c.uuid = uuidHIVTestDate
         AND DATE(o.value_datetime) BETWEEN p_startDate AND p_endDate
         LIMIT 1;
 
-    RETURN (patientHIVResultIsPositive && hivTestDateWithinReportingPeriod);
+    RETURN (patientHIVResultMatchesInput && hivTestDateWithinReportingPeriod);
 END$$
 DELIMITER ;
 
@@ -338,100 +312,6 @@ BEGIN
         LIMIT 1;
 
     RETURN (dateOfANC1WithinReportingPeriod);
-END$$
-DELIMITER ;
-
--- patientHIVNegAtEnrolOnANCFormWithinReportingPeriod
-
-DROP FUNCTION IF EXISTS patientHIVNegAtEnrolOnANCFormWithinReportingPeriod;
-
-DELIMITER $$
-CREATE FUNCTION patientHIVNegAtEnrolOnANCFormWithinReportingPeriod(
-    p_patientId INT(11),
-    p_startDate DATE,
-    p_endDate DATE) RETURNS TINYINT(1)
-    DETERMINISTIC
-BEGIN
-    DECLARE patientHIVResultIsNegative TINYINT(1) DEFAULT 0;
-    DECLARE hivTestDateWithinReportingPeriod TINYINT(1) DEFAULT 0;
-    DECLARE uuidHIVTestResult VARCHAR(38) DEFAULT "85dadffe-5714-4210-8632-6fb51ef593b6";
-    DECLARE uuidHIVTestResultNegative VARCHAR(38) DEFAULT "718b4589-2a11-4355-b8dc-aa668a93e098";
-    DECLARE uuidHIVTestDate VARCHAR(38) DEFAULT "c6c08cdc-18dc-4f42-809c-959621bc9a6c";
-    DECLARE atANCEnrolmentObsGroupId INT(11) DEFAULT getAtEnrolOnANCFormObsGroupId(p_patientId, p_startDate, p_endDate);
-    
-    SELECT
-        TRUE INTO patientHIVResultIsNegative
-    FROM obs o
-    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
-    WHERE atANCEnrolmentObsGroupId IS NOT NULL
-        AND o.obs_group_id = atANCEnrolmentObsGroupId
-        AND o.voided = 0 
-        AND o.person_id = p_patientId
-        AND c.uuid = uuidHIVTestResult
-        AND o.value_coded IS NOT NULL
-        AND o.value_coded = (SELECT concept_id FROM concept WHERE uuid = uuidHIVTestResultNegative)
-        LIMIT 1;
-
-    SELECT
-        TRUE INTO hivTestDateWithinReportingPeriod
-    FROM obs o
-    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
-    WHERE atANCEnrolmentObsGroupId IS NOT NULL
-        AND o.obs_group_id = atANCEnrolmentObsGroupId
-        AND o.voided = 0
-        AND o.person_id = p_patientId
-        AND c.uuid = uuidHIVTestDate
-        AND DATE(o.value_datetime) BETWEEN p_startDate AND p_endDate
-        LIMIT 1;
-
-    RETURN (patientHIVResultIsNegative && hivTestDateWithinReportingPeriod);
-END$$
-DELIMITER ;
-
--- patientHIVNegPriorToEnrolOnANCFormBeforeReportEndDate
-
-DROP FUNCTION IF EXISTS patientHIVNegPriorToEnrolOnANCFormBeforeReportEndDate;
-
-DELIMITER $$
-CREATE FUNCTION patientHIVNegPriorToEnrolOnANCFormBeforeReportEndDate(
-    p_patientId INT(11),
-    p_startDate DATE,
-    p_endDate DATE) RETURNS TINYINT(1)
-    DETERMINISTIC
-BEGIN
-    DECLARE patientHIVResultIsNegative TINYINT(1) DEFAULT 0;
-    DECLARE hivTestDateBeforeReportEndDate TINYINT(1) DEFAULT 0;
-    DECLARE uuidHIVTestResult VARCHAR(38) DEFAULT "85dadffe-5714-4210-8632-6fb51ef593b6";
-    DECLARE uuidHIVTestResultNegative VARCHAR(38) DEFAULT "718b4589-2a11-4355-b8dc-aa668a93e098";
-    DECLARE uuidHIVTestDate VARCHAR(38) DEFAULT "c6c08cdc-18dc-4f42-809c-959621bc9a6c";
-    DECLARE priorToANCEnrolmentObsGroupId INT(11) DEFAULT getPriorToANCEnrolmentObsGroupId(p_patientId, p_startDate, p_endDate);
-    
-    SELECT
-        TRUE INTO patientHIVResultIsNegative
-    FROM obs o
-    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
-    WHERE priorToANCEnrolmentObsGroupId IS NOT NULL
-        AND o.obs_group_id = priorToANCEnrolmentObsGroupId
-        AND o.voided = 0 
-        AND o.person_id = p_patientId
-        AND c.uuid = uuidHIVTestResult
-        AND o.value_coded IS NOT NULL
-        AND o.value_coded = (SELECT concept_id FROM concept WHERE uuid = uuidHIVTestResultNegative)
-        LIMIT 1;
-
-    SELECT
-        TRUE INTO hivTestDateBeforeReportEndDate
-    FROM obs o
-    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
-    WHERE priorToANCEnrolmentObsGroupId IS NOT NULL
-        AND o.obs_group_id = priorToANCEnrolmentObsGroupId
-        AND o.voided = 0
-        AND o.person_id = p_patientId
-        AND c.uuid = uuidHIVTestDate
-        AND DATE(o.value_datetime) < p_endDate
-        LIMIT 1;
-
-    RETURN (patientHIVResultIsNegative && hivTestDateBeforeReportEndDate);
 END$$
 DELIMITER ;
 
