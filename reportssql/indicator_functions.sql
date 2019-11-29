@@ -766,7 +766,7 @@ SELECT
 FROM
     patient pat
 WHERE
-    patientHIVPosPriorToEnrolOnANCForm(pat.patient_id) AND
+    patientHIVPosPriorToEnrolOnANCForm(pat.patient_id, p_startDate, p_endDate) AND
     patientHadANCVisitWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
     patientAgeIsBetween(pat.patient_id, p_startAge, p_endAge, p_includeEndAge) AND
     patientIsNotDead(pat.patient_id) AND
@@ -811,7 +811,7 @@ FROM
     patient pat
 WHERE
     patientHIVPosAtEnrolOnANCFormWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
-    NOT patientHIVPosPriorToEnrolOnANCForm(pat.patient_id) AND
+    NOT patientHIVPosPriorToEnrolOnANCForm(pat.patient_id, p_startDate, p_endDate) AND
     patientDateOfFirstANCVisitOnANCFormWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
     patientAgeIsBetween(pat.patient_id, p_startAge, p_endAge, p_includeEndAge) AND
     patientIsNotDead(pat.patient_id) AND
@@ -842,7 +842,7 @@ FROM
     patient pat
 WHERE
     patientHIVNegAtEnrolOnANCFormWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
-    NOT patientHIVPosPriorToEnrolOnANCForm(pat.patient_id) AND
+    NOT patientHIVPosPriorToEnrolOnANCForm(pat.patient_id, p_startDate, p_endDate) AND
     patientDateOfFirstANCVisitOnANCFormWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
     patientAgeIsBetween(pat.patient_id, p_startAge, p_endAge, p_includeEndAge) AND
     patientIsNotDead(pat.patient_id) AND
@@ -872,7 +872,7 @@ SELECT
 FROM
     patient pat
 WHERE
-    patientHIVNegPriorToEnrolOnANCFormBeforeReportEndDate(pat.patient_id, p_endDate) AND
+    patientHIVNegPriorToEnrolOnANCFormBeforeReportEndDate(pat.patient_id, p_startDate, p_endDate) AND
     patientNotEligibleForHIVRetestOnANCFormWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
     patientDateOfFirstANCVisitOnANCFormWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
     patientAgeIsBetween(pat.patient_id, p_startAge, p_endAge, p_includeEndAge) AND
