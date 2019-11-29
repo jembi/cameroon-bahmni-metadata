@@ -760,13 +760,14 @@ CREATE FUNCTION Testing_Indicator4a(
     DETERMINISTIC
 BEGIN
     DECLARE result INT(11) DEFAULT 0;
+    DECLARE uuidHIVTestResultPositive VARCHAR(38) DEFAULT "7acfafa4-f19b-485e-97a7-c9e002dbe37a";
 
 SELECT
     COUNT(DISTINCT pat.patient_id) INTO result
 FROM
     patient pat
 WHERE
-    patientHIVPosPriorToEnrolOnANCForm(pat.patient_id) AND
+    patientHIVTestResultWithinReportingPeriodIs(pat.patient_id, p_startDate, p_endDate, uuidHIVTestResultPositive, 1) AND
     patientHadANCVisitWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
     patientAgeIsBetween(pat.patient_id, p_startAge, p_endAge, p_includeEndAge) AND
     patientIsNotDead(pat.patient_id) AND
@@ -804,14 +805,15 @@ CREATE FUNCTION Testing_Indicator4b(
     DETERMINISTIC
 BEGIN
     DECLARE result INT(11) DEFAULT 0;
+    DECLARE uuidHIVTestResultPositive VARCHAR(38) DEFAULT "7acfafa4-f19b-485e-97a7-c9e002dbe37a";
 
 SELECT
     COUNT(DISTINCT pat.patient_id) INTO result
 FROM
     patient pat
 WHERE
-    patientHIVPosAtEnrolOnANCFormWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
-    NOT patientHIVPosPriorToEnrolOnANCForm(pat.patient_id) AND
+    patientHIVTestResultWithinReportingPeriodIs(pat.patient_id, p_startDate, p_endDate, uuidHIVTestResultPositive, 0) AND
+    NOT patientHIVTestResultWithinReportingPeriodIs(pat.patient_id, p_startDate, p_endDate, uuidHIVTestResultPositive, 1) AND
     patientDateOfFirstANCVisitOnANCFormWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
     patientAgeIsBetween(pat.patient_id, p_startAge, p_endAge, p_includeEndAge) AND
     patientIsNotDead(pat.patient_id) AND
@@ -835,14 +837,16 @@ CREATE FUNCTION Testing_Indicator4c(
     DETERMINISTIC
 BEGIN
     DECLARE result INT(11) DEFAULT 0;
+    DECLARE uuidHIVTestResultPositive VARCHAR(38) DEFAULT "7acfafa4-f19b-485e-97a7-c9e002dbe37a";
+    DECLARE uuidHIVTestResultNegative VARCHAR(38) DEFAULT "718b4589-2a11-4355-b8dc-aa668a93e098";
 
 SELECT
     COUNT(DISTINCT pat.patient_id) INTO result
 FROM
     patient pat
 WHERE
-    patientHIVNegAtEnrolOnANCFormWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
-    NOT patientHIVPosPriorToEnrolOnANCForm(pat.patient_id) AND
+    patientHIVTestResultWithinReportingPeriodIs(pat.patient_id, p_startDate, p_endDate, uuidHIVTestResultNegative, 0) AND
+    NOT patientHIVTestResultWithinReportingPeriodIs(pat.patient_id, p_startDate, p_endDate, uuidHIVTestResultPositive, 1) AND
     patientDateOfFirstANCVisitOnANCFormWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
     patientAgeIsBetween(pat.patient_id, p_startAge, p_endAge, p_includeEndAge) AND
     patientIsNotDead(pat.patient_id) AND
@@ -866,13 +870,14 @@ CREATE FUNCTION Testing_Indicator4d(
     DETERMINISTIC
 BEGIN
     DECLARE result INT(11) DEFAULT 0;
+    DECLARE uuidHIVTestResultNegative VARCHAR(38) DEFAULT "718b4589-2a11-4355-b8dc-aa668a93e098";
 
 SELECT
     COUNT(DISTINCT pat.patient_id) INTO result
 FROM
     patient pat
 WHERE
-    patientHIVNegPriorToEnrolOnANCFormBeforeReportEndDate(pat.patient_id, p_endDate) AND
+    patientHIVTestResultWithinReportingPeriodIs(pat.patient_id, p_startDate, p_endDate, uuidHIVTestResultNegative, 1) AND
     patientNotEligibleForHIVRetestOnANCFormWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
     patientDateOfFirstANCVisitOnANCFormWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
     patientAgeIsBetween(pat.patient_id, p_startAge, p_endAge, p_includeEndAge) AND
@@ -993,6 +998,39 @@ FROM
     patient pat
 WHERE
     patientDateOfFirstANCVisitOnANCFormWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate);
+
+    RETURN (result);
+END$$ 
+DELIMITER ;
+
+DROP FUNCTION IF EXISTS PMTCT_Indicator3;
+
+DELIMITER $$
+CREATE FUNCTION PMTCT_Indicator3(
+    p_startDate DATE,
+    p_endDate DATE) RETURNS INT(11)
+    DETERMINISTIC
+BEGIN
+    DECLARE result INT(11) DEFAULT 0;
+    DECLARE uuidHIVTestResultPositive VARCHAR(38) DEFAULT "7acfafa4-f19b-485e-97a7-c9e002dbe37a";
+    DECLARE uuidHIVTestResultNegative VARCHAR(38) DEFAULT "718b4589-2a11-4355-b8dc-aa668a93e098";
+    DECLARE uuidHIVTestResultIndeterminate VARCHAR(38) DEFAULT "32c3c2e4-317f-4c49-b927-34b3752e05cb";
+
+SELECT
+    COUNT(DISTINCT pat.patient_id) INTO result
+FROM
+    patient pat
+WHERE
+    NOT patientHIVTestedPriorToEnrolOnANCFormWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
+    (
+        patientHIVTestResultWithinReportingPeriodIs(pat.patient_id, p_startDate, p_endDate, uuidHIVTestResultPositive, 0) OR
+        patientHIVTestResultWithinReportingPeriodIs(pat.patient_id, p_startDate, p_endDate, uuidHIVTestResultNegative, 0) OR
+        patientHIVTestResultWithinReportingPeriodIs(pat.patient_id, p_startDate, p_endDate, uuidHIVTestResultIndeterminate, 0)
+    ) AND
+    patientIsNotDead(pat.patient_id) AND
+    patientIsNotLostToFollowUp(pat.patient_id) AND
+    patientIsNotTransferredOut(pat.patient_id) AND
+    patientGenderIs(pat.patient_id, "F");
 
     RETURN (result);
 END$$ 
