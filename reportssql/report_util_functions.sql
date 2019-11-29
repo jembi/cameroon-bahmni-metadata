@@ -1,3 +1,4 @@
+
 -- patientGenderIs
 
 DROP FUNCTION IF EXISTS patientGenderIs;
