@@ -38,19 +38,17 @@ CREATE FUNCTION patientHadANCVisitWithinReportingPeriod(
     DETERMINISTIC
 BEGIN
     DECLARE result TINYINT(1) DEFAULT 0;
-    DECLARE uuidvisitTypeANC VARCHAR(38) DEFAULT "a71de1a2-aa43-496a-a533-13f47fad0129";
 
     SELECT
         TRUE INTO result
-    FROM visit v
-    JOIN visit_type vt ON vt.visit_type_id = v.visit_type_id AND vt.retired = 0
-    WHERE v.voided = 0
-        AND v.patient_id = p_patientId
-        AND vt.uuid = uuidvisitTypeANC
-        AND v.date_started IS NOT NULL
-        AND DATE(v.date_started) BETWEEN p_startDate AND p_endDate;
+    FROM encounter e
+    JOIN location loc ON e.location_id = loc.location_id AND loc.retired = 0
+    WHERE e.voided = 0
+        AND e.patient_id = p_patientId
+        AND loc.name = "LOCATION_ANC"
+        AND DATE(e.encounter_datetime) BETWEEN p_startDate AND p_endDate LIMIT 1;
 
-    RETURN (result );
+    RETURN (result);
 END$$
 DELIMITER ;
 
