@@ -14,6 +14,7 @@ BEGIN
     FROM patient_identifier pi 
     WHERE pi.voided = 0
         AND pi.patient_id = p_patientId
+        AND pi.preferred = true
     LIMIT 1;
 
     RETURN result;
@@ -103,6 +104,27 @@ BEGIN
     WHERE p.voided = 0
         AND p.person_id = p_patientId
     LIMIT 1;
+
+    RETURN result;
+END$$
+DELIMITER ;
+
+-- getServicesUsedDuringVisit
+
+DROP FUNCTION IF EXISTS getServicesUsedDuringVisit;
+
+DELIMITER $$
+CREATE FUNCTION getServicesUsedDuringVisit(
+    p_visit_id INT(11)) RETURNS TEXT
+    DETERMINISTIC
+BEGIN
+    DECLARE result TEXT;
+
+    SELECT REPLACE(GROUP_CONCAT(DISTINCT loc.name), 'LOCATION_', '' ) INTO result
+    FROM encounter e
+    JOIN location loc ON e.location_id = loc.location_id
+    WHERE e.voided = 0 AND
+    e.visit_id = p_visit_id;
 
     RETURN result;
 END$$
