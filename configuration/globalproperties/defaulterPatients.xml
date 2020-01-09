@@ -3,11 +3,20 @@
     <globalProperty>
       <property>emrapi.sqlSearch.defaulterPatients</property>
       <value>
-      select distinct concat(pn.given_name," ", ifnull(pn.family_name,'')) as name,
-        pn.given_name as givenName,
-        pn.family_name as familyName,
-        pi.identifier as identifier,
-        concat("",p.uuid) as uuid
+      select
+        distinct pi.identifier as ID,
+        concat("",p.uuid) as uuid,
+        concat(pn.given_name," ", ifnull(pn.family_name,'')) as 'PROGRAM_MODULE_LABEL_NAME_KEY',
+        getPatientARTNumber(pat.patient_id) as 'PROGRAM_MODULE_LABEL_ART_NUMBER_KEY',
+        getPatientAge(pat.patient_id) as 'PROGRAM_MODULE_LABEL_AGE_KEY',
+        getPatientVillage(pat.patient_id) as 'PROGRAM_MODULE_LABEL_VILLAGE_KEY',
+        getPatientPhoneNumber(pat.patient_id) as 'PROGRAM_MODULE_LABEL_PHONE_NUMBER_KEY',
+        getPatientEmergencyContact(pat.patient_id) as 'PROGRAM_MODULE_LABEL_EMERGENCY_CONTACT_KEY',
+        "" as 'PROGRAM_MODULE_LABEL_TRACKING_STATE_KEY',
+        "" as 'PROGRAM_MODULE_LABEL_TRACKING_DATE_KEY',
+        "" as 'PROGRAM_MODULE_LABEL_TRACKING_OUTCOME_KEY',
+        getDateMostRecentARVAppointment(pat.patient_id) as 'PROGRAM_MODULE_LABEL_DATE_LAST_APPOINTMENT_KEY',
+        "" as 'PROGRAM_MODULE_LABEL_APS_NAME_KEY'
       from
         patient pat join person_name pn on pat.patient_id = pn.person_id and pn.voided = 0 and pat.voided=0
         join patient_identifier pi on pat.patient_id = pi.patient_id and pi.voided=0
