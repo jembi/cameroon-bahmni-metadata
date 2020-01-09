@@ -12,11 +12,11 @@
         getPatientVillage(pat.patient_id) as 'PROGRAM_MODULE_LABEL_VILLAGE_KEY',
         getPatientPhoneNumber(pat.patient_id) as 'PROGRAM_MODULE_LABEL_PHONE_NUMBER_KEY',
         getPatientEmergencyContact(pat.patient_id) as 'PROGRAM_MODULE_LABEL_EMERGENCY_CONTACT_KEY',
-        "" as 'PROGRAM_MODULE_LABEL_TRACKING_STATE_KEY',
-        "" as 'PROGRAM_MODULE_LABEL_TRACKING_DATE_KEY',
-        "" as 'PROGRAM_MODULE_LABEL_TRACKING_OUTCOME_KEY',
+        getPatientMostRecentProgramTrackingStateValue(pat.patient_id) as 'PROGRAM_MODULE_LABEL_TRACKING_STATE_KEY',
+        getPatientMostRecentProgramTrackingDateValue(pat.patient_id) as 'PROGRAM_MODULE_LABEL_TRACKING_DATE_KEY',
+        getPatientMostRecentProgramTrackingOutcomeValue(pat.patient_id) as 'PROGRAM_MODULE_LABEL_TRACKING_OUTCOME_KEY',
         getDateMostRecentARVAppointment(pat.patient_id) as 'PROGRAM_MODULE_LABEL_DATE_LAST_APPOINTMENT_KEY',
-        "" as 'PROGRAM_MODULE_LABEL_APS_NAME_KEY'
+        getPatientMostRecentProgramAPSName(pat.patient_id) as 'PROGRAM_MODULE_LABEL_APS_NAME_KEY'
       from
         patient pat join person_name pn on pat.patient_id = pn.person_id and pn.voided = 0 and pat.voided=0
         join patient_identifier pi on pat.patient_id = pi.patient_id and pi.voided=0
