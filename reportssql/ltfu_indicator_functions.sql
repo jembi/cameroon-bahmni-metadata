@@ -22,7 +22,7 @@ WHERE
     patientHasEnrolledIntoHivProgram(pat.patient_id) = "Yes" AND
     patientHasTherapeuticLine(pat.patient_id, 0) AND
     patientHasStartedARVTreatmentBefore(pat.patient_id, p_endDate) AND
-    patientEndOfARVTreatmentIsBefore(pat.patient_id, p_startDate) AND
+    patientWasOnARVTreatmentByDate(pat.patient_id, p_startDate) AND
     patientIsLostToFollowUp(pat.patient_id, p_startDate, p_endDate) AND
     patientIsNotDead(pat.patient_id) AND
     patientIsNotTransferredOut(pat.patient_id);

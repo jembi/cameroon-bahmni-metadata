@@ -677,7 +677,7 @@ WHERE
     patientGenderIs(pat.patient_id, p_gender) AND
     patientAgeWhenRegisteredForHivProgramIsBetween(pat.patient_id, p_startAge, p_endAge, p_includeEndAge) AND
     patientHasStartedARVTreatmentBeforeExtendedEndDate(pat.patient_id, p_endDate, 3) AND
-    patientWasOnARVTreatmentAtEndReportingPeriod(pat.patient_id, p_endDate) AND
+    patientWasOnARVTreatmentByDate(pat.patient_id, p_endDate) AND
     mostRecentNotDocumentedViralLoadExamIsBelow(pat.patient_id, p_endDate, 1000) AND
     patientIsNotDead(pat.patient_id) AND
     patientIsNotLostToFollowUp(pat.patient_id) AND
@@ -708,7 +708,7 @@ WHERE
     patientGenderIs(pat.patient_id, p_gender) AND
     patientAgeWhenRegisteredForHivProgramIsBetween(pat.patient_id, p_startAge, p_endAge, p_includeEndAge) AND
     patientHasStartedARVTreatmentBeforeExtendedEndDate(pat.patient_id, p_endDate, 3) AND
-    patientWasOnARVTreatmentAtEndReportingPeriod(pat.patient_id, p_endDate) AND
+    patientWasOnARVTreatmentByDate(pat.patient_id, p_endDate) AND
     mostRecentRoutineViralLoadExamIsBelow(pat.patient_id, p_endDate, 1000) AND
     patientIsNotDead(pat.patient_id) AND
     patientIsNotLostToFollowUp(pat.patient_id) AND
@@ -739,7 +739,7 @@ WHERE
     patientGenderIs(pat.patient_id, p_gender) AND
     patientAgeWhenRegisteredForHivProgramIsBetween(pat.patient_id, p_startAge, p_endAge, p_includeEndAge) AND
     patientHasStartedARVTreatmentBeforeExtendedEndDate(pat.patient_id, p_endDate, 3) AND
-    patientWasOnARVTreatmentAtEndReportingPeriod(pat.patient_id, p_endDate) AND
+    patientWasOnARVTreatmentByDate(pat.patient_id, p_endDate) AND
     mostRecentTargetedViralLoadExamIsBelow(pat.patient_id, p_endDate, 1000) AND
     patientIsNotDead(pat.patient_id) AND
     patientIsNotLostToFollowUp(pat.patient_id) AND
@@ -940,7 +940,7 @@ WHERE
     patientMostRecentVirologicHIVTestResultIsPositive(pat.patient_id) AND
     NOT patientHasEnrolledIntoHivProgramBefore(pat.patient_id, getDateOfVirologicTest(pat.patient_id, p_startDate, p_endDate)) AND
     NOT patientHasStartedARVTreatmentBefore(pat.patient_id, getDateOfVirologicTest(pat.patient_id, p_startDate, p_endDate)) AND
-    NOT patientWasOnARVTreatmentAtEndReportingPeriod(pat.patient_id, getDateOfVirologicTest(pat.patient_id, p_startDate, p_endDate)) AND
+    NOT patientWasOnARVTreatmentByDate(pat.patient_id, getDateOfVirologicTest(pat.patient_id, p_startDate, p_endDate)) AND
     patientAgeAtVirologicHIVTestIsBetween(pat.patient_id, p_startAgeInMonths, p_endAgeInMonths, p_startDate, p_endDate, p_includeStartAge) AND
     patientIsNotDead(pat.patient_id) AND
     patientIsNotLostToFollowUp(pat.patient_id) AND
@@ -973,7 +973,7 @@ WHERE
     patientHasEnrolledIntoHivProgramBefore(pat.patient_id, getDateOfVirologicTest(pat.patient_id, p_startDate, p_endDate)) AND
     patientHasTherapeuticLine(pat.patient_id, 0) AND
     patientHasStartedARVTreatmentBefore(pat.patient_id, getDateOfVirologicTest(pat.patient_id, p_startDate, p_endDate)) AND
-    patientWasOnARVTreatmentAtEndReportingPeriod(pat.patient_id, getDateOfVirologicTest(pat.patient_id, p_startDate, p_endDate)) AND
+    patientWasOnARVTreatmentByDate(pat.patient_id, getDateOfVirologicTest(pat.patient_id, p_startDate, p_endDate)) AND
     patientAgeAtVirologicHIVTestIsBetween(pat.patient_id, p_startAgeInMonths, p_endAgeInMonths, p_startDate, p_endDate, p_includeStartAge) AND
     patientIsNotDead(pat.patient_id) AND
     patientIsNotLostToFollowUp(pat.patient_id) AND
