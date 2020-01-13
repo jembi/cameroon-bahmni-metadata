@@ -217,3 +217,52 @@ BEGIN
     RETURN (result);
 END$$
 DELIMITER ;
+
+-- patientHasEnrolledInDefaulterProgram
+
+DROP FUNCTION IF EXISTS patientHasEnrolledInDefaulterProgram;
+
+DELIMITER $$
+CREATE FUNCTION patientHasEnrolledInDefaulterProgram(
+    p_patientId INT(11)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE result VARCHAR(1) DEFAULT 0;
+
+    SELECT TRUE INTO result
+    FROM patient_program pp
+        JOIN program p ON pp.program_id = p.program_id AND p.retired = 0
+    WHERE
+        pp.voided = 0 AND
+        pp.patient_id = p_patientId AND
+        p.name = "HIV_DEFAULTERS_PROGRAM_KEY"
+    LIMIT 1;
+
+    RETURN (result);
+END$$
+DELIMITER ;
+
+-- getPatientMostRecentDefaulterProgramOutcome
+
+DROP FUNCTION IF EXISTS getPatientMostRecentDefaulterProgramOutcome;
+
+DELIMITER $$
+CREATE FUNCTION getPatientMostRecentDefaulterProgramOutcome(
+    p_patientId INT(11)) RETURNS VARCHAR(250)
+    DETERMINISTIC
+BEGIN
+    DECLARE result VARCHAR(250);
+
+    SELECT cn.name INTO result
+    FROM patient_program pp
+        JOIN program p ON pp.program_id = p.program_id AND p.retired = 0
+        JOIN concept_name cn ON cn.concept_id = pp.outcome_concept_id AND cn.locale = "en"
+    WHERE
+        pp.voided = 0 AND
+        pp.patient_id = p_patientId AND
+        p.name = "HIV_DEFAULTERS_PROGRAM_KEY"
+    LIMIT 1;
+
+    RETURN (result);
+END$$
+DELIMITER ;
