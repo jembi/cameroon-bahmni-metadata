@@ -87,7 +87,8 @@ DROP FUNCTION IF EXISTS getPatientMostRecentProgramAttributeCodedValue;
 DELIMITER $$
 CREATE FUNCTION getPatientMostRecentProgramAttributeCodedValue(
     p_patientId INT(11),
-    p_uuidProgramAttribute VARCHAR(38)) RETURNS VARCHAR(250)
+    p_uuidProgramAttribute VARCHAR(38),
+    p_language VARCHAR(3)) RETURNS VARCHAR(250)
     DETERMINISTIC
 BEGIN
     DECLARE result VARCHAR(250);
@@ -97,7 +98,7 @@ BEGIN
         JOIN program_attribute_type pat ON pat.program_attribute_type_id = ppa.attribute_type_id AND pat.retired = 0
         JOIN patient_program pp ON ppa.patient_program_id = pp.patient_program_id AND pp.voided = 0
         JOIN concept c ON ppa.value_reference = c.concept_id
-        JOIN concept_name cn ON cn.concept_id = c.concept_id AND cn.locale = "en"
+        JOIN concept_name cn ON cn.concept_id = c.concept_id AND cn.locale = p_language
     WHERE
         ppa.voided = 0 AND
         pp.patient_id = p_patientId AND
@@ -142,7 +143,8 @@ DROP FUNCTION IF EXISTS getPatientMostRecentProgramTrackingStateValue;
 
 DELIMITER $$
 CREATE FUNCTION getPatientMostRecentProgramTrackingStateValue(
-    p_patientId INT(11)) RETURNS VARCHAR(250)
+    p_patientId INT(11),
+    p_language VARCHAR(3)) RETURNS VARCHAR(250)
     DETERMINISTIC
 BEGIN
     DECLARE result VARCHAR(250);
@@ -151,7 +153,7 @@ BEGIN
     SELECT cn.name INTO result
     FROM patient_state ps
         JOIN program_workflow_state pws ON ps.state = pws.program_workflow_state_id AND pws.retired = 0
-        JOIN concept_name cn ON pws.concept_id = cn.concept_id AND cn.locale="en"
+        JOIN concept_name cn ON pws.concept_id = cn.concept_id AND cn.locale=p_language
         JOIN patient_program pp ON pp.patient_program_id = ps.patient_program_id AND pp.voided = 0
         JOIN program p ON p.program_id = pp.program_id AND p.retired = 0
     WHERE
@@ -188,13 +190,14 @@ DROP FUNCTION IF EXISTS getPatientMostRecentProgramTrackingOutcomeValue;
 
 DELIMITER $$
 CREATE FUNCTION getPatientMostRecentProgramTrackingOutcomeValue(
-    p_patientId INT(11)) RETURNS VARCHAR(250)
+    p_patientId INT(11),
+    p_language VARCHAR(3)) RETURNS VARCHAR(250)
     DETERMINISTIC
 BEGIN
     DECLARE result VARCHAR(250);
     DECLARE uuidProgramTrackingOutcome VARCHAR(38) DEFAULT "caf6d807-861d-4393-9d6e-940b98fa712d";
 
-    SET result = getPatientMostRecentProgramAttributeCodedValue(p_patientId, uuidProgramTrackingOutcome);
+    SET result = getPatientMostRecentProgramAttributeCodedValue(p_patientId, uuidProgramTrackingOutcome, p_language);
 
     RETURN (result);
 END$$
@@ -248,7 +251,8 @@ DROP FUNCTION IF EXISTS getPatientMostRecentDefaulterProgramOutcome;
 
 DELIMITER $$
 CREATE FUNCTION getPatientMostRecentDefaulterProgramOutcome(
-    p_patientId INT(11)) RETURNS VARCHAR(250)
+    p_patientId INT(11),
+    p_language VARCHAR(3)) RETURNS VARCHAR(250)
     DETERMINISTIC
 BEGIN
     DECLARE result VARCHAR(250);
@@ -256,7 +260,7 @@ BEGIN
     SELECT cn.name INTO result
     FROM patient_program pp
         JOIN program p ON pp.program_id = p.program_id AND p.retired = 0
-        JOIN concept_name cn ON cn.concept_id = pp.outcome_concept_id AND cn.locale = "en"
+        JOIN concept_name cn ON cn.concept_id = pp.outcome_concept_id AND cn.locale = p_language
     WHERE
         pp.voided = 0 AND
         pp.patient_id = p_patientId AND

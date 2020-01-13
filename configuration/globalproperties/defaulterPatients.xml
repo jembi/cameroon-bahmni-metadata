@@ -12,9 +12,9 @@
         getPatientVillage(pat.patient_id) as 'PROGRAM_MODULE_LABEL_VILLAGE_KEY',
         getPatientPhoneNumber(pat.patient_id) as 'PROGRAM_MODULE_LABEL_PHONE_NUMBER_KEY',
         getPatientEmergencyContact(pat.patient_id) as 'PROGRAM_MODULE_LABEL_EMERGENCY_CONTACT_KEY',
-        getPatientMostRecentProgramTrackingStateValue(pat.patient_id) as 'PROGRAM_MODULE_LABEL_TRACKING_STATE_KEY',
+        getPatientMostRecentProgramTrackingStateValue(pat.patient_id, ${language}) as 'PROGRAM_MODULE_LABEL_TRACKING_STATE_KEY',
         getPatientMostRecentProgramTrackingDateValue(pat.patient_id) as 'PROGRAM_MODULE_LABEL_TRACKING_DATE_KEY',
-        getPatientMostRecentProgramTrackingOutcomeValue(pat.patient_id) as 'PROGRAM_MODULE_LABEL_TRACKING_OUTCOME_KEY',
+        getPatientMostRecentProgramTrackingOutcomeValue(pat.patient_id, ${language}) as 'PROGRAM_MODULE_LABEL_TRACKING_OUTCOME_KEY',
         getDateMostRecentARVAppointment(pat.patient_id) as 'PROGRAM_MODULE_LABEL_DATE_LAST_APPOINTMENT_KEY',
         getPatientMostRecentProgramAPSName(pat.patient_id) as 'PROGRAM_MODULE_LABEL_APS_NAME_KEY'
       from
