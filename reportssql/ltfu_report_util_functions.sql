@@ -76,7 +76,6 @@ BEGIN
     SELECT o.scheduled_date INTO result
     FROM orders o
     JOIN drug_order do ON do.order_id = o.order_id
-    JOIN concept c ON do.duration_units = c.concept_id AND c.retired = 0
     JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
     WHERE o.patient_id = p_patientId AND o.voided = 0
         AND drugIsARV(d.concept_id)
