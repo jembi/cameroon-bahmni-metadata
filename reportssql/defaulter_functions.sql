@@ -71,16 +71,12 @@ BEGIN
     SET dateOfLastHIVRelatedAppointment = getDateMostRecentARVAppointment(p_patientId);
     SET dateOfLastHIVRelatedEncounter = getDateMostRecentHIVRelatedEncounter(p_patientId);
 
-    IF (
+    RETURN NOT (
         patientHasEnrolledIntoHivProgram(p_patientId) = "No" OR -- a patient not in HIV cannot be a defaulter
         dateOfLastHIVRelatedAppointment IS NULL OR -- the patient has no appointment and therefore cannot be a defaulter
         TIMESTAMPADD(DAY, 7, dateOfLastHIVRelatedAppointment) > CURRENT_DATE() OR -- one week after the last appointment falls in future, the patient is therefore not yet a defaulter
         (dateOfLastHIVRelatedEncounter IS NOT NULL AND dateOfLastHIVRelatedEncounter >= dateOfLastHIVRelatedAppointment) -- the patient visited the clinic at or after the date of the appointment
-    ) THEN
-        RETURN 0;
-    ELSE
-        RETURN 1;
-    END IF;
+    );
 END$$
 DELIMITER ;
 
