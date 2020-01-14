@@ -492,14 +492,14 @@ BEGIN
 END$$ 
 DELIMITER ;
 
--- patientWasOnARVTreatmentAtEndReportingPeriod
+-- patientWasOnARVTreatmentByDate
 
-DROP FUNCTION IF EXISTS patientWasOnARVTreatmentAtEndReportingPeriod;
+DROP FUNCTION IF EXISTS patientWasOnARVTreatmentByDate;
 
 DELIMITER $$
-CREATE FUNCTION patientWasOnARVTreatmentAtEndReportingPeriod(
+CREATE FUNCTION patientWasOnARVTreatmentByDate(
     p_patientId INT(11),
-    p_endDate DATE) RETURNS TINYINT(1)
+    p_date DATE) RETURNS TINYINT(1)
     DETERMINISTIC
 BEGIN
 
@@ -516,7 +516,7 @@ BEGIN
             o.scheduled_date,
             do.duration,
             c.uuid -- uuid of the duration unit concept
-            ) >= p_endDate
+            ) >= p_date
         AND drugOrderIsDispensed(p_patientId, o.order_id)
     GROUP BY o.patient_id;
 
