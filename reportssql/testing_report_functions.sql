@@ -1,5 +1,37 @@
 -- Testing Report
 
+DROP FUNCTION IF EXISTS Testing_Indicator1;
+
+DELIMITER $$
+CREATE FUNCTION Testing_Indicator1(
+    p_startDate DATE,
+    p_endDate DATE,
+    p_startAge INT(11),
+    p_endAge INT (11),
+    p_includeEndAge TINYINT(1),
+    p_gender VARCHAR(1),
+    p_hivResult VARCHAR(8),
+    p_testingEntryPoint VARCHAR(50)) RETURNS INT(11)
+    DETERMINISTIC
+BEGIN
+    DECLARE result INT(11) DEFAULT 0;
+
+    SELECT
+        COUNT(DISTINCT pat.patient_id) INTO result
+    FROM
+        patient pat
+    WHERE
+        patientGenderIs(pat.patient_id, p_gender) AND
+        getPatientHIVTestDateFromCounselingForm(pat.patient_id) > TIMESTAMPADD(MONTH, -3, CURDATE()) AND
+        getPatientHIVTestDateFromCounselingForm(pat.patient_id) BETWEEN p_startDate AND p_endDate AND
+        getPatientHIVTestResultFromCounselingForm(pat.patient_id) = p_hivResult AND
+        getTestintEntryPoint(pat.patient_id) = p_testingEntryPoint AND
+        patientAgeIsBetween(pat.patient_id, p_startAge, p_endAge, p_includeEndAge);
+
+    RETURN (result);
+END$$ 
+DELIMITER ;
+
 DROP FUNCTION IF EXISTS Testing_Indicator4a;
 
 DELIMITER $$
@@ -795,3 +827,82 @@ BEGIN
 END$$ 
 DELIMITER ;
 
+-- getPatientHIVTestDateFromCounselingForm
+
+DROP FUNCTION IF EXISTS getPatientHIVTestDateFromCounselingForm;
+
+DELIMITER $$
+CREATE FUNCTION getPatientHIVTestDateFromCounselingForm(
+    p_patientId INT(11)) RETURNS DATE
+    DETERMINISTIC
+BEGIN
+    DECLARE result DATE;
+    DECLARE uuidHIVTestDate VARCHAR(38) DEFAULT "c6c08cdc-18dc-4f42-809c-959621bc9a6c";
+
+    SELECT
+        o.value_datetime INTO result
+    FROM obs o
+        JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
+    WHERE o.voided = 0 
+        AND o.person_id = p_patientId
+        AND c.uuid = uuidHIVTestDate
+    ORDER BY o.date_created DESC
+    LIMIT 1;
+
+    RETURN (result);
+END$$
+DELIMITER ;
+
+-- getPatientHIVTestResultFromCounselingForm
+
+DROP FUNCTION IF EXISTS getPatientHIVTestResultFromCounselingForm;
+
+DELIMITER $$
+CREATE FUNCTION getPatientHIVTestResultFromCounselingForm(
+    p_patientId INT(11)) RETURNS VARCHAR(8)
+    DETERMINISTIC
+BEGIN
+    DECLARE result VARCHAR(8);
+    DECLARE uuidHIVTestResult VARCHAR(38) DEFAULT "659ed086-730d-4ac4-910e-fea4c6507512";
+
+    SELECT
+        cn.name INTO result
+    FROM obs o
+        JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
+        JOIN concept_name cn ON o.value_coded = cn.concept_id AND cn.locale='en'
+    WHERE o.voided = 0
+        AND o.person_id = p_patientId
+        AND c.uuid = uuidHIVTestResult
+    ORDER BY o.date_created DESC
+    LIMIT 1;
+
+    RETURN (result);
+END$$
+DELIMITER ;
+
+-- getTestintEntryPoint
+
+DROP FUNCTION IF EXISTS getTestintEntryPoint;
+
+DELIMITER $$
+CREATE FUNCTION getTestintEntryPoint(
+    p_patientId INT(11)) RETURNS VARCHAR(50)
+    DETERMINISTIC
+BEGIN
+    DECLARE result VARCHAR(50);
+    DECLARE uuidTestingEntryPoint VARCHAR(38) DEFAULT "bc43179d-00b4-4712-a5d6-4dabd4230888";
+
+    SELECT
+        cn.name INTO result
+    FROM obs o
+        JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
+        JOIN concept_name cn ON o.value_coded = cn.concept_id AND cn.locale='en'
+    WHERE o.voided = 0
+        AND o.person_id = p_patientId
+        AND c.uuid = uuidTestingEntryPoint
+    ORDER BY o.date_created DESC
+    LIMIT 1;
+
+    RETURN (result);
+END$$
+DELIMITER ;
