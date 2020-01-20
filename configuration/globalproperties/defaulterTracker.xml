@@ -1,7 +1,7 @@
 <config>
   <globalProperties>
     <globalProperty>
-      <property>emrapi.sqlSearch.defaulterPatients</property>
+      <property>emrapi.sqlSearch.defaulterTracker</property>
       <value>
       select
         distinct pi.identifier as ID,
@@ -24,7 +24,9 @@
         join global_property gp on gp.property="bahmni.primaryIdentifierType" and gp.property_value=pit.uuid
         join person p on p.person_id = pat.patient_id and p.voided=0
       where
-        patientIsDefaulter(pat.patient_id)
+        patientIsDefaulter(pat.patient_id) and
+        patientHasEnrolledInDefaulterProgram(pat.patient_id) and
+        getPatientMostRecentDefaulterProgramOutcome(pat.patient_id, ${language}) is null
       order by pat.patient_id desc;
       </value>
     </globalProperty>
