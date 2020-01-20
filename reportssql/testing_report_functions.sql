@@ -15,16 +15,18 @@ CREATE FUNCTION Testing_Indicator1(
     DETERMINISTIC
 BEGIN
     DECLARE result INT(11) DEFAULT 0;
+    DECLARE previousHIVTestDateFromCounselingForm DATE;
 
     SELECT
-        COUNT(DISTINCT pat.patient_id) INTO result
+        COUNT(DISTINCT pat.patient_id), getPatientPreviousHIVTestDateFromCounselingForm(pat.patient_id)
+        INTO
+        result, previousHIVTestDateFromCounselingForm
     FROM
         patient pat
     WHERE
         patientGenderIs(pat.patient_id, p_gender) AND
-        getPatientHIVTestDateFromCounselingForm(pat.patient_id) > TIMESTAMPADD(MONTH, -3, CURDATE()) AND
-        getPatientHIVTestDateFromCounselingForm(pat.patient_id) BETWEEN p_startDate AND p_endDate AND
-        getPatientHIVTestResultFromCounselingForm(pat.patient_id) = p_hivResult AND
+        (previousHIVTestDateFromCounselingForm  < TIMESTAMPADD(MONTH, -3, CURDATE()) OR previousHIVTestDateFromCounselingForm IS NULL) AND
+        patientHIVFinalTestResultIsWithinReportingPeriod(pat.patient_id, p_hivResult, p_startDate, p_endDate) AND
         getTestintEntryPoint(pat.patient_id) = p_testingEntryPoint AND
         patientAgeIsBetween(pat.patient_id, p_startAge, p_endAge, p_includeEndAge);
 
@@ -827,17 +829,18 @@ BEGIN
 END$$ 
 DELIMITER ;
 
--- getPatientHIVTestDateFromCounselingForm
+-- getPatientPreviousHIVTestDateFromCounselingForm
 
-DROP FUNCTION IF EXISTS getPatientHIVTestDateFromCounselingForm;
+DROP FUNCTION IF EXISTS getPatientPreviousHIVTestDateFromCounselingForm;
 
 DELIMITER $$
-CREATE FUNCTION getPatientHIVTestDateFromCounselingForm(
+CREATE FUNCTION getPatientPreviousHIVTestDateFromCounselingForm(
     p_patientId INT(11)) RETURNS DATE
     DETERMINISTIC
 BEGIN
     DECLARE result DATE;
     DECLARE uuidHIVTestDate VARCHAR(38) DEFAULT "c6c08cdc-18dc-4f42-809c-959621bc9a6c";
+    DECLARE uuidCounselingForm VARCHAR(38) DEFAULT "6bfd85ce-22c8-4b54-af0e-ab0af24240e3";
 
     SELECT
         o.value_datetime INTO result
@@ -846,6 +849,7 @@ BEGIN
     WHERE o.voided = 0 
         AND o.person_id = p_patientId
         AND c.uuid = uuidHIVTestDate
+        AND (SELECT obs.concept_id FROM obs WHERE obs_id = o.obs_group_id) = (SELECT concept_id FROM concept WHERE concept.uuid = uuidCounselingForm)
     ORDER BY o.date_created DESC
     LIMIT 1;
 
@@ -853,26 +857,30 @@ BEGIN
 END$$
 DELIMITER ;
 
--- getPatientHIVTestResultFromCounselingForm
+-- patientHIVFinalTestResultIsWithinReportingPeriod
 
-DROP FUNCTION IF EXISTS getPatientHIVTestResultFromCounselingForm;
+DROP FUNCTION IF EXISTS patientHIVFinalTestResultIsWithinReportingPeriod;
 
 DELIMITER $$
-CREATE FUNCTION getPatientHIVTestResultFromCounselingForm(
-    p_patientId INT(11)) RETURNS VARCHAR(8)
+CREATE FUNCTION patientHIVFinalTestResultIsWithinReportingPeriod(
+    p_patientId INT(11),
+    p_result VARCHAR(8),
+    p_startDate DATE,
+    p_endDate DATE) RETURNS TINYINT(1)
     DETERMINISTIC
 BEGIN
-    DECLARE result VARCHAR(8);
-    DECLARE uuidHIVTestResult VARCHAR(38) DEFAULT "659ed086-730d-4ac4-910e-fea4c6507512";
+    DECLARE result TINYINT(1) DEFAULT 0;
+    DECLARE uuidHIVTestFinalResult VARCHAR(38) DEFAULT "41e48d08-2235-47d5-af12-87a009057603";
 
     SELECT
-        cn.name INTO result
+        cn.name = p_result INTO result
     FROM obs o
         JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
         JOIN concept_name cn ON o.value_coded = cn.concept_id AND cn.locale='en'
     WHERE o.voided = 0
         AND o.person_id = p_patientId
-        AND c.uuid = uuidHIVTestResult
+        AND c.uuid = uuidHIVTestFinalResult
+        AND o.date_created BETWEEN p_startDate AND p_endDate
     ORDER BY o.date_created DESC
     LIMIT 1;
 
