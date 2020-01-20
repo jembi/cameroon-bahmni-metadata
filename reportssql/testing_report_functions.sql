@@ -27,7 +27,7 @@ BEGIN
         patientGenderIs(pat.patient_id, p_gender) AND
         (previousHIVTestDateFromCounselingForm  < TIMESTAMPADD(MONTH, -3, CURDATE()) OR previousHIVTestDateFromCounselingForm IS NULL) AND
         patientHIVFinalTestResultIsWithinReportingPeriod(pat.patient_id, p_hivResult, p_startDate, p_endDate) AND
-        getTestintEntryPoint(pat.patient_id) = p_testingEntryPoint AND
+        getTestingEntryPoint(pat.patient_id) = p_testingEntryPoint AND
         patientAgeIsBetween(pat.patient_id, p_startAge, p_endAge, p_includeEndAge);
 
     RETURN (result);
@@ -888,12 +888,12 @@ BEGIN
 END$$
 DELIMITER ;
 
--- getTestintEntryPoint
+-- getTestingEntryPoint
 
-DROP FUNCTION IF EXISTS getTestintEntryPoint;
+DROP FUNCTION IF EXISTS getTestingEntryPoint;
 
 DELIMITER $$
-CREATE FUNCTION getTestintEntryPoint(
+CREATE FUNCTION getTestingEntryPoint(
     p_patientId INT(11)) RETURNS VARCHAR(50)
     DETERMINISTIC
 BEGIN
