@@ -269,6 +269,39 @@ WHERE
 END$$ 
 DELIMITER ;
 
+DROP FUNCTION IF EXISTS Testing_Indicator5;
+
+DELIMITER $$
+CREATE FUNCTION Testing_Indicator5(
+    p_startDate DATE,
+    p_endDate DATE,
+    p_startAge INT(11),
+    p_endAge INT (11),
+    p_includeEndAge TINYINT(1),
+    p_gender VARCHAR(1),
+    p_testingEntryPoint VARCHAR(50)) RETURNS INT(11)
+    DETERMINISTIC
+BEGIN
+    DECLARE result INT(11) DEFAULT 0;
+    DECLARE previousHIVTestDateFromCounselingForm DATE;
+
+    SELECT
+        COUNT(DISTINCT pat.patient_id), getPatientPreviousHIVTestDateFromCounselingForm(pat.patient_id)
+        INTO
+        result, previousHIVTestDateFromCounselingForm
+    FROM
+        patient pat
+    WHERE
+        patientGenderIs(pat.patient_id, p_gender) AND
+        (previousHIVTestDateFromCounselingForm  < TIMESTAMPADD(MONTH, -1, CURDATE()) OR previousHIVTestDateFromCounselingForm IS NULL) AND
+        patientHIVFinalTestResultIsWithinReportingPeriod(pat.patient_id, 'POSITIVE', p_startDate, p_endDate) AND
+        getTestingEntryPoint(pat.patient_id) = p_testingEntryPoint AND
+        patientAgeIsBetween(pat.patient_id, p_startAge, p_endAge, p_includeEndAge);
+
+    RETURN (result);
+END$$ 
+DELIMITER ;
+
 -- getPriorToANCEnrolmentObsGroupId
 
 DROP FUNCTION IF EXISTS getPriorToANCEnrolmentObsGroupId;
