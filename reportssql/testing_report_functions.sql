@@ -309,12 +309,9 @@ CREATE FUNCTION Testing_Indicator5j(
     DETERMINISTIC
 BEGIN
     DECLARE result INT(11) DEFAULT 0;
-    DECLARE previousHIVTestDateFromCounselingForm DATE;
 
     SELECT
-        COUNT(DISTINCT pat.patient_id), getPatientPreviousHIVTestDateFromCounselingForm(pat.patient_id)
-        INTO
-        result, previousHIVTestDateFromCounselingForm
+        COUNT(DISTINCT pat.patient_id) INTO result
     FROM
         patient pat
     WHERE
