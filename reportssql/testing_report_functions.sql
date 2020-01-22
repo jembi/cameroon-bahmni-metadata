@@ -15,17 +15,14 @@ CREATE FUNCTION Testing_Indicator1(
     DETERMINISTIC
 BEGIN
     DECLARE result INT(11) DEFAULT 0;
-    DECLARE previousHIVTestDateFromCounselingForm DATE;
 
     SELECT
-        COUNT(DISTINCT pat.patient_id), getPatientPreviousHIVTestDateFromCounselingForm(pat.patient_id)
-        INTO
-        result, previousHIVTestDateFromCounselingForm
+        COUNT(DISTINCT pat.patient_id) INTO result
     FROM
         patient pat
     WHERE
         patientGenderIs(pat.patient_id, p_gender) AND
-        (previousHIVTestDateFromCounselingForm < TIMESTAMPADD(MONTH, -3, CURDATE()) OR previousHIVTestDateFromCounselingForm IS NULL) AND
+        (getPatientPreviousHIVTestDateFromCounselingForm(pat.patient_id) < TIMESTAMPADD(MONTH, -3, CURDATE()) OR getPatientPreviousHIVTestDateFromCounselingForm(pat.patient_id) IS NULL) AND
         patientHIVFinalTestResultIsWithinReportingPeriod(pat.patient_id, p_hivResult, p_startDate, p_endDate) AND
         getTestingEntryPoint(pat.patient_id) = p_testingEntryPoint AND
         patientAgeIsBetween(pat.patient_id, p_startAge, p_endAge, p_includeEndAge);
@@ -283,17 +280,14 @@ CREATE FUNCTION Testing_Indicator5(
     DETERMINISTIC
 BEGIN
     DECLARE result INT(11) DEFAULT 0;
-    DECLARE previousHIVTestDateFromCounselingForm DATE;
 
     SELECT
-        COUNT(DISTINCT pat.patient_id), getPatientPreviousHIVTestDateFromCounselingForm(pat.patient_id)
-        INTO
-        result, previousHIVTestDateFromCounselingForm
+        COUNT(DISTINCT pat.patient_id) INTO result
     FROM
         patient pat
     WHERE
         patientGenderIs(pat.patient_id, p_gender) AND
-        (previousHIVTestDateFromCounselingForm > TIMESTAMPADD(MONTH, -1, CURDATE()) OR previousHIVTestDateFromCounselingForm IS NULL) AND
+        (getPatientPreviousHIVTestDateFromCounselingForm(pat.patient_id) > TIMESTAMPADD(MONTH, -1, CURDATE()) OR getPatientPreviousHIVTestDateFromCounselingForm(pat.patient_id) IS NULL) AND
         patientHIVFinalTestResultIsWithinReportingPeriod(pat.patient_id, 'POSITIVE', p_startDate, p_endDate) AND
         getTestingEntryPoint(pat.patient_id) = p_testingEntryPoint AND
         patientAgeIsBetween(pat.patient_id, p_startAge, p_endAge, p_includeEndAge);
