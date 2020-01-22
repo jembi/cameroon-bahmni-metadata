@@ -25,7 +25,7 @@ BEGIN
         patient pat
     WHERE
         patientGenderIs(pat.patient_id, p_gender) AND
-        (previousHIVTestDateFromCounselingForm  < TIMESTAMPADD(MONTH, -3, CURDATE()) OR previousHIVTestDateFromCounselingForm IS NULL) AND
+        (previousHIVTestDateFromCounselingForm < TIMESTAMPADD(MONTH, -3, CURDATE()) OR previousHIVTestDateFromCounselingForm IS NULL) AND
         patientHIVFinalTestResultIsWithinReportingPeriod(pat.patient_id, p_hivResult, p_startDate, p_endDate) AND
         getTestingEntryPoint(pat.patient_id) = p_testingEntryPoint AND
         patientAgeIsBetween(pat.patient_id, p_startAge, p_endAge, p_includeEndAge);
@@ -293,7 +293,7 @@ BEGIN
         patient pat
     WHERE
         patientGenderIs(pat.patient_id, p_gender) AND
-        (previousHIVTestDateFromCounselingForm  < TIMESTAMPADD(MONTH, -1, CURDATE()) OR previousHIVTestDateFromCounselingForm IS NULL) AND
+        (previousHIVTestDateFromCounselingForm > TIMESTAMPADD(MONTH, -1, CURDATE()) OR previousHIVTestDateFromCounselingForm IS NULL) AND
         patientHIVFinalTestResultIsWithinReportingPeriod(pat.patient_id, 'POSITIVE', p_startDate, p_endDate) AND
         getTestingEntryPoint(pat.patient_id) = p_testingEntryPoint AND
         patientAgeIsBetween(pat.patient_id, p_startAge, p_endAge, p_includeEndAge);
