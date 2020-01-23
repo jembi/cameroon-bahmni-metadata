@@ -132,3 +132,63 @@ WHERE
 END$$ 
 DELIMITER ;
 
+DROP FUNCTION IF EXISTS TREATMENT_Indicator4a;
+
+DELIMITER $$
+CREATE FUNCTION TREATMENT_Indicator4a(
+    p_startDate DATE,
+    p_endDate DATE,
+    p_startAge INT(11),
+    p_endAge INT (11),
+    p_includeEndAge TINYINT(1),
+    p_gender VARCHAR(1)) RETURNS INT(11)
+    DETERMINISTIC
+BEGIN
+    DECLARE result INT(11) DEFAULT 0;
+
+SELECT
+    COUNT(DISTINCT pat.patient_id) INTO result
+FROM
+    patient pat
+WHERE
+    patientGenderIs(pat.patient_id, p_gender) AND
+    patientAgeWhenRegisteredForHivProgramIsBetween(pat.patient_id, p_startAge, p_endAge, p_includeEndAge) AND
+    patientHasEnrolledIntoHivProgram(pat.patient_id) = "Yes" AND
+    patientHasTherapeuticLine(pat.patient_id, 0) AND
+    patientHasStartedARVTreatmentBefore(pat.patient_id, p_endDate) AND
+    patientWasOnARVTreatmentByDate(pat.patient_id, p_startDate) AND
+    patientIsLostToFollowUp(pat.patient_id, p_startDate, p_endDate) AND
+    patientHasProgramOutcomeDeadWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate);
+
+    RETURN (result);
+END$$ 
+DELIMITER ;
+
+-- patientHasProgramOutcomeDeadWithinReportingPeriod
+
+DROP FUNCTION IF EXISTS patientHasProgramOutcomeDeadWithinReportingPeriod;
+
+DELIMITER $$
+CREATE FUNCTION patientHasProgramOutcomeDeadWithinReportingPeriod(
+    p_patientId INT,
+    p_startDate DATE,
+    p_endDate DATE) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE dead TINYINT(1) DEFAULT 0;
+    DECLARE uuidDead VARCHAR(38) DEFAULT "bc1bdd23-0264-4831-8b13-1bdbc45f1763";
+
+    SELECT TRUE INTO dead
+    FROM person p
+    JOIN patient_program pp ON pp.patient_id = p.person_id AND pp.voided = 0
+    JOIN concept c ON c.concept_id = pp.outcome_concept_id
+    WHERE p.person_id = p_patientId
+        AND p.voided = 0 
+        AND c.uuid = uuidDead
+        AND pp.date_completed BETWEEN p_startDate AND p_endDate;
+
+    RETURN dead; 
+
+END$$
+DELIMITER ;
+
