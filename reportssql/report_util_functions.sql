@@ -1056,7 +1056,7 @@ BEGIN
     JOIN concept c ON c.concept_id = pp.outcome_concept_id
     WHERE p.person_id = p_patientId
         AND p.voided = 0 
-        AND c.uuid = patientTransferedOut;
+        AND c.uuid = uuidPatientTransferredOut;
 
     RETURN (!patientTransferedOut); 
 
