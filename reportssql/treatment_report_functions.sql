@@ -158,7 +158,11 @@ WHERE
     patientHasStartedARVTreatmentBefore(pat.patient_id, p_endDate) AND
     patientWasOnARVTreatmentByDate(pat.patient_id, p_startDate) AND
     patientIsLostToFollowUp(pat.patient_id, p_startDate, p_endDate) AND
-    patientHasProgramOutcomeDeadWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate);
+    (
+        patientHasProgramOutcomeDeadWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate)
+        OR
+        patientDeclaredDeadInTheRegisteredFormWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate)
+    );
 
     RETURN (result);
 END$$ 
@@ -192,3 +196,25 @@ BEGIN
 END$$
 DELIMITER ;
 
+-- patientDeclaredDeadInTheRegisteredFormWithinReportingPeriod
+
+DROP FUNCTION IF EXISTS patientDeclaredDeadInTheRegisteredFormWithinReportingPeriod;
+
+DELIMITER $$
+CREATE FUNCTION patientDeclaredDeadInTheRegisteredFormWithinReportingPeriod(
+    p_patientId INT,
+    p_startDate DATE,
+    p_endDate DATE) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE dead TINYINT(1) DEFAULT 0;
+
+    SELECT p.dead INTO dead
+    FROM person p
+    WHERE p.person_id = p_patientId AND p.voided = 0
+        AND p.death_date BETWEEN p_startDate AND p_endDate;
+
+    RETURN dead; 
+
+END$$
+DELIMITER ;
