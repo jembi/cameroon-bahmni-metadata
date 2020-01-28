@@ -640,7 +640,7 @@ BEGIN
         INTO testDateFromForm, encounterIdOfFormResult
     FROM obs o
     JOIN concept c ON o.concept_id = c.concept_id AND c.retired = 0
-    WHERE voided = 0
+    WHERE o.voided = 0
         AND o.order_id IS NULL
         AND o.value_datetime IS NOT NULL
         AND o.value_datetime < p_endDate
@@ -652,9 +652,9 @@ BEGIN
     SELECT o.value_numeric INTO testResultFromForm
     FROM obs o
     JOIN concept c ON o.concept_id = c.concept_id AND c.retired = 0
-    WHERE voided = 0
+    WHERE o.voided = 0
         AND o.encounter_id = encounterIdOfFormResult
-        AND order_id IS NULL
+        AND o.order_id IS NULL
         AND o.value_numeric IS NOT NULL
         AND o.person_id = p_patientId
         AND c.uuid = p_uuidViralLoadExam
@@ -667,8 +667,8 @@ BEGIN
         INTO testDateFromOpenElis, testResultFromOpenElis
     FROM obs o
     JOIN concept c ON o.concept_id = c.concept_id AND c.retired = 0
-    WHERE voided = 0
-        AND order_id IS NOT NULL
+    WHERE o.voided = 0
+        AND o.order_id IS NOT NULL
         AND o.value_numeric IS NOT NULL
         AND o.person_id = p_patientId
         AND c.uuid = p_uuidViralLoadExam
@@ -963,7 +963,7 @@ BEGIN
     SELECT TRUE INTO drugDispensed
     FROM obs o
     JOIN concept c ON o.concept_id = c.concept_id AND c.retired = 0
-    WHERE voided = 0
+    WHERE o.voided = 0
         AND o.person_id = p_patientId
         AND o.order_id = p_orderId
         AND c.uuid = uuidDispensedConcept;
@@ -1455,20 +1455,20 @@ proc_vital_load:BEGIN
     SELECT o.value_datetime INTO testDateFromForm
     FROM obs o
     JOIN concept c ON o.concept_id = c.concept_id AND c.retired = 0
-    WHERE voided = 0
-        AND order_id IS NULL
+    WHERE o.voided = 0
+        AND o.order_id IS NULL
         AND o.value_datetime IS NOT NULL
         AND o.person_id = p_patientId
         AND (c.uuid = routineViralLoadTestDateUuid OR c.uuid = targetedViralLoadTestDateUuid OR c.uuid = notDocumentedViralLoadTestDateUuid)
-    ORDER BY o.value_datetime DESC
+    ORDER BY o.value_datetime DESC, o.obs_datetime DESC
     LIMIT 1;
 
     -- read and store latest test date from elis
     SELECT o.obs_datetime INTO testDateFromOpenElis
     FROM obs o
     JOIN concept c ON o.concept_id = c.concept_id AND c.retired = 0
-    WHERE voided = 0
-        AND order_id IS NOT NULL
+    WHERE o.voided = 0
+        AND o.order_id IS NOT NULL
         AND o.value_numeric IS NOT NULL
         AND o.person_id = p_patientId
         AND (c.uuid = routineViralLoadTestUuid OR c.uuid = targetedViralLoadTestUuid OR c.uuid = notDocumentedViralLoadTestUuid)
@@ -1500,19 +1500,19 @@ proc_vital_load:BEGIN
         SELECT o.value_numeric INTO p_testResult
         FROM obs o
         JOIN concept c ON o.concept_id = c.concept_id AND c.retired = 0
-        WHERE voided = 0
-            AND order_id IS NULL
+        WHERE o.voided = 0
+            AND o.order_id IS NULL
             AND o.value_numeric IS NOT NULL
             AND o.person_id = p_patientId
             AND (c.uuid = routineViralLoadTestUuid OR c.uuid = targetedViralLoadTestUuid OR c.uuid = notDocumentedViralLoadTestUuid)
-        ORDER BY o.value_datetime DESC
+        ORDER BY o.obs_datetime DESC
         LIMIT 1;
     ELSE
         SELECT o.value_numeric INTO p_testResult
         FROM obs o
         JOIN concept c ON o.concept_id = c.concept_id AND c.retired = 0
-        WHERE voided = 0
-            AND order_id IS NOT NULL
+        WHERE o.voided = 0
+            AND o.order_id IS NOT NULL
             AND o.value_numeric IS NOT NULL
             AND o.person_id = p_patientId
             AND (c.uuid = routineViralLoadTestUuid OR c.uuid = targetedViralLoadTestUuid OR c.uuid = notDocumentedViralLoadTestUuid)
