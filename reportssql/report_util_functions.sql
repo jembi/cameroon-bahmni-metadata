@@ -1460,7 +1460,7 @@ proc_vital_load:BEGIN
         AND o.value_datetime IS NOT NULL
         AND o.person_id = p_patientId
         AND (c.uuid = routineViralLoadTestDateUuid OR c.uuid = targetedViralLoadTestDateUuid OR c.uuid = notDocumentedViralLoadTestDateUuid)
-    ORDER BY o.value_datetime DESC
+    ORDER BY o.value_datetime, o.obs_datetime DESC
     LIMIT 1;
 
     -- read and store latest test date from elis
@@ -1505,7 +1505,7 @@ proc_vital_load:BEGIN
             AND o.value_numeric IS NOT NULL
             AND o.person_id = p_patientId
             AND (c.uuid = routineViralLoadTestUuid OR c.uuid = targetedViralLoadTestUuid OR c.uuid = notDocumentedViralLoadTestUuid)
-        ORDER BY o.value_datetime DESC
+        ORDER BY o.value_datetime, o.obs_datetime DESC
         LIMIT 1;
     ELSE
         SELECT o.value_numeric INTO p_testResult
