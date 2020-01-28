@@ -168,6 +168,38 @@ WHERE
 END$$ 
 DELIMITER ;
 
+DROP FUNCTION IF EXISTS TREATMENT_Indicator4d;
+
+DELIMITER $$
+CREATE FUNCTION TREATMENT_Indicator4d(
+    p_startDate DATE,
+    p_endDate DATE,
+    p_startAge INT(11),
+    p_endAge INT (11),
+    p_includeEndAge TINYINT(1),
+    p_gender VARCHAR(1)) RETURNS INT(11)
+    DETERMINISTIC
+BEGIN
+    DECLARE result INT(11) DEFAULT 0;
+
+SELECT
+    COUNT(DISTINCT pat.patient_id) INTO result
+FROM
+    patient pat
+WHERE
+    patientGenderIs(pat.patient_id, p_gender) AND
+    patientAgeWhenRegisteredForHivProgramIsBetween(pat.patient_id, p_startAge, p_endAge, p_includeEndAge) AND
+    patientHasEnrolledIntoHivProgram(pat.patient_id) = "Yes" AND
+    patientHasTherapeuticLine(pat.patient_id, 0) AND
+    patientHasStartedARVTreatmentBefore(pat.patient_id, p_endDate) AND
+    patientWasOnARVTreatmentByDate(pat.patient_id, p_startDate) AND
+    patientIsLostToFollowUp(pat.patient_id, p_startDate, p_endDate) AND
+    patientHasProgramOutcomeTransferredOutWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate);
+
+    RETURN (result);
+END$$ 
+DELIMITER ;
+
 DROP FUNCTION IF EXISTS TREATMENT_Indicator4e;
 
 DELIMITER $$
@@ -194,7 +226,7 @@ WHERE
     patientHasStartedARVTreatmentBefore(pat.patient_id, p_endDate) AND
     patientWasOnARVTreatmentByDate(pat.patient_id, p_startDate) AND
     patientIsLostToFollowUp(pat.patient_id, p_startDate, p_endDate) AND
-    patientHasProgramOutcomeRefusedTreatmentReportingPeriod(pat.patient_id, p_startDate, p_endDate);
+    patientHasProgramOutcomeRefusedTreatmentWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate);
 
     RETURN (result);
 END$$ 
@@ -292,12 +324,12 @@ BEGIN
 END$$
 DELIMITER ;
 
--- patientHasProgramOutcomeRefusedTreatmentReportingPeriod
+-- patientHasProgramOutcomeRefusedTreatmentWithinReportingPeriod
 
-DROP FUNCTION IF EXISTS patientHasProgramOutcomeRefusedTreatmentReportingPeriod;
+DROP FUNCTION IF EXISTS patientHasProgramOutcomeRefusedTreatmentWithinReportingPeriod;
 
 DELIMITER $$
-CREATE FUNCTION patientHasProgramOutcomeRefusedTreatmentReportingPeriod(
+CREATE FUNCTION patientHasProgramOutcomeRefusedTreatmentWithinReportingPeriod(
     p_patientId INT,
     p_startDate DATE,
     p_endDate DATE) RETURNS TINYINT(1)
@@ -313,6 +345,34 @@ BEGIN
     WHERE p.person_id = p_patientId
         AND p.voided = 0 
         AND c.uuid = uuidRefusedTreatment
+        AND pp.date_completed BETWEEN p_startDate AND p_endDate;
+
+    RETURN refusedTreatment; 
+
+END$$
+DELIMITER ;
+
+-- patientHasProgramOutcomeTransferredOutWithinReportingPeriod
+
+DROP FUNCTION IF EXISTS patientHasProgramOutcomeTransferredOutWithinReportingPeriod;
+
+DELIMITER $$
+CREATE FUNCTION patientHasProgramOutcomeTransferredOutWithinReportingPeriod(
+    p_patientId INT,
+    p_startDate DATE,
+    p_endDate DATE) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE refusedTreatment TINYINT(1) DEFAULT 0;
+    DECLARE uuidTransferredOut VARCHAR(38) DEFAULT "b949cd75-97cb-4de2-9553-e6d335696f07";
+
+    SELECT TRUE INTO refusedTreatment
+    FROM person p
+    JOIN patient_program pp ON pp.patient_id = p.person_id AND pp.voided = 0
+    JOIN concept c ON c.concept_id = pp.outcome_concept_id
+    WHERE p.person_id = p_patientId
+        AND p.voided = 0 
+        AND c.uuid = uuidTransferredOut
         AND pp.date_completed BETWEEN p_startDate AND p_endDate;
 
     RETURN refusedTreatment; 
