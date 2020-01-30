@@ -1,3 +1,4 @@
+
 -- patientGenderIs
 
 DROP FUNCTION IF EXISTS patientGenderIs;
@@ -280,6 +281,34 @@ BEGIN
 END$$
 DELIMITER ;
 
+-- patientHasStartedARVTreatmentAfter
+
+DROP FUNCTION IF EXISTS patientHasStartedARVTreatmentAfter;
+
+DELIMITER $$
+CREATE FUNCTION patientHasStartedARVTreatmentAfter(
+    p_patientId INT(11),
+    p_date DATE) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE result TINYINT(1) DEFAULT 0;
+    DECLARE uuidARVTreatmentStartDate VARCHAR(38) DEFAULT "e3f9c7ee-aa3e-4224-9d18-42e09b095ac6";
+
+    SELECT
+        TRUE INTO result
+    FROM obs o
+    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
+    WHERE o.voided = 0
+        AND o.person_id = p_patientId
+        AND c.uuid = uuidARVTreatmentStartDate
+        AND o.value_datetime IS NOT NULL
+        AND cast(o.value_datetime AS DATE) > p_date
+    GROUP BY c.uuid;
+
+    RETURN (result );
+END$$
+DELIMITER ;
+
 -- patientHasStartedARVTreatmentBeforeExtendedEndDate
 
 DROP FUNCTION IF EXISTS patientHasStartedARVTreatmentBeforeExtendedEndDate;
@@ -491,14 +520,14 @@ BEGIN
 END$$ 
 DELIMITER ;
 
--- patientWasOnARVTreatmentAtEndReportingPeriod
+-- patientWasOnARVTreatmentByDate
 
-DROP FUNCTION IF EXISTS patientWasOnARVTreatmentAtEndReportingPeriod;
+DROP FUNCTION IF EXISTS patientWasOnARVTreatmentByDate;
 
 DELIMITER $$
-CREATE FUNCTION patientWasOnARVTreatmentAtEndReportingPeriod(
+CREATE FUNCTION patientWasOnARVTreatmentByDate(
     p_patientId INT(11),
-    p_endDate DATE) RETURNS TINYINT(1)
+    p_date DATE) RETURNS TINYINT(1)
     DETERMINISTIC
 BEGIN
 
@@ -515,7 +544,7 @@ BEGIN
             o.scheduled_date,
             do.duration,
             c.uuid -- uuid of the duration unit concept
-            ) >= p_endDate
+            ) >= p_date
         AND drugOrderIsDispensed(p_patientId, o.order_id)
     GROUP BY o.patient_id;
 
@@ -611,7 +640,7 @@ BEGIN
         INTO testDateFromForm, encounterIdOfFormResult
     FROM obs o
     JOIN concept c ON o.concept_id = c.concept_id AND c.retired = 0
-    WHERE voided = 0
+    WHERE o.voided = 0
         AND o.order_id IS NULL
         AND o.value_datetime IS NOT NULL
         AND o.value_datetime < p_endDate
@@ -623,9 +652,9 @@ BEGIN
     SELECT o.value_numeric INTO testResultFromForm
     FROM obs o
     JOIN concept c ON o.concept_id = c.concept_id AND c.retired = 0
-    WHERE voided = 0
+    WHERE o.voided = 0
         AND o.encounter_id = encounterIdOfFormResult
-        AND order_id IS NULL
+        AND o.order_id IS NULL
         AND o.value_numeric IS NOT NULL
         AND o.person_id = p_patientId
         AND c.uuid = p_uuidViralLoadExam
@@ -638,8 +667,8 @@ BEGIN
         INTO testDateFromOpenElis, testResultFromOpenElis
     FROM obs o
     JOIN concept c ON o.concept_id = c.concept_id AND c.retired = 0
-    WHERE voided = 0
-        AND order_id IS NOT NULL
+    WHERE o.voided = 0
+        AND o.order_id IS NOT NULL
         AND o.value_numeric IS NOT NULL
         AND o.person_id = p_patientId
         AND c.uuid = p_uuidViralLoadExam
@@ -934,7 +963,7 @@ BEGIN
     SELECT TRUE INTO drugDispensed
     FROM obs o
     JOIN concept c ON o.concept_id = c.concept_id AND c.retired = 0
-    WHERE voided = 0
+    WHERE o.voided = 0
         AND o.person_id = p_patientId
         AND o.order_id = p_orderId
         AND c.uuid = uuidDispensedConcept;
@@ -1055,7 +1084,7 @@ BEGIN
     JOIN concept c ON c.concept_id = pp.outcome_concept_id
     WHERE p.person_id = p_patientId
         AND p.voided = 0 
-        AND c.uuid = patientTransferedOut;
+        AND c.uuid = uuidPatientTransferredOut;
 
     RETURN (!patientTransferedOut); 
 
@@ -1426,20 +1455,20 @@ proc_vital_load:BEGIN
     SELECT o.value_datetime INTO testDateFromForm
     FROM obs o
     JOIN concept c ON o.concept_id = c.concept_id AND c.retired = 0
-    WHERE voided = 0
-        AND order_id IS NULL
+    WHERE o.voided = 0
+        AND o.order_id IS NULL
         AND o.value_datetime IS NOT NULL
         AND o.person_id = p_patientId
         AND (c.uuid = routineViralLoadTestDateUuid OR c.uuid = targetedViralLoadTestDateUuid OR c.uuid = notDocumentedViralLoadTestDateUuid)
-    ORDER BY o.value_datetime DESC
+    ORDER BY o.value_datetime DESC, o.obs_datetime DESC
     LIMIT 1;
 
     -- read and store latest test date from elis
     SELECT o.obs_datetime INTO testDateFromOpenElis
     FROM obs o
     JOIN concept c ON o.concept_id = c.concept_id AND c.retired = 0
-    WHERE voided = 0
-        AND order_id IS NOT NULL
+    WHERE o.voided = 0
+        AND o.order_id IS NOT NULL
         AND o.value_numeric IS NOT NULL
         AND o.person_id = p_patientId
         AND (c.uuid = routineViralLoadTestUuid OR c.uuid = targetedViralLoadTestUuid OR c.uuid = notDocumentedViralLoadTestUuid)
@@ -1471,19 +1500,19 @@ proc_vital_load:BEGIN
         SELECT o.value_numeric INTO p_testResult
         FROM obs o
         JOIN concept c ON o.concept_id = c.concept_id AND c.retired = 0
-        WHERE voided = 0
-            AND order_id IS NULL
+        WHERE o.voided = 0
+            AND o.order_id IS NULL
             AND o.value_numeric IS NOT NULL
             AND o.person_id = p_patientId
             AND (c.uuid = routineViralLoadTestUuid OR c.uuid = targetedViralLoadTestUuid OR c.uuid = notDocumentedViralLoadTestUuid)
-        ORDER BY o.value_datetime DESC
+        ORDER BY o.obs_datetime DESC
         LIMIT 1;
     ELSE
         SELECT o.value_numeric INTO p_testResult
         FROM obs o
         JOIN concept c ON o.concept_id = c.concept_id AND c.retired = 0
-        WHERE voided = 0
-            AND order_id IS NOT NULL
+        WHERE o.voided = 0
+            AND o.order_id IS NOT NULL
             AND o.value_numeric IS NOT NULL
             AND o.person_id = p_patientId
             AND (c.uuid = routineViralLoadTestUuid OR c.uuid = targetedViralLoadTestUuid OR c.uuid = notDocumentedViralLoadTestUuid)
