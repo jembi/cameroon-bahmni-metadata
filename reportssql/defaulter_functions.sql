@@ -221,6 +221,24 @@ BEGIN
 END$$
 DELIMITER ;
 
+-- getPatientProgramARTNumber
+
+DROP FUNCTION IF EXISTS getPatientProgramARTNumber;
+
+DELIMITER $$
+CREATE FUNCTION getPatientProgramARTNumber(
+    p_patientId INT(11)) RETURNS VARCHAR(250)
+    DETERMINISTIC
+BEGIN
+    DECLARE result VARCHAR(250);
+    DECLARE uuidProgramARTNumber VARCHAR(38) DEFAULT "c41f844e-a707-11e6-91e9-0800270d80ce";
+
+    SET result = getPatientMostRecentProgramAttributeValue(p_patientId, uuidProgramARTNumber);
+
+    RETURN (result);
+END$$
+DELIMITER ;
+
 -- patientHasEnrolledInDefaulterProgram
 
 DROP FUNCTION IF EXISTS patientHasEnrolledInDefaulterProgram;

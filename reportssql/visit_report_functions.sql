@@ -419,7 +419,13 @@ CREATE FUNCTION getPatientARTNumber(
     p_patientId INT(11)) RETURNS VARCHAR(50)
     DETERMINISTIC
 BEGIN
-    RETURN getPatientIdentifierValue(p_patientId, 'REGISTRATION_IDTYPE_3_ART_KEY');
+    DECLARE artNumber VARCHAR(50);
+    SET artNumber = getPatientIdentifierValue(p_patientId, 'REGISTRATION_IDTYPE_3_ART_KEY');
+    IF (artNumber IS NOT NULL) THEN
+        return artNumber;
+    ELSE
+        return getPatientProgramARTNumber(p_patientId);
+    END IF;
 END$$
 DELIMITER ;
 
