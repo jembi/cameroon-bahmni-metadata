@@ -19,11 +19,8 @@ BEGIN
         JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
         JOIN concept_name cn ON cn.concept_id = d.concept_id AND cn.locale = "en"
     WHERE o.voided = 0
-        AND drugIsARV(d.concept_id)
         AND cn.name = p_arvName
-        AND patientHasTherapeuticLine(o.patient_id, p_protocolLineNumber)
-        AND o.scheduled_date BETWEEN p_startDate AND p_endDate
-        AND drugOrderIsDispensed(o.patient_id, o.order_id)
+        AND patientWithTherapeuticLinePickedARVDrugDuringReportingPeriod(o.patient_id, p_startDate, p_endDate, p_protocolLineNumber)
         AND patientAgeIsBetween(o.patient_id, p_startAge, p_endAge, p_includeEndAge);
 
     RETURN (result);
@@ -54,7 +51,7 @@ BEGIN
         AND cn.name = p_arvName
         AND o.scheduled_date BETWEEN p_startDate AND p_endDate
         AND drugOrderIsDispensed(o.patient_id, o.order_id)
-        AND patientPickedARVDrugDuringReportingPeriodWithNoTherapeuticLine(o.patient_id, p_startDate, p_endDate)
+        AND patientPickedARVDrugDuringReportingPeriod(o.patient_id, p_startDate, p_endDate)
         AND patientReasonForConsultationIsUnplannedAid(o.patient_id)
         AND patientAgeIsBetween(o.patient_id, p_startAge, p_endAge, p_includeEndAge);
 
@@ -86,7 +83,7 @@ BEGIN
         AND cn.name = p_arvName
         AND o.scheduled_date BETWEEN p_startDate AND p_endDate
         AND drugOrderIsDispensed(o.patient_id, o.order_id)
-        AND patientPickedARVDrugDuringReportingPeriodWithNoTherapeuticLine(o.patient_id, p_startDate, p_endDate)
+        AND patientPickedARVDrugDuringReportingPeriod(o.patient_id, p_startDate, p_endDate)
         AND patientHasPickedProphylaxisDuringReportingPeriod(o.patient_id, p_startDate, p_endDate)
         AND patientAgeIsBetween(o.patient_id, p_startAge, p_endAge, p_includeEndAge);
 
