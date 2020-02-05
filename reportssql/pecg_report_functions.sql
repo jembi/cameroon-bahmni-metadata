@@ -429,6 +429,8 @@ WHERE
 END$$ 
 DELIMITER ;
 
+-- Accidents of Exposure (AES)
+
 DROP FUNCTION IF EXISTS PECG_Indicator20;
 
 DELIMITER $$
@@ -459,6 +461,8 @@ WHERE
     RETURN (result);
 END$$ 
 DELIMITER ;
+
+-- Punctual Aid (PA)
 
 DROP FUNCTION IF EXISTS PECG_Indicator19;
 
