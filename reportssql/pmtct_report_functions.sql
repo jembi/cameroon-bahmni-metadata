@@ -80,6 +80,33 @@ WHERE
 END$$ 
 DELIMITER ;
 
+DROP FUNCTION IF EXISTS PMTCT_Indicator4;
+
+DELIMITER $$
+CREATE FUNCTION PMTCT_Indicator4(
+    p_startDate DATE,
+    p_endDate DATE) RETURNS INT(11)
+    DETERMINISTIC
+BEGIN
+    DECLARE result INT(11) DEFAULT 0;
+    DECLARE uuidHIVTestResultPositive VARCHAR(38) DEFAULT "7acfafa4-f19b-485e-97a7-c9e002dbe37a";
+
+SELECT
+    COUNT(DISTINCT pat.patient_id) INTO result
+FROM
+    patient pat
+WHERE
+    NOT patientHIVTestedPriorToEnrolOnANCFormWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
+    patientHIVTestResultWithinReportingPeriodIs(pat.patient_id, p_startDate, p_endDate, uuidHIVTestResultPositive, 0) AND
+    patientIsNotDead(pat.patient_id) AND
+    patientIsNotLostToFollowUp(pat.patient_id) AND
+    patientIsNotTransferredOut(pat.patient_id) AND
+    patientGenderIs(pat.patient_id, "F");
+
+    RETURN (result);
+END$$ 
+DELIMITER ;
+
 -- patientHIVTestedPriorToEnrolOnANCFormWithinReportingPeriod
 
 DROP FUNCTION IF EXISTS patientHIVTestedPriorToEnrolOnANCFormWithinReportingPeriod;
