@@ -19,6 +19,9 @@ BEGIN
         JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
         JOIN concept_name cn ON cn.concept_id = d.concept_id AND cn.locale = "en"
     WHERE o.voided = 0
+        AND drugIsARV(d.concept_id)
+        AND drugOrderIsDispensed(o.patient_id, o.order_id)
+        AND o.scheduled_date BETWEEN p_startDate AND p_endDate
         AND cn.name = p_arvName
         AND patientWithTherapeuticLinePickedARVDrugDuringReportingPeriod(o.patient_id, p_startDate, p_endDate, p_protocolLineNumber)
         AND patientAgeIsBetween(o.patient_id, p_startAge, p_endAge, p_includeEndAge);
@@ -27,10 +30,10 @@ BEGIN
 END$$ 
 DELIMITER ;
 
-DROP FUNCTION IF EXISTS getNumberOfAES_ARVDispensed;
+DROP FUNCTION IF EXISTS getNumberOfProphylaxisARVDispensed;
 
 DELIMITER $$
-CREATE FUNCTION getNumberOfAES_ARVDispensed(
+CREATE FUNCTION getNumberOfProphylaxisARVDispensed(
     p_startDate DATE,
     p_endDate DATE,
     p_startAge INT(11),
@@ -47,22 +50,23 @@ BEGIN
         JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
         JOIN concept_name cn ON cn.concept_id = d.concept_id AND cn.locale = "en"
     WHERE o.voided = 0
-        AND drugIsARV(d.concept_id)
+        AND IF (
+            patientIsAdult(o.patient_id),
+            drugIsAdultProphylaxis(d.concept_id),
+            drugIsChildProphylaxis(d.concept_id))
         AND cn.name = p_arvName
         AND o.scheduled_date BETWEEN p_startDate AND p_endDate
         AND drugOrderIsDispensed(o.patient_id, o.order_id)
-        AND patientPickedARVDrugDuringReportingPeriod(o.patient_id, p_startDate, p_endDate)
-        AND patientReasonForConsultationIsUnplannedAid(o.patient_id)
         AND patientAgeIsBetween(o.patient_id, p_startAge, p_endAge, p_includeEndAge);
 
     RETURN (result);
 END$$ 
 DELIMITER ;
 
-DROP FUNCTION IF EXISTS getNumberOfPA_ARVDispensed;
+DROP FUNCTION IF EXISTS getNumberOfPunctualAidARVDispensed;
 
 DELIMITER $$
-CREATE FUNCTION getNumberOfPA_ARVDispensed(
+CREATE FUNCTION getNumberOfPunctualAidARVDispensed(
     p_startDate DATE,
     p_endDate DATE,
     p_startAge INT(11),
@@ -79,12 +83,11 @@ BEGIN
         JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
         JOIN concept_name cn ON cn.concept_id = d.concept_id AND cn.locale = "en"
     WHERE o.voided = 0
+        AND patientReasonForConsultationIsUnplannedAid(o.patient_id)
         AND drugIsARV(d.concept_id)
         AND cn.name = p_arvName
         AND o.scheduled_date BETWEEN p_startDate AND p_endDate
         AND drugOrderIsDispensed(o.patient_id, o.order_id)
-        AND patientPickedARVDrugDuringReportingPeriod(o.patient_id, p_startDate, p_endDate)
-        AND patientHasPickedProphylaxisDuringReportingPeriod(o.patient_id, p_startDate, p_endDate)
         AND patientAgeIsBetween(o.patient_id, p_startAge, p_endAge, p_includeEndAge);
 
     RETURN (result);
