@@ -53,7 +53,7 @@ WHERE
     patientGenderIs(pat.patient_id, p_gender) AND
     patientAgeWhenRegisteredForHivProgramIsBetween(pat.patient_id, p_startAge, p_endAge, p_includeEndAge) AND
     patientHasStartedARVTreatmentDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
-    patientPickedARVDrugDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate, 0) AND
+    patientWithTherapeuticLinePickedARVDrugDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate, 0) AND
     patientIsNotDead(pat.patient_id) AND
     patientIsNotLostToFollowUp(pat.patient_id) AND
     patientIsNotTransferredOut(pat.patient_id);
@@ -87,7 +87,7 @@ WHERE
     IF (
         isOldPatient(pat.patient_id, p_startDate),
         patientWasOnARVTreatmentOrHasPickedUpADrugWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate, 0),
-        patientPickedARVDrugDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate, 0)
+        patientWithTherapeuticLinePickedARVDrugDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate, 0)
     ) AND
     patientIsNotDead(pat.patient_id) AND
     patientIsNotLostToFollowUp(pat.patient_id) AND
@@ -122,7 +122,7 @@ WHERE
     IF (
         isOldPatient(pat.patient_id, p_startDate),
         patientWasOnARVTreatmentOrHasPickedUpADrugWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate, 1),
-        patientPickedARVDrugDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate, 1)
+        patientWithTherapeuticLinePickedARVDrugDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate, 1)
     ) AND
     patientIsNotDead(pat.patient_id) AND
     patientIsNotLostToFollowUp(pat.patient_id) AND
@@ -157,7 +157,7 @@ WHERE
     IF (
         isOldPatient(pat.patient_id, p_startDate),
         patientWasOnARVTreatmentOrHasPickedUpADrugWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate, 2),
-        patientPickedARVDrugDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate, 2)
+        patientWithTherapeuticLinePickedARVDrugDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate, 2)
     ) AND
     patientIsNotDead(pat.patient_id) AND
     patientIsNotLostToFollowUp(pat.patient_id) AND
@@ -192,7 +192,7 @@ WHERE
     IF (
         isOldPatient(pat.patient_id, p_startDate),
         patientWasOnARVTreatmentOrHasPickedUpADrugWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate, 3),
-        patientPickedARVDrugDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate, 3)
+        patientWithTherapeuticLinePickedARVDrugDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate, 3)
     ) AND
     patientIsNotDead(pat.patient_id) AND
     patientIsNotLostToFollowUp(pat.patient_id) AND
@@ -352,7 +352,7 @@ WHERE
     patientHasStartedARVTreatmentBefore(pat.patient_id, p_startDate) AND
     patientDidntCollectARV(pat.patient_id, p_startDate, p_endDate, 0, -1) AND
     patientHasScheduledAnARTAppointment(pat.patient_id, p_startDate, p_endDate, -1) AND
-    patientPickedARVDrugDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate, 0) AND
+    patientWithTherapeuticLinePickedARVDrugDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate, 0) AND
     patientIsNotDead(pat.patient_id) AND
     patientIsNotLostToFollowUp(pat.patient_id) AND
     patientIsNotTransferredOut(pat.patient_id);
@@ -387,7 +387,7 @@ WHERE
     IF (
         isOldPatient(pat.patient_id, p_startDate),
         patientWasOnARVTreatmentOrHasPickedUpADrugWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate, 0),
-        patientPickedARVDrugDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate, 0)
+        patientWithTherapeuticLinePickedARVDrugDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate, 0)
     ) AND
     patientIsNotDead(pat.patient_id) AND
     patientIsNotLostToFollowUp(pat.patient_id) AND
@@ -429,6 +429,8 @@ WHERE
 END$$ 
 DELIMITER ;
 
+-- Accidents of Exposure (AES)
+
 DROP FUNCTION IF EXISTS PECG_Indicator20;
 
 DELIMITER $$
@@ -460,6 +462,8 @@ WHERE
 END$$ 
 DELIMITER ;
 
+-- Punctual Aid (PA)
+
 DROP FUNCTION IF EXISTS PECG_Indicator19;
 
 DELIMITER $$
@@ -483,7 +487,7 @@ WHERE
     patientAgeWhenRegisteredForHivProgramIsBetween(pat.patient_id, p_startAge, p_endAge, p_includeEndAge) AND
     patientHasEnrolledIntoHivProgramDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
     patientReasonForConsultationIsUnplannedAid(pat.patient_id) AND
-    patientPickedARVDrugDuringReportingPeriodWithNoTherapeuticLine(pat.patient_id, p_startDate, p_endDate) AND
+    patientPickedARVDrugDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
     patientIsNotDead(pat.patient_id) AND
     patientIsNotLostToFollowUp(pat.patient_id) AND
     patientIsNotTransferredOut(pat.patient_id);
