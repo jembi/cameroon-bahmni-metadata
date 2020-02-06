@@ -107,6 +107,33 @@ WHERE
 END$$ 
 DELIMITER ;
 
+DROP FUNCTION IF EXISTS PMTCT_Indicator5;
+
+DELIMITER $$
+CREATE FUNCTION PMTCT_Indicator5(
+    p_startDate DATE,
+    p_endDate DATE) RETURNS INT(11)
+    DETERMINISTIC
+BEGIN
+    DECLARE result INT(11) DEFAULT 0;
+    DECLARE uuidHIVTestResultPositive VARCHAR(38) DEFAULT "7acfafa4-f19b-485e-97a7-c9e002dbe37a";
+
+SELECT
+    COUNT(DISTINCT pat.patient_id) INTO result
+FROM
+    patient pat
+WHERE
+    patientDateOfFirstANCVisitOnANCFormWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
+    patientHasHIVPOSTestPriorToEnrolOnANCFormBeforeReportingPeriod(pat.patient_id, p_startDate) AND
+    patientIsNotDead(pat.patient_id) AND
+    patientIsNotLostToFollowUp(pat.patient_id) AND
+    patientIsNotTransferredOut(pat.patient_id) AND
+    patientGenderIs(pat.patient_id, "F");
+
+    RETURN (result);
+END$$ 
+DELIMITER ;
+
 -- patientHIVTestedPriorToEnrolOnANCFormWithinReportingPeriod
 
 DROP FUNCTION IF EXISTS patientHIVTestedPriorToEnrolOnANCFormWithinReportingPeriod;
@@ -168,5 +195,51 @@ BEGIN
         LIMIT 1;
 
     RETURN (hivTestDateWithinReportingPeriod);
+END$$
+DELIMITER ;
+
+-- patientHasHIVPOSTestPriorToEnrolOnANCFormBeforeReportingPeriod
+
+DROP FUNCTION IF EXISTS patientHasHIVPOSTestPriorToEnrolOnANCFormBeforeReportingPeriod;
+
+DELIMITER $$
+CREATE FUNCTION patientHasHIVPOSTestPriorToEnrolOnANCFormBeforeReportingPeriod(
+    p_patientId INT(11),
+    p_startDate DATE) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE HIVPOSTestGroupId INT(11) DEFAULT 0;
+    DECLARE patientTestDateIsBeforeReportingPeriod TINYINT(1) DEFAULT 0;
+    DECLARE uuidPriorToANCEnrolment VARCHAR(38) DEFAULT "130e05df-8283-453b-a611-d4f884fac8e0";
+    DECLARE uuidHIVTestResult VARCHAR(38) DEFAULT "85dadffe-5714-4210-8632-6fb51ef593b6";
+    DECLARE uuidHIVTestResultPositive VARCHAR(38) DEFAULT "7acfafa4-f19b-485e-97a7-c9e002dbe37a";
+    DECLARE uuidHIVTestDate VARCHAR(38) DEFAULT "c6c08cdc-18dc-4f42-809c-959621bc9a6c";
+
+    SELECT
+        o.obs_group_id INTO HIVPOSTestGroupId
+    FROM obs o
+    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
+    WHERE o.voided = 0 
+        AND o.person_id = p_patientId
+        AND c.uuid = uuidHIVTestResult
+        AND o.value_coded IS NOT NULL
+        AND o.value_coded = (SELECT concept_id FROM concept WHERE uuid = uuidHIVTestResultPositive)
+        AND (SELECT obs.concept_id FROM obs WHERE obs_id = o.obs_group_id) = (SELECT concept_id FROM concept WHERE concept.uuid = uuidPriorToANCEnrolment)
+        LIMIT 1;
+
+    SELECT
+        TRUE INTO patientTestDateIsBeforeReportingPeriod
+    FROM obs o
+    JOIN concept c ON c.concept_id = o.concept_id AND c.retired = 0
+    WHERE HIVPOSTestGroupId IS NOT NULL
+        AND o.obs_group_id = HIVPOSTestGroupId
+        AND o.voided = 0
+        AND o.person_id = p_patientId
+        AND c.uuid = uuidHIVTestDate
+        AND o.value_datetime IS NOT NULL
+        AND DATE(o.value_datetime) < p_startDate
+        LIMIT 1;
+
+    RETURN patientTestDateIsBeforeReportingPeriod;
 END$$
 DELIMITER ;
