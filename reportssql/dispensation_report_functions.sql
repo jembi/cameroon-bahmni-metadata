@@ -20,10 +20,10 @@ BEGIN
         JOIN concept_name cn ON cn.concept_id = d.concept_id AND cn.locale = "en"
     WHERE o.voided = 0
         AND drugIsARV(d.concept_id)
-        AND drugOrderIsDispensed(o.patient_id, o.order_id)
-        AND o.scheduled_date BETWEEN p_startDate AND p_endDate
         AND cn.name = p_arvName
-        AND patientWithTherapeuticLinePickedARVDrugDuringReportingPeriod(o.patient_id, p_startDate, p_endDate, p_protocolLineNumber)
+        AND o.scheduled_date BETWEEN p_startDate AND p_endDate
+        AND drugOrderIsDispensed(o.patient_id, o.order_id)
+        AND patientHasTherapeuticLine(o.patient_id, p_protocolLineNumber)
         AND patientAgeIsBetween(o.patient_id, p_startAge, p_endAge, p_includeEndAge);
 
     RETURN (result);
