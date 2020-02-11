@@ -280,17 +280,49 @@ CREATE FUNCTION Testing_Indicator5(
     DETERMINISTIC
 BEGIN
     DECLARE result INT(11) DEFAULT 0;
+    DECLARE uuidHIVTestDate VARCHAR(38) DEFAULT "c6c08cdc-18dc-4f42-809c-959621bc9a6c";
+    DECLARE uuidCounselingForm VARCHAR(38) DEFAULT "6bfd85ce-22c8-4b54-af0e-ab0af24240e3";
+    DECLARE uuidHIVTestFinalResult VARCHAR(38) DEFAULT "41e48d08-2235-47d5-af12-87a009057603";
+    DECLARE uuidTestingEntryPoint VARCHAR(38) DEFAULT "bc43179d-00b4-4712-a5d6-4dabd4230888";
 
     SELECT
         COUNT(DISTINCT pat.patient_id) INTO result
     FROM
         patient pat
+        LEFT JOIN person per ON per.person_id = pat.patient_id AND per.voided = 0
+        LEFT JOIN obs o_hiv_test_date ON o_hiv_test_date.person_id = pat.patient_id AND o_hiv_test_date.voided = 0
+        LEFT JOIN obs o_hiv_test_date2 ON o_hiv_test_date2.person_id = pat.patient_id AND o_hiv_test_date2.voided = 0 AND o_hiv_test_date.value_datetime < o_hiv_test_date2.value_datetime 
+        LEFT JOIN obs o_hiv_test_result ON o_hiv_test_result.person_id = pat.patient_id AND o_hiv_test_result.voided = 0
+        LEFT JOIN obs o_hiv_test_result2 ON o_hiv_test_result2.person_id = pat.patient_id AND o_hiv_test_result2.voided = 0 AND o_hiv_test_result.date_created < o_hiv_test_result2.date_created
+        LEFT JOIN obs o_entry_point ON o_entry_point.person_id = pat.patient_id AND o_entry_point.voided = 0
+        LEFT JOIN obs o_entry_point2 ON o_entry_point2.person_id = pat.patient_id AND o_entry_point2.voided = 0 AND o_entry_point.date_created < o_entry_point2.date_created
+        LEFT JOIN concept c_hiv_test_date ON c_hiv_test_date.concept_id = o_hiv_test_date.concept_id AND c_hiv_test_date.retired = 0
+        LEFT JOIN concept c_hiv_test_result ON c_hiv_test_result.concept_id = o_hiv_test_result.concept_id AND c_hiv_test_result.retired = 0
+        LEFT JOIN concept c_entry_point ON c_entry_point.concept_id = o_entry_point.concept_id AND c_entry_point.retired = 0
+        LEFT JOIN concept_name cn_hiv_test_result ON o_hiv_test_result.value_coded = cn_hiv_test_result.concept_id AND cn_hiv_test_result.locale='en' AND cn_hiv_test_result.locale_preferred = 1
+        LEFT JOIN concept_name cn_entry_point ON o_entry_point.value_coded = cn_entry_point.concept_id AND cn_entry_point.locale='en' AND cn_entry_point.locale_preferred = 1
     WHERE
-        patientGenderIs(pat.patient_id, p_gender) AND
-        (getPatientPreviousHIVTestDateFromCounselingForm(pat.patient_id) > TIMESTAMPADD(MONTH, -1, CURDATE()) OR getPatientPreviousHIVTestDateFromCounselingForm(pat.patient_id) IS NULL) AND
-        patientHIVFinalTestResultIsWithinReportingPeriod(pat.patient_id, 'POSITIVE', p_startDate, p_endDate) AND
-        getTestingEntryPoint(pat.patient_id) = p_testingEntryPoint AND
-        patientAgeIsBetween(pat.patient_id, p_startAge, p_endAge, p_includeEndAge);
+        -- check patient gender
+        per.gender = p_gender AND
+        -- check patient age is between p_startAge and p_endAge
+        IF (p_includeEndAge, 
+            timestampdiff(YEAR, per.birthdate, CURDATE()) BETWEEN p_startAge AND p_endAge, 
+            timestampdiff(YEAR, per.birthdate, CURDATE()) >= p_startAge
+            AND timestampdiff(YEAR, per.birthdate, CURDATE()) < p_endAge) AND
+        -- check HIV test date from counseling form is less than a month away
+        c_hiv_test_date.uuid = uuidHIVTestDate AND
+        (SELECT obs.concept_id FROM obs WHERE obs_id = o_hiv_test_date.obs_group_id) = (SELECT concept_id FROM concept WHERE concept.uuid = uuidCounselingForm) AND
+        o_hiv_test_date2.obs_id IS NULL AND
+        (o_hiv_test_date.value_datetime > TIMESTAMPADD(MONTH, -1, CURDATE()) OR o_hiv_test_date.value_datetime IS NULL) AND
+        -- check patient HIV final test result is positive and within reporting period
+        cn_hiv_test_result.name = 'Positive' AND
+        o_hiv_test_result.date_created BETWEEN p_startDate AND p_endDate AND
+        c_hiv_test_result.uuid = uuidHIVTestFinalResult AND
+        o_hiv_test_result2.date_created IS NULL AND
+        -- check the testing entry point is Index
+        cn_entry_point.name = p_testingEntryPoint AND
+        c_entry_point.uuid = uuidTestingEntryPoint AND
+        o_entry_point2.date_created IS NULL;
 
     RETURN (result);
 END$$ 
