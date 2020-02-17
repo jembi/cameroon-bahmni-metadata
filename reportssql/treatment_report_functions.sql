@@ -74,7 +74,9 @@ CREATE FUNCTION TREATMENT_Indicator2(
     p_startAge INT(11),
     p_endAge INT (11),
     p_includeEndAge TINYINT(1),
-    p_gender VARCHAR(1)) RETURNS INT(11)
+    p_gender VARCHAR(1),
+    p_drugDurationMonthsMin INT(11),
+    p_drugDurationMonthsMax INT(11)) RETURNS INT(11)
     DETERMINISTIC
 BEGIN
     DECLARE result INT(11) DEFAULT 0;
@@ -93,6 +95,7 @@ WHERE
         patientWasOnARVTreatmentOrHasPickedUpADrugWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate, 0),
         patientWithTherapeuticLinePickedARVDrugDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate, 0)
     ) AND
+    patientARVDrugDurationBetween(pat.patient_id, p_drugDurationMonthsMin, p_drugDurationMonthsMax) AND
     patientIsNotDead(pat.patient_id) AND
     patientIsNotLostToFollowUp(pat.patient_id) AND
     patientIsNotTransferredOut(pat.patient_id);
@@ -429,5 +432,39 @@ BEGIN
     GROUP BY o.patient_id;
 
     RETURN (result );
+END$$ 
+DELIMITER ;
+
+-- patientARVDrugDurationBetween
+
+DROP FUNCTION IF EXISTS patientARVDrugDurationBetween;
+
+DELIMITER $$
+CREATE FUNCTION patientARVDrugDurationBetween(
+    p_patientId INT(11),
+    p_drugDurationMonthsMin INT(11),
+    p_drugDurationMonthsMax INT(11)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+
+DECLARE result TINYINT(1) DEFAULT 0;
+
+    SELECT true INTO result
+    FROM orders o
+    JOIN drug_order do ON do.order_id = o.order_id
+    JOIN concept c ON do.duration_units = c.concept_id AND c.retired = 0
+    JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
+    WHERE o.patient_id = p_patientId AND o.voided = 0
+        AND drugIsARV(d.concept_id)
+        AND calculateTreatmentEndDate(
+            o.scheduled_date,
+            do.duration,
+            c.uuid -- uuid of the duration unit concept
+            ) BETWEEN timestampadd(MONTH, p_drugDurationMonthsMin, o.scheduled_date) 
+                AND timestampadd(MONTH, p_drugDurationMonthsMax, o.scheduled_date)
+        AND drugOrderIsDispensed(p_patientId, o.order_id)
+        GROUP BY o.patient_id;
+
+    RETURN (result);
 END$$ 
 DELIMITER ;
