@@ -1,9 +1,9 @@
 Uuid,Members,Answers,Fully specified name:fr,Fully specified name:en,Short name:fr,Short name:en,Data class,Data type,_order:1340
-37b12af0-5231-11ea-8d77-2e728ce88125,,,Index Testing Program,Index Testing Program,Index Testing Program,Index Testing Program,Misc,Text,
+37b12af0-5231-11ea-8d77-2e728ce88125,,,Programme Cas Index,Index Testing Program,Programme Cas Index,Index Testing Program,Misc,Text,
 6bcd71bc-5232-11ea-8d77-2e728ce88125,,,Refusé le dépistage,Refused Testing,Refusé le dépistage,Refused Testing,Misc,N/A,
 6bcd6f00-5232-11ea-8d77-2e728ce88125,,,Accord pour le dépistage,Accepted Testing,Accord pour le dépistage,Accepted Testing,Misc,N/A,
-6bcd7522-5232-11ea-8d77-2e728ce88125,Refused Testing;Accepted Testing,,Index Testing Résultats du programme,Index Testing Program Outcomes,Résultats du programme,Program Outcomes,Misc,Coded,
-e88aaae4-5232-11ea-8d77-2e728ce88125,,,Index Testing Program Workflow,Index Testing Program Workflow,Index Testing Program Workflow,Index Testing Program Workflow,Misc,N/A,
+6bcd7522-5232-11ea-8d77-2e728ce88125,Refused Testing;Accepted Testing,,Résultats du Programme Cas Index,Index Testing Program Outcomes,Résultats du programme,Program Outcomes,Misc,Coded,
+e88aaae4-5232-11ea-8d77-2e728ce88125,,,Flux de Travail du Programme Cas Index,Index Testing Program Workflow,Flux de Travail du Programme Cas Index,Index Testing Program Workflow,Misc,N/A,
 7209dfe2-5233-11ea-8d77-2e728ce88125,,,Notification 1,Notification 1,Notification 1,Notification 1,Misc,N/A,
 7209e294-5233-11ea-8d77-2e728ce88125,,,Notification 2,Notification 2,Notification 2,Notification 2,Misc,N/A,
 7209e6cc-5233-11ea-8d77-2e728ce88125,,,Notification 3,Notification 3,Notification 3,Notification 3,Misc,N/A,
