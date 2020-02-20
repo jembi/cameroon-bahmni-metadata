@@ -74,7 +74,9 @@ CREATE FUNCTION TREATMENT_Indicator2(
     p_startAge INT(11),
     p_endAge INT (11),
     p_includeEndAge TINYINT(1),
-    p_gender VARCHAR(1)) RETURNS INT(11)
+    p_gender VARCHAR(1),
+    p_minDuration INT(11),
+    p_maxDuration INT(11)) RETURNS INT(11)
     DETERMINISTIC
 BEGIN
     DECLARE result INT(11) DEFAULT 0;
@@ -90,8 +92,9 @@ WHERE
     patientHasStartedARVTreatmentDuringOrBeforeReportingPeriod(pat.patient_id, p_endDate) AND
     IF (
         isOldPatient(pat.patient_id, p_startDate),
-        patientWasOnARVTreatmentOrHasPickedUpADrugWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate, 0),
-        patientWithTherapeuticLinePickedARVDrugDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate, 0)
+        (patientOnARTDuringEntireReportingPeriodAndDurationBetween(pat.patient_id, p_startDate, p_endDate, p_minDuration, p_maxDuration) OR
+            patientPickedARVDrugDuringReportingPeriodAndDurationBetween(pat.patient_id, p_startDate, p_endDate, p_minDuration, p_maxDuration)),
+        patientPickedARVDrugDuringReportingPeriodAndDurationBetween(pat.patient_id, p_startDate, p_endDate, p_minDuration, p_maxDuration)
     ) AND
     patientIsNotDead(pat.patient_id) AND
     patientIsNotLostToFollowUp(pat.patient_id) AND
@@ -426,6 +429,87 @@ BEGIN
     WHERE o.patient_id = p_patientId AND o.voided = 0
         AND drugIsARV(d.concept_id)
         AND o.scheduled_date BETWEEN p_startDate AND p_endDate
+    GROUP BY o.patient_id;
+
+    RETURN (result );
+END$$ 
+DELIMITER ;
+
+-- patientOnARTDuringEntireReportingPeriodAndDurationBetween
+
+DROP FUNCTION IF EXISTS patientOnARTDuringEntireReportingPeriodAndDurationBetween;
+
+DELIMITER $$
+CREATE FUNCTION patientOnARTDuringEntireReportingPeriodAndDurationBetween(
+    p_patientId INT(11),
+    p_startDate DATE,
+    p_endDate DATE,
+    p_minDuration INT(11),
+    p_maxDuration INT(11)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+
+    DECLARE result TINYINT(1) DEFAULT 0;
+
+    SELECT TRUE INTO result
+    FROM orders o
+    JOIN drug_order do ON do.order_id = o.order_id
+    JOIN concept c ON do.duration_units = c.concept_id AND c.retired = 0
+    JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
+    WHERE o.patient_id = p_patientId AND o.voided = 0
+        AND drugIsARV(d.concept_id)
+        AND patientHasTherapeuticLine(p_patientId, 0)
+        AND o.scheduled_date < p_startDate
+        AND drugOrderIsDispensed(p_patientId, o.order_id)
+        AND calculateTreatmentEndDate(
+            o.scheduled_date,
+            do.duration,
+            c.uuid -- uuid of the duration unit concept
+            ) >= p_endDate
+        AND calculateTreatmentEndDate(
+            o.scheduled_date,
+            do.duration,
+            c.uuid -- uuid of the duration unit concept
+            ) BETWEEN timestampadd(MONTH, p_minDuration, o.scheduled_date) 
+                AND timestampadd(DAY, -1, timestampadd(MONTH, p_maxDuration, o.scheduled_date))    
+    GROUP BY o.patient_id;
+
+    RETURN (result );
+END$$ 
+DELIMITER ;
+
+-- patientPickedARVDrugDuringReportingPeriodAndDurationBetween
+
+DROP FUNCTION IF EXISTS patientPickedARVDrugDuringReportingPeriodAndDurationBetween;
+
+DELIMITER $$
+CREATE FUNCTION patientPickedARVDrugDuringReportingPeriodAndDurationBetween(
+    p_patientId INT(11),
+    p_startDate DATE,
+    p_endDate DATE,
+    p_minDuration INT(11),
+    p_maxDuration INT(11)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+
+    DECLARE result TINYINT(1) DEFAULT 0;
+
+    SELECT TRUE INTO result
+    FROM orders o
+    JOIN drug_order do ON do.order_id = o.order_id
+    JOIN concept c ON do.duration_units = c.concept_id AND c.retired = 0
+    JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
+    WHERE o.patient_id = p_patientId AND o.voided = 0
+        AND drugIsARV(d.concept_id)
+        AND patientHasTherapeuticLine(p_patientId, 0)
+        AND o.scheduled_date BETWEEN p_startDate AND p_endDate
+        AND drugOrderIsDispensed(p_patientId, o.order_id)
+        AND calculateTreatmentEndDate(
+            o.scheduled_date,
+            do.duration,
+            c.uuid -- uuid of the duration unit concept
+            ) BETWEEN timestampadd(MONTH, p_minDuration, o.scheduled_date) 
+                AND timestampadd(DAY, -1, timestampadd(MONTH, p_maxDuration, o.scheduled_date))
     GROUP BY o.patient_id;
 
     RETURN (result );
