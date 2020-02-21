@@ -22,6 +22,48 @@ BEGIN
 END$$
 DELIMITER ;
 
+-- getNumberOfContactsRelatedToIndex
+
+DROP FUNCTION IF EXISTS getNumberOfContactsRelatedToIndex;
+
+DELIMITER $$
+CREATE FUNCTION getNumberOfContactsRelatedToIndex(
+    p_patientId INT(11)) RETURNS INT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE result INT(1) DEFAULT 0;
+
+    SELECT count(DISTINCT pat.patient_id) INTO result
+    FROM patient pat
+    WHERE pat.voided = 0 AND
+        patientsAreRelated(p_patientId, pat.patient_id) AND
+        patientIsNotDead(pat.patient_id);
+
+    RETURN (result);
+END$$
+DELIMITER ;
+
+-- getNumberOfEnrolledContactsRelatedToIndex
+
+DROP FUNCTION IF EXISTS getNumberOfEnrolledContactsRelatedToIndex;
+
+DELIMITER $$
+CREATE FUNCTION getNumberOfEnrolledContactsRelatedToIndex(
+    p_patientId INT(11)) RETURNS INT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE result INT(1) DEFAULT 0;
+
+    SELECT count(DISTINCT pat.patient_id) INTO result
+    FROM patient pat
+    WHERE pat.voided = 0 AND
+        patientsAreRelated(p_patientId, pat.patient_id) AND
+        patientIsNotDead(pat.patient_id) AND
+        patientHasEnrolledIntoIndexProgram(pat.patient_id);
+
+    RETURN (result);
+END$$
+DELIMITER ;
 
 -- patientIsContact
 
@@ -90,6 +132,31 @@ BEGIN
         pat.name = p_programAttributeName
     ORDER BY ppa.date_created DESC
     LIMIT 1;
+
+    RETURN (result);
+END$$
+DELIMITER ;
+
+-- patientHasEnrolledIntoIndexProgram
+
+DROP FUNCTION IF EXISTS patientHasEnrolledIntoIndexProgram;
+
+DELIMITER $$
+CREATE FUNCTION patientHasEnrolledIntoIndexProgram(
+    p_patientId INT(11)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE result TINYINT(1) DEFAULT 0;
+
+    SELECT
+        TRUE INTO result
+    FROM person p
+    JOIN patient_program pp ON pp.patient_id = p.person_id AND pp.voided = 0
+    JOIN program pro ON pro.program_id = pp.program_id AND pro.retired = 0
+    WHERE p.person_id = p_patientId
+        AND p.voided = 0
+        AND pro.name = "INDEX_TESTING_PROGRAM_KEY"
+    GROUP BY pro.name;
 
     RETURN (result);
 END$$
