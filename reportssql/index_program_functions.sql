@@ -65,6 +65,51 @@ BEGIN
 END$$
 DELIMITER ;
 
+-- getIndexNames
+
+DROP FUNCTION IF EXISTS getIndexNames;
+
+DELIMITER $$
+CREATE FUNCTION getIndexNames(
+    p_contactPatientId INT(11)) RETURNS TEXT
+    DETERMINISTIC
+BEGIN
+    DECLARE result TEXT DEFAULT '';
+
+    SELECT GROUP_CONCAT(concat(pn.given_name," ", ifnull(pn.family_name,''))) INTO result
+    FROM person_name pn
+    WHERE pn.voided = 0 AND
+        patientsAreRelated(p_contactPatientId, pn.person_id) AND
+        patientIsIndex(pn.person_id) AND
+        patientIsNotDead(pn.person_id);
+
+    RETURN (result);
+END$$
+DELIMITER ;
+
+
+-- getIndexRelationships
+
+DROP FUNCTION IF EXISTS getIndexRelationships;
+
+DELIMITER $$
+CREATE FUNCTION getIndexRelationships(
+    p_contactPatientId INT(11)) RETURNS TEXT
+    DETERMINISTIC
+BEGIN
+    DECLARE result TEXT DEFAULT '';
+
+    SELECT GROUP_CONCAT(getRelationshipNameBetweenPatients(p_contactPatientId, pn.person_id)) INTO result
+    FROM person_name pn
+    WHERE pn.voided = 0 AND
+        patientsAreRelated(p_contactPatientId, pn.person_id) AND
+        patientIsIndex(pn.person_id) AND
+        patientIsNotDead(pn.person_id);
+
+    RETURN (result);
+END$$
+DELIMITER ;
+
 -- patientIsContact
 
 DROP FUNCTION IF EXISTS patientIsContact;
@@ -107,6 +152,131 @@ BEGIN
     LIMIT 1;
 
     RETURN (result);
+END$$
+DELIMITER ;
+
+-- getRelationshipNameBetweenPatients
+
+DROP FUNCTION IF EXISTS getRelationshipNameBetweenPatients;
+
+DELIMITER $$
+CREATE FUNCTION getRelationshipNameBetweenPatients(
+    p_patientIdA INT(11),
+    p_patientIdB INT(11)) RETURNS VARCHAR(50)
+    DETERMINISTIC
+BEGIN
+    DECLARE result VARCHAR(50) DEFAULT "";
+
+    SELECT rt.a_is_to_b INTO result
+    FROM relationship r
+    JOIN relationship_type rt ON r.relationship = rt.relationship_type_id
+    WHERE r.voided = 0 AND
+        r.person_a = p_patientIdA AND r.person_b = p_patientIdB
+    LIMIT 1;
+
+    RETURN (result);
+END$$
+DELIMITER ;
+
+-- getPatientMostRecentProgramAttributeCodedValueFromName
+
+DROP FUNCTION IF EXISTS getPatientMostRecentProgramAttributeCodedValueFromName;
+
+DELIMITER $$
+CREATE FUNCTION getPatientMostRecentProgramAttributeCodedValueFromName(
+    p_patientId INT(11),
+    p_programAttributeName VARCHAR(255),
+    p_language VARCHAR(3)) RETURNS VARCHAR(255)
+    DETERMINISTIC
+BEGIN
+    DECLARE uuidProgramAttribute VARCHAR(38);
+
+    SELECT pat.uuid INTO uuidProgramAttribute
+    FROM program_attribute_type pat
+    WHERE pat.name = p_programAttributeName
+    LIMIT 1;
+
+    RETURN getPatientMostRecentProgramAttributeCodedValue(p_patientId, uuidProgramAttribute, p_language);
+END$$
+DELIMITER ;
+
+-- getMostRecentDateObservation
+
+DROP FUNCTION IF EXISTS getMostRecentDateObservation;
+
+DELIMITER $$
+CREATE FUNCTION getMostRecentDateObservation(
+    p_patientId INT(11),
+    p_conceptName VARCHAR(255)) RETURNS DATE
+    DETERMINISTIC
+BEGIN
+    DECLARE result DATE;
+
+    SELECT o.value_datetime INTO result
+    FROM obs o
+    JOIN concept_name cn ON cn.concept_id = o.concept_id
+    WHERE o.person_id = p_patientId
+        AND o.voided = 0
+        AND cn.name = p_conceptName
+    ORDER BY o.date_created DESC
+    LIMIT 1;
+
+    RETURN result;
+END$$
+DELIMITER ;
+
+
+-- getMostRecentTextObservation
+
+DROP FUNCTION IF EXISTS getMostRecentTextObservation;
+
+DELIMITER $$
+CREATE FUNCTION getMostRecentTextObservation(
+    p_patientId INT(11),
+    p_conceptName VARCHAR(255)) RETURNS TEXT
+    DETERMINISTIC
+BEGIN
+    DECLARE result TEXT;
+
+    SELECT o.value_text INTO result
+    FROM obs o
+    JOIN concept_name cn ON cn.concept_id = o.concept_id
+    WHERE o.person_id = p_patientId
+        AND o.voided = 0
+        AND cn.name = p_conceptName
+    ORDER BY o.date_created DESC
+    LIMIT 1;
+
+    RETURN result;
+END$$
+DELIMITER ;
+
+
+-- getMostRecentCodedObservation
+
+DROP FUNCTION IF EXISTS getMostRecentCodedObservation;
+
+DELIMITER $$
+CREATE FUNCTION getMostRecentCodedObservation(
+    p_patientId INT(11),
+    p_conceptName VARCHAR(255),
+    p_language VARCHAR(3)) RETURNS VARCHAR(255)
+    DETERMINISTIC
+BEGIN
+    DECLARE result VARCHAR(255);
+
+    SELECT cn2.name INTO result
+    FROM obs o
+    JOIN concept_name cn ON cn.concept_id = o.concept_id
+    JOIN concept_name cn2 ON cn2.concept_id = o.value_coded
+    WHERE o.person_id = p_patientId
+        AND o.voided = 0
+        AND cn.name = p_conceptName
+        AND cn2.locale = p_language
+    ORDER BY o.date_created DESC
+    LIMIT 1;
+
+    RETURN result;
 END$$
 DELIMITER ;
 
