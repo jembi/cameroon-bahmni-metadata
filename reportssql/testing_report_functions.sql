@@ -58,16 +58,16 @@ WHERE
     patientIsNotTransferredOut(pat.patient_id) AND 
     patientGenderIs(pat.patient_id, 'F') AND
     (
-        patientHIVDatePriorToEnrolOnANCForm3MOrLessBeforeReportEndDate(pat.patient_id, p_endDate) 
+        patientHIVDatePriorToEnrolOnANCForm3MOrLessBeforeReportEndDate(pat.patient_id, p_startDate, p_endDate) 
         OR
         (
-            patientHIVDatePriorToEnrolOnANCFormMoreThan3MBeforeReportEndDate(pat.patient_id, p_endDate) AND
+            patientHIVDatePriorToEnrolOnANCFormMoreThan3MBeforeReportEndDate(pat.patient_id, p_startDate, p_endDate) AND
             patientHIVRetestPosPriorToEnrolOnANCFormWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
             NOT patientAlreadyOnARTOnANCFormBeforeReportEndDate(pat.patient_id, p_endDate) 
         )
         OR
         (
-            patientHIVDatePriorToEnrolOnANCFormMoreThan3MBeforeReportEndDate(pat.patient_id, p_endDate) AND
+            patientHIVDatePriorToEnrolOnANCFormMoreThan3MBeforeReportEndDate(pat.patient_id, p_startDate, p_endDate) AND
             patientAlreadyOnARTOnANCFormBeforeReportEndDate(pat.patient_id, p_endDate)
         )
     );
@@ -430,6 +430,7 @@ DROP FUNCTION IF EXISTS patientHIVDatePriorToEnrolOnANCFormMoreThan3MBeforeRepor
 DELIMITER $$
 CREATE FUNCTION patientHIVDatePriorToEnrolOnANCFormMoreThan3MBeforeReportEndDate(
     p_patientId INT(11),
+    p_startDate DATE,
     p_endDate DATE) RETURNS TINYINT(1)
     DETERMINISTIC
 BEGIN
@@ -461,6 +462,7 @@ DROP FUNCTION IF EXISTS patientHIVDatePriorToEnrolOnANCForm3MOrLessBeforeReportE
 DELIMITER $$
 CREATE FUNCTION patientHIVDatePriorToEnrolOnANCForm3MOrLessBeforeReportEndDate(
     p_patientId INT(11),
+    p_startDate DATE,
     p_endDate DATE) RETURNS TINYINT(1)
     DETERMINISTIC
 BEGIN
