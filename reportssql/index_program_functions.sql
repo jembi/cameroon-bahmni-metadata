@@ -331,3 +331,28 @@ BEGIN
     RETURN (result);
 END$$
 DELIMITER ;
+
+-- getTestedLocation
+
+DROP FUNCTION IF EXISTS getTestedLocation;
+
+DELIMITER $$
+CREATE FUNCTION getTestedLocation(
+    p_patientId INT(11)) RETURNS VARCHAR(255)
+    DETERMINISTIC
+BEGIN
+    DECLARE result VARCHAR(255);
+
+    SELECT l.name INTO result
+    FROM obs o
+    JOIN concept_name cn ON cn.concept_id = o.concept_id
+    JOIN location l ON o.location_id = l.location_id
+    WHERE o.person_id = p_patientId
+        AND o.voided = 0
+        AND cn.name = 'Final Test Result'
+    ORDER BY o.date_created DESC
+    LIMIT 1;
+
+    RETURN result;
+END$$
+DELIMITER ;
