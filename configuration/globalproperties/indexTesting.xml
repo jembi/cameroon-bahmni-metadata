@@ -19,7 +19,7 @@
       where 
         patientIsIndex(p.person_id) AND
         (getNumberOfContactsRelatedToIndex(p.person_id) = 0 or
-        getNumberOfEnrolledContactsRelatedToIndex(p.person_id) < getNumberOfContactsRelatedToIndex(p.person_id))
+        getNumberOfEnrolledContactsRelatedToIndex(p.person_id) &lt; getNumberOfContactsRelatedToIndex(p.person_id))
       order by p.date_created desc;
       </value>
     </globalProperty>
