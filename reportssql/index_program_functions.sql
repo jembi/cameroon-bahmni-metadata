@@ -65,46 +65,50 @@ BEGIN
 END$$
 DELIMITER ;
 
--- getIndexNames
+-- getFirstIndexName
 
-DROP FUNCTION IF EXISTS getIndexNames;
+DROP FUNCTION IF EXISTS getFirstIndexName;
 
 DELIMITER $$
-CREATE FUNCTION getIndexNames(
+CREATE FUNCTION getFirstIndexName(
     p_contactPatientId INT(11)) RETURNS TEXT
     DETERMINISTIC
 BEGIN
     DECLARE result TEXT DEFAULT '';
 
-    SELECT GROUP_CONCAT(concat(pn.given_name," ", ifnull(pn.family_name,''))) INTO result
+    SELECT concat(pn.given_name," ", ifnull(pn.family_name,'')) INTO result
     FROM person_name pn
     WHERE pn.voided = 0 AND
         patientsAreRelated(p_contactPatientId, pn.person_id) AND
         patientIsIndex(pn.person_id) AND
-        patientIsNotDead(pn.person_id);
+        patientIsNotDead(pn.person_id)
+        ORDER BY pn.date_created ASC 
+        LIMIT 1;
 
     RETURN (result);
 END$$
 DELIMITER ;
 
 
--- getIndexRelationships
+-- getFirstIndexRelationship
 
-DROP FUNCTION IF EXISTS getIndexRelationships;
+DROP FUNCTION IF EXISTS getFirstIndexRelationship;
 
 DELIMITER $$
-CREATE FUNCTION getIndexRelationships(
+CREATE FUNCTION getFirstIndexRelationship(
     p_contactPatientId INT(11)) RETURNS TEXT
     DETERMINISTIC
 BEGIN
     DECLARE result TEXT DEFAULT '';
 
-    SELECT GROUP_CONCAT(getRelationshipNameBetweenPatients(p_contactPatientId, pn.person_id)) INTO result
+    SELECT getRelationshipNameBetweenPatients(p_contactPatientId, pn.person_id) INTO result
     FROM person_name pn
     WHERE pn.voided = 0 AND
         patientsAreRelated(p_contactPatientId, pn.person_id) AND
         patientIsIndex(pn.person_id) AND
-        patientIsNotDead(pn.person_id);
+        patientIsNotDead(pn.person_id)
+        ORDER BY pn.date_created ASC 
+        LIMIT 1;
 
     RETURN (result);
 END$$
