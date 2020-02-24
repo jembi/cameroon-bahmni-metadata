@@ -263,14 +263,15 @@ BEGIN
 END$$
 DELIMITER ;
 
--- getPatientMostRecentDefaulterProgramOutcome
+-- getPatientMostRecentProgramOutcome
 
-DROP FUNCTION IF EXISTS getPatientMostRecentDefaulterProgramOutcome;
+DROP FUNCTION IF EXISTS getPatientMostRecentProgramOutcome;
 
 DELIMITER $$
-CREATE FUNCTION getPatientMostRecentDefaulterProgramOutcome(
+CREATE FUNCTION getPatientMostRecentProgramOutcome(
     p_patientId INT(11),
-    p_language VARCHAR(3)) RETURNS VARCHAR(250)
+    p_language VARCHAR(3),
+    p_program VARCHAR(250)) RETURNS VARCHAR(250)
     DETERMINISTIC
 BEGIN
     DECLARE result VARCHAR(250);
@@ -282,7 +283,7 @@ BEGIN
     WHERE
         pp.voided = 0 AND
         pp.patient_id = p_patientId AND
-        p.name = "HIV_DEFAULTERS_PROGRAM_KEY"
+        p.name = p_program
     LIMIT 1;
 
     RETURN (result);
