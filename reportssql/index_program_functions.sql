@@ -80,8 +80,7 @@ BEGIN
     FROM person_name pn
     WHERE pn.voided = 0 AND
         patientsAreRelated(p_contactPatientId, pn.person_id) AND
-        patientIsIndex(pn.person_id) AND
-        patientIsNotDead(pn.person_id)
+        patientIsIndex(pn.person_id)
         ORDER BY pn.date_created ASC 
         LIMIT 1;
 
@@ -101,12 +100,11 @@ CREATE FUNCTION getFirstIndexRelationship(
 BEGIN
     DECLARE result TEXT DEFAULT '';
 
-    SELECT getRelationshipNameBetweenPatients(p_contactPatientId, pn.person_id) INTO result
-    FROM person_name pn
-    WHERE pn.voided = 0 AND
-        patientsAreRelated(p_contactPatientId, pn.person_id) AND
-        patientIsIndex(pn.person_id) AND
-        patientIsNotDead(pn.person_id)
+    SELECT getRelationshipNameBetweenPatients(p_contactPatientId, pnIndex.person_id) INTO result
+    FROM person_name pnIndex
+    WHERE pnIndex.voided = 0 AND
+        patientsAreRelated(p_contactPatientId, pnIndex.person_id) AND
+        patientIsIndex(pnIndex.person_id)
         ORDER BY pn.date_created ASC 
         LIMIT 1;
 
@@ -126,10 +124,11 @@ BEGIN
     DECLARE result TINYINT(1) DEFAULT 0;
 
     SELECT TRUE INTO result
-    FROM person pIndex
-    WHERE pIndex.voided = 0 AND
-        patientIsIndex(pIndex.person_id) AND
-        patientsAreRelated(p_contactId, pIndex.person_id)
+    FROM relationship r
+    JOIN person pIndex ON (r.person_a = p_contactId AND r.person_b = pIndex.person_id) OR
+            (r.person_a = pIndex.person_id AND r.person_b = p_contactId)
+    WHERE 
+        patientIsIndex(pIndex.person_id)
     LIMIT 1;
 
     RETURN (result);
@@ -175,7 +174,8 @@ BEGIN
     FROM relationship r
     JOIN relationship_type rt ON r.relationship = rt.relationship_type_id
     WHERE r.voided = 0 AND
-        r.person_a = p_patientIdA AND r.person_b = p_patientIdB
+        ((r.person_a = p_patientIdA AND r.person_b = p_patientIdB) OR
+            (r.person_a = p_patientIdB AND r.person_b = p_patientIdA))
     LIMIT 1;
 
     RETURN (result);
