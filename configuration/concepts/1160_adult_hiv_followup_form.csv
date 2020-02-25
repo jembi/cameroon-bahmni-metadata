@@ -1,5 +1,5 @@
 uuid,Members,Answers,Fully specified name:fr,Fully specified name:en,Short name:fr,Short name:en,Data class,Data type,_version:1,_order:1160
-d252d940-24d9-4cc4-9fc8-c617af369c7e,"Index testing offered?;Index testing accepted?",,1. Cas Index,1. Index Testing,1. Cas Index,1. Index Testing,Misc,N/A,,
+d252d940-24d9-4cc4-9fc8-c617af369c7e,"Index testing offered?;Date Offered;Index testing accepted?;Date Accepted",,1. Cas Index,1. Index Testing,1. Cas Index,1. Index Testing,Misc,N/A,,
 bcf78400-e5a9-4070-90ea-5ff83a9b8bd3,,Yes full name;No full name,Prophylaxie au Fluconazole,Fluconazole prophylaxis,Prophylaxie au Fluconazole,Fluconazole prophylaxis,Misc,Coded,,
 34c25e99-f09b-4514-85b9-e2a9f4962085,,Yes full name;No full name,Prophylaxie é INH,Prophylaxis at INH,Prophylaxie é INH,Prophylaxis at INH,Misc,Coded,,
 2f172c49-0200-4454-8be6-b80ec7e46b8a,11a26112-8ceb-4a0c-aa46-46175b57be22;bcf78400-e5a9-4070-90ea-5ff83a9b8bd3;34c25e99-f09b-4514-85b9-e2a9f4962085,,2. Prophylaxie,2. Prophylaxis,2. Prophylaxie,2. Prophylaxis,Misc,N/A,,
