@@ -80,8 +80,7 @@ BEGIN
     FROM person_name pn
     WHERE pn.voided = 0 AND
         patientsAreRelated(p_contactPatientId, pn.person_id) AND
-        patientIsIndex(pn.person_id) AND
-        patientIsNotDead(pn.person_id)
+        patientIsIndex(pn.person_id)
         ORDER BY pn.date_created ASC 
         LIMIT 1;
 
