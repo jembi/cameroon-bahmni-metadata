@@ -126,10 +126,11 @@ BEGIN
     DECLARE result TINYINT(1) DEFAULT 0;
 
     SELECT TRUE INTO result
-    FROM person pIndex
-    WHERE pIndex.voided = 0 AND
-        patientIsIndex(pIndex.person_id) AND
-        patientsAreRelated(p_contactId, pIndex.person_id)
+    FROM relationship r
+    JOIN person pIndex ON (r.person_a = p_contactId AND r.person_b = pIndex.person_id) OR
+            (r.person_a = pIndex.person_id AND r.person_b = p_contactId)
+    WHERE 
+        patientIsIndex(pIndex.person_id)
     LIMIT 1;
 
     RETURN (result);
