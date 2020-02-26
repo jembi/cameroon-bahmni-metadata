@@ -105,7 +105,7 @@ BEGIN
     WHERE pnIndex.voided = 0 AND
         patientsAreRelated(p_contactPatientId, pnIndex.person_id) AND
         patientIsIndex(pnIndex.person_id)
-        ORDER BY pn.date_created ASC 
+        ORDER BY pnIndex.date_created ASC 
         LIMIT 1;
 
     RETURN (result);
