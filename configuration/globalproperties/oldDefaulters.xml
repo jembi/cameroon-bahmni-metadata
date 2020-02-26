@@ -17,7 +17,7 @@
         getPatientMostRecentProgramTrackingOutcomeValue(pat.patient_id, ${language}) as 'PROGRAM_MODULE_LABEL_TRACKING_OUTCOME_KEY',
         getDateMostRecentARVAppointment(pat.patient_id) as 'PROGRAM_MODULE_LABEL_DATE_LAST_APPOINTMENT_KEY',
         getPatientMostRecentProgramAPSName(pat.patient_id) as 'PROGRAM_MODULE_LABEL_APS_NAME_KEY',
-        getPatientMostRecentDefaulterProgramOutcome(pat.patient_id, ${language}) as 'PROGRAM_MODULE_LABEL_PROGRAM_OUTCOME_KEY'
+        getPatientMostRecentProgramOutcome(pat.patient_id, ${language}, 'HIV_DEFAULTERS_PROGRAM_KEY') as 'PROGRAM_MODULE_LABEL_PROGRAM_OUTCOME_KEY'
       from
         patient pat join person_name pn on pat.patient_id = pn.person_id and pn.voided = 0 and pat.voided=0
         join patient_identifier pi on pat.patient_id = pi.patient_id and pi.voided=0
@@ -27,7 +27,7 @@
       where
         patientIsDefaulter(pat.patient_id) and
         patientHasEnrolledInDefaulterProgram(pat.patient_id) and
-        getPatientMostRecentDefaulterProgramOutcome(pat.patient_id, ${language}) is not null
+        getPatientMostRecentProgramOutcome(pat.patient_id, ${language}, 'HIV_DEFAULTERS_PROGRAM_KEY') is not null
       order by pat.patient_id desc;
       </value>
     </globalProperty>

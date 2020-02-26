@@ -748,7 +748,7 @@ BEGIN
     RETURN
         patientWasOnARVTreatmentDuringEntireReportingPeriod(p_patientId, extended_startDate, extended_endDate, p_protocolLineNumber)
         OR
-        patientPickedARVDrugDuringReportingPeriod(p_patientId, extended_startDate, extended_endDate, p_protocolLineNumber);
+        patientWithTherapeuticLinePickedARVDrugDuringReportingPeriod(p_patientId, extended_startDate, extended_endDate, p_protocolLineNumber);
 END$$ 
 DELIMITER ;
 
@@ -768,7 +768,7 @@ BEGIN
     RETURN
         patientWasOnARVTreatmentDuringEntireReportingPeriod(p_patientId, p_startDate, p_endDate, p_protocolLineNumber)
         OR
-        patientPickedARVDrugDuringReportingPeriod(p_patientId, p_startDate, p_endDate, p_protocolLineNumber);
+        patientWithTherapeuticLinePickedARVDrugDuringReportingPeriod(p_patientId, p_startDate, p_endDate, p_protocolLineNumber);
 END$$ 
 DELIMITER ;
 
@@ -807,12 +807,12 @@ BEGIN
 END$$ 
 DELIMITER ;
 
--- patientPickedARVDrugDuringReportingPeriod
+-- patientWithTherapeuticLinePickedARVDrugDuringReportingPeriod
 
-DROP FUNCTION IF EXISTS patientPickedARVDrugDuringReportingPeriod;
+DROP FUNCTION IF EXISTS patientWithTherapeuticLinePickedARVDrugDuringReportingPeriod;
 
 DELIMITER $$
-CREATE FUNCTION patientPickedARVDrugDuringReportingPeriod(
+CREATE FUNCTION patientWithTherapeuticLinePickedARVDrugDuringReportingPeriod(
     p_patientId INT(11),
     p_startDate DATE,
     p_endDate DATE,
@@ -821,7 +821,7 @@ CREATE FUNCTION patientPickedARVDrugDuringReportingPeriod(
 BEGIN
 
     RETURN
-        patientPickedARVDrugDuringReportingPeriodWithNoTherapeuticLine(p_patientId, p_startDate, p_endDate)
+        patientPickedARVDrugDuringReportingPeriod(p_patientId, p_startDate, p_endDate)
         AND
         patientHasTherapeuticLine(p_patientId, p_protocolLineNumber);
 END$$ 
@@ -846,12 +846,12 @@ BEGIN
 END$$
 DELIMITER ;
 
--- patientPickedARVDrugDuringReportingPeriodWithNoTherapeuticLine
+-- patientPickedARVDrugDuringReportingPeriod
 
-DROP FUNCTION IF EXISTS patientPickedARVDrugDuringReportingPeriodWithNoTherapeuticLine;
+DROP FUNCTION IF EXISTS patientPickedARVDrugDuringReportingPeriod;
 
 DELIMITER $$
-CREATE FUNCTION patientPickedARVDrugDuringReportingPeriodWithNoTherapeuticLine(
+CREATE FUNCTION patientPickedARVDrugDuringReportingPeriod(
     p_patientId INT(11),
     p_startDate DATE,
     p_endDate DATE) RETURNS TINYINT(1)

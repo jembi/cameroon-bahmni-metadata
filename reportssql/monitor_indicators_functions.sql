@@ -36,7 +36,7 @@ BEGIN
     SELECT 
         COUNT(distinct e.encounter_id) INTO result 
     FROM encounter e, obs o 
-    WHERE e.date_created between p_startDate and p_endDate
+    WHERE e.encounter_datetime between p_startDate and p_endDate
         AND o.encounter_id=e.encounter_id
         AND o.concept_id=(select concept_id from concept where uuid=formUuid);
 

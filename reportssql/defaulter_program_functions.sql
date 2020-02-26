@@ -221,6 +221,24 @@ BEGIN
 END$$
 DELIMITER ;
 
+-- getPatientProgramARTNumber
+
+DROP FUNCTION IF EXISTS getPatientProgramARTNumber;
+
+DELIMITER $$
+CREATE FUNCTION getPatientProgramARTNumber(
+    p_patientId INT(11)) RETURNS VARCHAR(250)
+    DETERMINISTIC
+BEGIN
+    DECLARE result VARCHAR(250);
+    DECLARE uuidProgramARTNumber VARCHAR(38) DEFAULT "c41f844e-a707-11e6-91e9-0800270d80ce";
+
+    SET result = getPatientMostRecentProgramAttributeValue(p_patientId, uuidProgramARTNumber);
+
+    RETURN (result);
+END$$
+DELIMITER ;
+
 -- patientHasEnrolledInDefaulterProgram
 
 DROP FUNCTION IF EXISTS patientHasEnrolledInDefaulterProgram;
@@ -245,14 +263,15 @@ BEGIN
 END$$
 DELIMITER ;
 
--- getPatientMostRecentDefaulterProgramOutcome
+-- getPatientMostRecentProgramOutcome
 
-DROP FUNCTION IF EXISTS getPatientMostRecentDefaulterProgramOutcome;
+DROP FUNCTION IF EXISTS getPatientMostRecentProgramOutcome;
 
 DELIMITER $$
-CREATE FUNCTION getPatientMostRecentDefaulterProgramOutcome(
+CREATE FUNCTION getPatientMostRecentProgramOutcome(
     p_patientId INT(11),
-    p_language VARCHAR(3)) RETURNS VARCHAR(250)
+    p_language VARCHAR(3),
+    p_program VARCHAR(250)) RETURNS VARCHAR(250)
     DETERMINISTIC
 BEGIN
     DECLARE result VARCHAR(250);
@@ -264,7 +283,7 @@ BEGIN
     WHERE
         pp.voided = 0 AND
         pp.patient_id = p_patientId AND
-        p.name = "HIV_DEFAULTERS_PROGRAM_KEY"
+        p.name = p_program
     LIMIT 1;
 
     RETURN (result);
