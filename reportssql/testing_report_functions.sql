@@ -323,6 +323,34 @@ BEGIN
 END$$ 
 DELIMITER ;
 
+DROP FUNCTION IF EXISTS Testing_Indicator7ab;
+
+DELIMITER $$
+CREATE FUNCTION Testing_Indicator7ab(
+    p_startDate DATE,
+    p_endDate DATE,
+    p_startAge INT(11),
+    p_endAge INT (11),
+    p_includeEndAge TINYINT(1),
+    p_gender VARCHAR(1),
+    p_checkDateAccepted TINYINT(1)) RETURNS INT(11)
+    DETERMINISTIC
+BEGIN
+    DECLARE result INT(11) DEFAULT 0;
+
+    SELECT
+        COUNT(DISTINCT pat.patient_id) INTO result
+    FROM
+        patient pat
+    WHERE
+        patientGenderIs(pat.patient_id, p_gender) AND
+        wasIndexDateWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate, p_checkDateAccepted) AND
+        patientAgeIsBetween(pat.patient_id, p_startAge, p_endAge, p_includeEndAge);
+
+    RETURN (result);
+END$$ 
+DELIMITER ;
+
 -- getPriorToANCEnrolmentObsGroupId
 
 DROP FUNCTION IF EXISTS getPriorToANCEnrolmentObsGroupId;
@@ -995,4 +1023,36 @@ BEGIN
         testDate BETWEEN p_startDate AND p_endDate);
 
 END$$ 
+DELIMITER ;
+
+-- wasIndexDateWithinReportingPeriod
+
+DROP FUNCTION IF EXISTS wasIndexDateWithinReportingPeriod;
+
+DELIMITER $$
+CREATE FUNCTION wasIndexDateWithinReportingPeriod(
+    p_patientId INT(11),
+    p_startDate DATE,
+    p_endDate DATE,
+    p_checkDateAccepted TINYINT(1)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE indexDate DATE;
+    DECLARE dateUuid VARCHAR(38) DEFAULT '836fe9d4-96f1-4fea-9ad8-35bd06e0ee05'; -- date offered concept uuid
+
+    IF (p_checkDateAccepted) THEN 
+        SET dateUuid = 'e7a002be-8afc-48b1-a81b-634e37f2961c'; -- date accepted concept uuid
+    END IF;
+    
+    SELECT value_datetime INTO indexDate
+    FROM obs
+    WHERE voided = 0 AND person_id = p_patientId AND
+        concept_id = (select concept_id from concept where uuid = dateUuid) AND
+        value_datetime IS NOT NULL
+    ORDER BY value_datetime DESC
+    LIMIT 1;
+
+    RETURN (indexDate BETWEEN p_startDate AND p_endDate);
+
+END$$
 DELIMITER ;
