@@ -379,6 +379,35 @@ BEGIN
 END$$ 
 DELIMITER ;
 
+DROP FUNCTION IF EXISTS Testing_Indicator7de;
+
+DELIMITER $$
+CREATE FUNCTION Testing_Indicator7de(
+    p_startDate DATE,
+    p_endDate DATE,
+    p_startAge INT(11),
+    p_endAge INT (11),
+    p_includeEndAge TINYINT(1),
+    p_gender VARCHAR(1),
+    p_hivResult VARCHAR(8)) RETURNS INT(11)
+    DETERMINISTIC
+BEGIN
+    DECLARE result INT(11) DEFAULT 0;
+
+    SELECT
+        COUNT(DISTINCT pat.patient_id) INTO result
+    FROM
+        patient pat
+    WHERE
+        patientGenderIs(pat.patient_id, p_gender) AND
+        patientIsContact(pat.patient_id) AND
+        getPatientRegistrationDate(pat.patient_id) BETWEEN p_startDate AND p_endDate AND
+        patientHIVFinalTestResultIsWithinReportingPeriod(pat.patient_id, p_hivResult, p_startDate, p_endDate) AND
+        patientAgeIsBetween(pat.patient_id, p_startAge, p_endAge, p_includeEndAge);
+
+    RETURN (result);
+END$$ 
+DELIMITER ;
 
 DROP FUNCTION IF EXISTS Testing_Indicator7f;
 
@@ -409,7 +438,6 @@ BEGIN
     RETURN (result);
 END$$ 
 DELIMITER ;
-
 
 -- getPatientHIVDateFromCounsellingForm
 
@@ -444,7 +472,6 @@ BEGIN
     RETURN testDate;
 END$$
 DELIMITER ;
-
 
 -- getPatientHIVResultFromCounsellingForm
 
