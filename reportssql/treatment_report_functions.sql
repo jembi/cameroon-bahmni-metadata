@@ -114,7 +114,7 @@ CREATE FUNCTION TREATMENT_Indicator3(
     p_endAge INT (11),
     p_includeEndAge TINYINT(1),
     p_gender VARCHAR(1),
-    p_isBreastfeeding TINYINT(1)) RETURNS INT(11)
+    p_includeOnlyBreastfeeding TINYINT(1)) RETURNS INT(11)
     DETERMINISTIC
 BEGIN
     DECLARE result INT(11) DEFAULT 0;
@@ -125,7 +125,7 @@ FROM
     patient pat
 WHERE
     patientGenderIs(pat.patient_id, p_gender) AND
-    (!p_isBreastfeeding OR getProgramAttributeValueWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate, '242c9027-dc2d-42e6-869e-045e8a8b95cb') = 'true') AND
+    (!p_includeOnlyBreastfeeding OR getProgramAttributeValueWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate, '242c9027-dc2d-42e6-869e-045e8a8b95cb') = 'true') AND
     patientAgeWhenRegisteredForHivProgramIsBetween(pat.patient_id, p_startAge, p_endAge, p_includeEndAge) AND
     patientHasStartedARVTreatmentDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
     patientWasPrescribedARVDrugDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
