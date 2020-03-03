@@ -113,7 +113,8 @@ CREATE FUNCTION TREATMENT_Indicator3(
     p_startAge INT(11),
     p_endAge INT (11),
     p_includeEndAge TINYINT(1),
-    p_gender VARCHAR(1)) RETURNS INT(11)
+    p_gender VARCHAR(1),
+    p_isBreastfeeding TINYINT(1)) RETURNS INT(11)
     DETERMINISTIC
 BEGIN
     DECLARE result INT(11) DEFAULT 0;
@@ -124,6 +125,7 @@ FROM
     patient pat
 WHERE
     patientGenderIs(pat.patient_id, p_gender) AND
+    (!p_isBreastfeeding OR getProgramAttributeValueWithinReportingPeriod(pat.patient_id, p_startDate, p_endDate, '242c9027-dc2d-42e6-869e-045e8a8b95cb') = 'true') AND
     patientAgeWhenRegisteredForHivProgramIsBetween(pat.patient_id, p_startAge, p_endAge, p_includeEndAge) AND
     patientHasStartedARVTreatmentDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
     patientWasPrescribedARVDrugDuringReportingPeriod(pat.patient_id, p_startDate, p_endDate) AND
@@ -514,4 +516,68 @@ BEGIN
 
     RETURN (result );
 END$$ 
+DELIMITER ;
+
+-- patientIsBreastfeeding
+
+DROP FUNCTION IF EXISTS patientIsBreastfeeding;
+
+DELIMITER $$
+CREATE FUNCTION patientIsBreastfeeding(
+    p_patientId INT(11)) RETURNS TINYINT(1)
+    DETERMINISTIC
+BEGIN
+
+    DECLARE result TINYINT(1) DEFAULT 0;
+
+    SELECT TRUE INTO result
+    FROM orders o
+    JOIN drug_order do ON do.order_id = o.order_id
+    JOIN concept c ON do.duration_units = c.concept_id AND c.retired = 0
+    JOIN drug d ON d.drug_id = do.drug_inventory_id AND d.retired = 0
+    WHERE o.patient_id = p_patientId AND o.voided = 0
+        AND drugIsARV(d.concept_id)
+        AND patientHasTherapeuticLine(p_patientId, 0)
+        AND o.scheduled_date BETWEEN p_startDate AND p_endDate
+        AND drugOrderIsDispensed(p_patientId, o.order_id)
+        AND calculateTreatmentEndDate(
+            o.scheduled_date,
+            do.duration,
+            c.uuid -- uuid of the duration unit concept
+            ) BETWEEN timestampadd(MONTH, p_minDuration, o.scheduled_date) 
+                AND timestampadd(DAY, -1, timestampadd(MONTH, p_maxDuration, o.scheduled_date))
+    GROUP BY o.patient_id;
+
+    RETURN (result );
+END$$ 
+DELIMITER ;
+
+-- getPatientMostRecentProgramAttributeValue
+
+DROP FUNCTION IF EXISTS getProgramAttributeValueWithinReportingPeriod;
+
+DELIMITER $$
+CREATE FUNCTION getProgramAttributeValueWithinReportingPeriod(
+    p_patientId INT(11),
+    p_startDate DATE,
+    p_endDate DATE,
+    p_uuidProgramAttribute VARCHAR(38)) RETURNS VARCHAR(250)
+    DETERMINISTIC
+BEGIN
+    DECLARE result VARCHAR(250);
+
+    SELECT ppa.value_reference INTO result
+    FROM patient_program_attribute ppa
+        JOIN program_attribute_type pat ON pat.program_attribute_type_id = ppa.attribute_type_id AND pat.retired = 0
+        JOIN patient_program pp ON ppa.patient_program_id = pp.patient_program_id AND pp.voided = 0
+    WHERE
+        ppa.voided = 0 AND
+        pp.patient_id = p_patientId AND
+        pat.uuid = p_uuidProgramAttribute AND
+        ppa.date_created BETWEEN p_startDate AND p_endDate
+    ORDER BY ppa.date_created DESC
+    LIMIT 1;
+
+    RETURN (result);
+END$$
 DELIMITER ;
